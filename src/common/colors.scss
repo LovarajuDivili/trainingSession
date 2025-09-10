@@ -1,0 +1,77 @@
+//write common colors here
+$primary-color: #906aff;
+$primary-100: #f1ecff;
+$primary-300: #c7b5ff;
+$primary-400: #ac8fff;
+$primary-500: #906aff;
+$secondary-color: #64748b;
+$secondary-200: #f1f5f9;
+$secondary-300: #e2e8f0;
+$secondary-400: #cbd5e1;
+$secondary-500: #97a2b0;
+$label-color: #05060f;
+$footer: #334155;
+$primary-light: #f1ecff;
+$white: #fff;
+$border-color: #cbd3de;
+$icon-bg: #e3daff;
+$heading-color: #070a13;
+$grey: #97a2b6;
+$light-grey: #f0f0f0;
+$black: #000000;
+$dark-grey: #2d394a;
+$table-header: #eff4f8;
+$button-border: #64748b;
+$button-text: #48525f;
+$botResponse-icons: #475569;
+$neutral-100: #1e293b;
+$warning-color: #cc2901;
+$medium-grey: #ffebe6;
+$white: #fff;
+$neutrals-100: #f8fafc;
+$neutrals-500: #94a3b8;
+$gray-100: #7a879a;
+$secondary-blue-100: #e6f3ff;
+$secondary-blue-500: #339dff;
+$secondary-blue-600: #0084ff;
+$success-color: #22c55e;
+$success-100: #ecfdf5;
+$success-500: #22c55e;
+$error-color: #ff3b30;
+$error-100: #fff1f0;
+$error-500: #ff3b30;
+
+//write common fonts here
+$text-transform-capitalize: capitalize;
+$font-style-normal: "normal";
+$manrope-extrabold: "Manrope-ExtraBold";
+$manrope-bold: "Manrope-Bold";
+$manrope-semibold: "Manrope-SemiBold";
+$manrope-medium: "Manrope-Medium";
+$manrope: "Manrope";
+$break-word: break-word;
+$font-family: manrope !important;
+$font-weight: bold !important;
+
+//write common fontBold here
+$font-600: 600;
+$font-400: 400;
+$font-700: 700;
+$font-size-16: 16px;
+$font-size-18: 18px;
+$font-size-12: 12px;
+$width-100-percent: 100%;
+$border-radius-16: 16px;
+
+// If you want to use this colors file in your component then import this file in your component scss file
+// Example: @import 'src/common/colors.scss';
+// Then you can use the colors like this
+// Example:
+//.class-name {
+//   background-color: $primary-color;
+//   border-color: $primary-color;
+//  color: $primary-color;
+//}
+// Or you can use it in your html file like this
+// Example:
+// <div class="class-name" style="background-color: $primary-color; border-color: $primary-color; color: $primary-color;"></div>
