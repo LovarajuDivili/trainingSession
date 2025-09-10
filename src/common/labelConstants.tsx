@@ -12,6 +12,10 @@ export const HomePage_Dropdowns = {
     HR : 'HR',
 }
 
+export const Welcome_Msgs = {
+    WELCOME_MSG : "Hello, welcome to"
+}
+
 
 // If you want to use this variables in your component
 // Example:
