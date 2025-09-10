@@ -13,7 +13,11 @@ export const HomePage_Dropdowns = {
 }
 
 export const Welcome_Msgs = {
-    WELCOME_MSG : "Hello, welcome to"
+    WELCOME_MSG : "Hello, welcome to "
+}
+
+export const Select_Account = {
+    SELECT_ACCOUNT : "Please select an account type to proceed: "
 }
 
 
