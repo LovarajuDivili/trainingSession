@@ -16,10 +16,9 @@ import CodeIcon from "@mui/icons-material/Code";
 import SettingsApplicationsIcon from "@mui/icons-material/SettingsApplications";
 import SyncAltIcon from "@mui/icons-material/SyncAlt";
 import BugReportIcon from "@mui/icons-material/BugReport";
-import { Welcome_Msgs } from "../common/labelConstants";
+import { Select_Account, Welcome_Msgs } from "../common/labelConstants";
 
-
-
+// TODO- will do in further steps
 // const dropDowns = [
 //     {
 //       label: "Admin",
@@ -37,8 +36,6 @@ const WelcomeSasa = () => {
   const handleDropdownChange = (event: SelectChangeEvent) => {
     setDropdownValue(event.target.value);
   };
-
-  
 
   return (
     <Box>
@@ -66,7 +63,7 @@ const WelcomeSasa = () => {
           variant="body1"
           gutterBottom
         >
-          Please select an account type to proceed:
+          {Select_Account.SELECT_ACCOUNT}
         </Typography>
 
         <FormControl sx={{ width: "250px", mt: 2 }}>

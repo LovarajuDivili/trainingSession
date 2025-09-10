@@ -1,10 +1,8 @@
 import { useState } from "react";
 import { Box, Typography, IconButton, Button } from "@mui/material";
 import AccountCircle from "@mui/icons-material/AccountCircle";
-//import SmartToy from "@mui/icons-material/SmartToy";
 import LogoutIcon from "@mui/icons-material/Logout";
-import SwapHorizIcon from "@mui/icons-material/SwapHoriz"; // Using a Material icon for arrows
-//import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import SwapHorizIcon from "@mui/icons-material/SwapHoriz";
 
 const Header = () => {
   const [showLogout, setShowLogout] = useState(false);
@@ -20,7 +18,7 @@ const Header = () => {
   return (
     <Box
       sx={{
-        position: "fixed", 
+        position: "fixed",
         top: 0,
         left: 0,
         right: 0,
@@ -30,7 +28,7 @@ const Header = () => {
         display: "flex",
         alignItems: "center",
         justifyContent: "space-between",
-        
+
         zIndex: 1000,
       }}
     >
@@ -57,6 +55,14 @@ const Header = () => {
           position: "relative",
         }}
       >
+        <Box
+          sx={{
+            width: "1px",
+            height: "30px",
+            backgroundColor: "rgba(255, 255, 255, 0.5)", // semi-transparent white
+            marginX: 2,
+          }}
+        />
         <IconButton sx={{ color: "white" }}>
           <SwapHorizIcon />
         </IconButton>
