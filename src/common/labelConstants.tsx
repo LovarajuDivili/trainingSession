@@ -1,6 +1,8 @@
 
 export const HomePage = {
     AIFA : 'AIFA',
+    VITE : "Vite",
+    REACT : "React"
 }
 
 export const HomePage_Dropdowns = {
