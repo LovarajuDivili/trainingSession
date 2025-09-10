@@ -35,3 +35,8 @@ docs: update README with setup instructions
 added login form
 bugfix in api call
 update readme
+
+## Before raising a PR, ensure the build passes by running:
+---> Builds the app for production
+
+npm run build
