@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import { ThemeProvider, CssBaseline, Box } from "@mui/material";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import theme from "./theme/theme";
-
 import Navbar from "./components/Navbar";
 import AccountSelection from "./components/AccountSelection";
 import LogoutSuccess from "./pages/LogoutSuccess";

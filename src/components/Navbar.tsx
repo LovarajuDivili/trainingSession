@@ -16,6 +16,8 @@ import {
 import { useNavigate } from "react-router-dom";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import LogoutIcon from "@mui/icons-material/Logout";
+import { GoArrowSwitch } from "react-icons/go";
+import Divider from "@mui/material/Divider";
 
 interface NavbarProps {
   accountType: string;
@@ -65,66 +67,87 @@ const Navbar: React.FC<NavbarProps> = () => {
               alt="AIFA Logo"
             />
           </Typography>
-          <Box
-            sx={{
+
+          <div
+            style={{
               display: "flex",
-              gap: 1.3,
-              background: "white",
-              borderRadius: 28,
-              padding: 0.4,
               alignItems: "center",
+              justifyContent: "center",
+              gap: 22,
             }}
           >
-            <img src="/aifa_clr_logo.svg" alt="AIFA Color Logo" />
-            <IconButton onClick={handleOpenMenu} sx={{ p: 0 }}>
-              <Box
-                sx={{
-                  width: 40,
-                  height: 40,
-                  padding: 2.7,
-                  bgcolor: "#906aff",
-                  borderRadius: "50%",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                <AccountCircleIcon sx={{ fontSize: 28, color: "#fff" }} />
-              </Box>
-            </IconButton>
-            <Menu
-              anchorEl={anchorEl}
-              open={Boolean(anchorEl)}
-              onClose={handleCloseMenu}
-              anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-              transformOrigin={{ vertical: "top", horizontal: "right" }}
-              PaperProps={{
-                sx: {
-                  bgcolor: "#f3f0ff",
-                  color: "#4b2db7",
-                  borderRadius: 2,
-                  minWidth: 150,
-                  boxShadow: "0px 5px 15px rgba(0, 0, 0, 0.2)",
-                },
+            <GoArrowSwitch style={{ fontSize: 24 }} />
+            <Divider
+              orientation="vertical"
+              variant="middle"
+              flexItem
+              sx={{ borderColor: "white" }}
+            />
+            <Box
+              sx={{
+                display: "flex",
+                gap: 1.1,
+                background: "white",
+                borderRadius: 28,
+                padding: 0.7,
+                alignItems: "center",
               }}
             >
-              <MenuItem
-                onClick={handleLogout}
-                sx={{
-                  "&:hover": {
-                    bgcolor: "#d8c9ff",
+              <img
+                src="/aifa_clr_logo.svg"
+                alt="AIFA Color Logo"
+                style={{ width: 105 }}
+              />
+              <IconButton onClick={handleOpenMenu} sx={{ p: 0 }}>
+                <Box
+                  sx={{
+                    width: 35,
+                    height: 35,
+                    padding: 2.2,
+                    bgcolor: "#906aff",
+                    borderRadius: "50%",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <AccountCircleIcon sx={{ fontSize: 28, color: "#fff" }} />
+                </Box>
+              </IconButton>
+              <Menu
+                anchorEl={anchorEl}
+                open={Boolean(anchorEl)}
+                onClose={handleCloseMenu}
+                anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+                transformOrigin={{ vertical: "top", horizontal: "right" }}
+                PaperProps={{
+                  sx: {
+                    bgcolor: "#f3f0ff",
+                    color: "#4b2db7",
+                    borderRadius: 2,
+                    minWidth: 150,
+                    boxShadow: "0px 5px 15px rgba(0, 0, 0, 0.2)",
                   },
-                  borderRadius: 1,
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 1,
                 }}
               >
-                <LogoutIcon fontSize="small" style={{ color: "black" }} />
-                Logout
-              </MenuItem>
-            </Menu>
-          </Box>
+                <MenuItem
+                  onClick={handleLogout}
+                  sx={{
+                    "&:hover": {
+                      bgcolor: "#d8c9ff",
+                    },
+                    borderRadius: 1,
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 1,
+                  }}
+                >
+                  <LogoutIcon fontSize="small" style={{ color: "black" }} />
+                  Logout
+                </MenuItem>
+              </Menu>
+            </Box>
+          </div>
         </Toolbar>
       </AppBar>
 
