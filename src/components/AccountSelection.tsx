@@ -16,53 +16,11 @@ import {
   DialogContent,
   DialogActions,
 } from "@mui/material";
-
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
-import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
-import SettingsIcon from "@mui/icons-material/Settings";
-import CodeIcon from "@mui/icons-material/Code";
-import BuildIcon from "@mui/icons-material/Build";
-import TransformIcon from "@mui/icons-material/Transform";
-import BugReportIcon from "@mui/icons-material/BugReport";
 import { GoArrowRight } from "react-icons/go";
-
-interface AccountSelectionProps {
-  accountType: string;
-  setAccountType: (type: string) => void;
-}
-
-const accountTypes = [
-  {
-    value: "Admin",
-    label: "Admin",
-    icon: <AdminPanelSettingsIcon sx={{ color: "#a084e8" }} />,
-  },
-  {
-    value: "Technical",
-    label: "Technical",
-    icon: <SettingsIcon sx={{ color: "#5bc0f8" }} />,
-  },
-  {
-    value: "Developer",
-    label: "Developer",
-    icon: <CodeIcon sx={{ color: "#00b894" }} />,
-  },
-  {
-    value: "Functional",
-    label: "Functional",
-    icon: <BuildIcon sx={{ color: "#fd7e14" }} />,
-  },
-  {
-    value: "Migrator",
-    label: "Migrator",
-    icon: <TransformIcon sx={{ color: "#ff6f61" }} />,
-  },
-  {
-    value: "Tester",
-    label: "Tester",
-    icon: <BugReportIcon sx={{ color: "#ff9f1c" }} />,
-  },
-];
+import { AccountSelectionProps } from "../common/types";
+import { accountTypes } from "../common/accountTypes";
+import { LABELS, DIALOG_TEXTS } from "../common/labelConstants";
 
 const AccountSelection: React.FC<AccountSelectionProps> = ({
   accountType,
@@ -87,6 +45,7 @@ const AccountSelection: React.FC<AccountSelectionProps> = ({
   };
 
   const selected = accountTypes.find((item) => item.value === accountType);
+
   return (
     <Container
       maxWidth="md"
@@ -108,19 +67,19 @@ const AccountSelection: React.FC<AccountSelectionProps> = ({
         }}
       >
         <Typography variant="h5" sx={{ fontWeight: 600, mb: 2 }}>
-          Hello, welcome to{" "}
-          <span style={{ color: "#906aff" }}>Cerebro SASA.</span>
+          {LABELS.WELCOME_TITLE}{" "}
+          <span style={{ color: "#906aff" }}>{LABELS.APP_NAME}</span>
         </Typography>
 
         <Typography variant="body1" sx={{ mb: 2 }}>
-          Please select an account type to proceed !
+          {LABELS.SELECT_ACCOUNT}
         </Typography>
 
         <Typography
           variant="subtitle2"
           sx={{ textAlign: "left", fontWeight: 500, mb: 1, color: "#888" }}
         >
-          Account Type
+          {LABELS.ACCOUNT_TYPE}
         </Typography>
 
         <FormControl fullWidth sx={{ mb: 3 }}>
@@ -172,25 +131,25 @@ const AccountSelection: React.FC<AccountSelectionProps> = ({
           }}
           onClick={handleProceed}
         >
-          Proceed <GoArrowRight style={{ fontSize: 21, marginLeft: 5 }} />
+          {LABELS.PROCEED_BUTTON}{" "}
+          <GoArrowRight style={{ fontSize: 21, marginLeft: 5 }} />
         </Button>
       </Paper>
+
       <Dialog
         open={openDialog}
         onClose={handleCancel}
         PaperProps={{
           sx: {
-            position: "absolute",
-            top: 20,
-            m: 0,
+            borderRadius: 3,
           },
         }}
       >
         <DialogTitle sx={{ fontWeight: 600, textAlign: "center" }}>
-          Confirm Proceed
+          {DIALOG_TEXTS.CONFIRM_TITLE}
         </DialogTitle>
         <DialogContent sx={{ textAlign: "center" }}>
-          Are you sure you want to proceed as{" "}
+          {DIALOG_TEXTS.CONFIRM_MESSAGE}{" "}
           <span style={{ fontWeight: 600, color: "#906aff" }}>
             {accountType}
           </span>
@@ -201,7 +160,7 @@ const AccountSelection: React.FC<AccountSelectionProps> = ({
             onClick={handleCancel}
             sx={{ color: "#4b2db7", fontWeight: 600 }}
           >
-            Cancel
+            {DIALOG_TEXTS.CANCEL}
           </Button>
           <Button
             onClick={handleConfirm}
@@ -213,7 +172,7 @@ const AccountSelection: React.FC<AccountSelectionProps> = ({
               "&:hover": { opacity: 0.9 },
             }}
           >
-            OK
+            {DIALOG_TEXTS.OK}
           </Button>
         </DialogActions>
       </Dialog>
