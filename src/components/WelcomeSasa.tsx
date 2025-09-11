@@ -17,6 +17,7 @@ import SettingsApplicationsIcon from "@mui/icons-material/SettingsApplications";
 import SyncAltIcon from "@mui/icons-material/SyncAlt";
 import BugReportIcon from "@mui/icons-material/BugReport";
 import { Select_Account, Welcome_Msgs } from "../common/labelConstants";
+import ArrowRightAltIcon from "@mui/icons-material/ArrowRightAlt";
 
 // TODO- will do in further steps
 // const dropDowns = [
@@ -31,7 +32,7 @@ import { Select_Account, Welcome_Msgs } from "../common/labelConstants";
 //   ];
 
 const WelcomeSasa = () => {
-  const [dropdownValue, setDropdownValue] = useState("admin");
+  const [dropdownValue, setDropdownValue] = useState<string>("admin");
 
   const handleDropdownChange = (event: SelectChangeEvent) => {
     setDropdownValue(event.target.value);
@@ -139,7 +140,7 @@ const WelcomeSasa = () => {
           disabled={!dropdownValue}
           onClick={() => console.log("Selected account type:", dropdownValue)}
         >
-          Proceed ➔
+          Proceed <ArrowRightAltIcon />
         </Button>
       </Box>
     </Box>
