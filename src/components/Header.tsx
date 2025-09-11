@@ -3,9 +3,10 @@ import { Box, Typography, IconButton, Button } from "@mui/material";
 import AccountCircle from "@mui/icons-material/AccountCircle";
 import LogoutIcon from "@mui/icons-material/Logout";
 import SwapHorizIcon from "@mui/icons-material/SwapHoriz";
+import Divider from "@mui/material/Divider";
 
 const Header = () => {
-  const [showLogout, setShowLogout] = useState(false);
+  const [showLogout, setShowLogout] = useState<boolean>(false);
 
   const handleIconClick = () => {
     setShowLogout((prev) => !prev);
@@ -28,11 +29,10 @@ const Header = () => {
         display: "flex",
         alignItems: "center",
         justifyContent: "space-between",
-
         zIndex: 1000,
       }}
     >
-      <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+      <Box sx={{ display: "flex", alignItems: "center", gap: 1,marginLeft:"10px" }}>
         <Box
           component="img"
           src="/chat.svg"
@@ -42,6 +42,7 @@ const Header = () => {
             height: 35,
           }}
         />
+
         <Typography variant="h6" component="div" sx={{ color: "white" }}>
           <strong>Aifa</strong>
         </Typography>
@@ -51,21 +52,24 @@ const Header = () => {
         sx={{
           display: "flex",
           alignItems: "center",
-          gap: 1,
+          gap: 4,
           position: "relative",
+          marginRight:"10px"
         }}
       >
-        <Box
-          sx={{
-            width: "1px",
-            height: "30px",
-            backgroundColor: "rgba(255, 255, 255, 0.5)", // semi-transparent white
-            marginX: 2,
-          }}
-        />
         <IconButton sx={{ color: "white" }}>
           <SwapHorizIcon />
         </IconButton>
+
+        <Divider
+          orientation="vertical"
+          variant="middle"
+          flexItem
+          sx={{
+            backgroundColor: "white",
+            width: "0px",
+          }}
+        />
 
         <Box
           sx={{
