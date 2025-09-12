@@ -1,9 +1,10 @@
 import React, { useState } from "react";
 import { ThemeProvider, CssBaseline, Box } from "@mui/material";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import theme from "./theme/theme";
 import Navbar from "./components/Navbar";
 import AccountSelection from "./components/AccountSelection";
+import Dashboard from "./pages/DashBoard";
 import LogoutSuccess from "./pages/LogoutSuccess";
 
 const App: React.FC = () => {
@@ -14,7 +15,7 @@ const App: React.FC = () => {
       <CssBaseline />
       <BrowserRouter>
         <Navbar accountType={accountType} />
-        <Box component="main" sx={{ p: 3 }}>
+        <Box component="main">
           <Routes>
             <Route
               path="/"
@@ -25,7 +26,13 @@ const App: React.FC = () => {
                 />
               }
             />
+            <Route
+              path="/dashboard"
+              element={<Dashboard accountType={accountType} />}
+            />
             <Route path="/logout-success" element={<LogoutSuccess />} />
+            {/* Redirect any unknown path */}
+            <Route path="*" element={<Navigate to="/" />} />
           </Routes>
         </Box>
       </BrowserRouter>

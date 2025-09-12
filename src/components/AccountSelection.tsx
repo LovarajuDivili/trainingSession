@@ -21,12 +21,14 @@ import { GoArrowRight } from "react-icons/go";
 import { AccountSelectionProps } from "../common/types";
 import { accountTypes } from "../common/accountTypes";
 import { LABELS, DIALOG_TEXTS } from "../common/labelConstants";
+import { useNavigate } from "react-router-dom";
 
 const AccountSelection: React.FC<AccountSelectionProps> = ({
   accountType,
   setAccountType,
 }) => {
   const [openDialog, setOpenDialog] = useState(false);
+  const navigate = useNavigate();
 
   const handleChange = (event: SelectChangeEvent) => {
     setAccountType(event.target.value as string);
@@ -41,7 +43,10 @@ const AccountSelection: React.FC<AccountSelectionProps> = ({
   };
 
   const handleConfirm = () => {
+    document.activeElement instanceof HTMLElement &&
+      document.activeElement.blur();
     setOpenDialog(false);
+    navigate("/dashboard");
   };
 
   const selected = accountTypes.find((item) => item.value === accountType);
@@ -99,12 +104,8 @@ const AccountSelection: React.FC<AccountSelectionProps> = ({
               bgcolor: "#f1ecff",
               py: 0.5,
               px: 1.5,
-              "& .MuiOutlinedInput-notchedOutline": {
-                border: "none",
-              },
-              "& .MuiSelect-icon": {
-                color: "#906aff",
-              },
+              "& .MuiOutlinedInput-notchedOutline": { border: "none" },
+              "& .MuiSelect-icon": { color: "#906aff" },
             }}
           >
             {accountTypes.map((item) => (
@@ -125,9 +126,7 @@ const AccountSelection: React.FC<AccountSelectionProps> = ({
             fontWeight: 600,
             borderRadius: 3,
             py: 1.5,
-            "&:hover": {
-              bgcolor: "#ac8fff",
-            },
+            "&:hover": { bgcolor: "#ac8fff" },
           }}
           onClick={handleProceed}
         >
@@ -139,11 +138,8 @@ const AccountSelection: React.FC<AccountSelectionProps> = ({
       <Dialog
         open={openDialog}
         onClose={handleCancel}
-        PaperProps={{
-          sx: {
-            borderRadius: 3,
-          },
-        }}
+        closeAfterTransition={false}
+        PaperProps={{ sx: { borderRadius: 3 } }}
       >
         <DialogTitle sx={{ fontWeight: 600, textAlign: "center" }}>
           {DIALOG_TEXTS.CONFIRM_TITLE}

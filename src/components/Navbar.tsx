@@ -12,18 +12,18 @@ import {
   DialogContent,
   DialogActions,
   Button,
+  Divider,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import LogoutIcon from "@mui/icons-material/Logout";
 import { GoArrowSwitch } from "react-icons/go";
-import Divider from "@mui/material/Divider";
 
 interface NavbarProps {
   accountType: string;
 }
 
-const Navbar: React.FC<NavbarProps> = () => {
+const Navbar: React.FC<NavbarProps> = ({ accountType }) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [openDialog, setOpenDialog] = useState(false);
   const navigate = useNavigate();
@@ -42,6 +42,9 @@ const Navbar: React.FC<NavbarProps> = () => {
   };
 
   const handleConfirmLogout = () => {
+    document.activeElement instanceof HTMLElement &&
+      document.activeElement.blur();
+
     setOpenDialog(false);
     navigate("/logout-success");
   };
@@ -53,57 +56,67 @@ const Navbar: React.FC<NavbarProps> = () => {
   return (
     <>
       <AppBar
-        position="static"
+        position="fixed"
         sx={{
           background: "linear-gradient(90deg, #906aff, #ac8fff)",
           boxShadow: "none",
+          zIndex: (theme) => theme.zIndex.drawer + 1,
         }}
       >
-        <Toolbar sx={{ display: "flex", justifyContent: "space-between" }}>
-          <Typography variant="h6" sx={{ fontWeight: 600 }}>
-            <img
-              src="/aifalogo.svg"
-              style={{ width: 120, display: "flex" }}
-              alt="AIFA Logo"
-            />
-          </Typography>
-
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: 22,
-            }}
-          >
-            <GoArrowSwitch style={{ fontSize: 24 }} />
+        <Toolbar
+          sx={{ display: "flex", justifyContent: "space-between", height: 56 }}
+        >
+          <Box sx={{ display: "flex", alignItems: "center", gap: 3 }}>
+            <img src="/aifalogo.svg" alt="AIFA Labs" style={{ height: 32 }} />
             <Divider
               orientation="vertical"
-              variant="middle"
+              flexItem
+              sx={{ borderColor: "rgba(255,255,255,0.6)" }}
+            />
+            <Typography
+              variant="subtitle1"
+              sx={{
+                color: "white",
+                fontSize: 15,
+                fontWeight: 600,
+                letterSpacing: 0.2,
+              }}
+            >
+              {accountType}
+            </Typography>
+          </Box>
+
+          <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+            <IconButton sx={{ color: "white" }}>
+              <GoArrowSwitch style={{ fontSize: 24, color: "white" }} />
+            </IconButton>
+            <Divider
+              orientation="vertical"
               flexItem
               sx={{ borderColor: "white" }}
             />
+
             <Box
               sx={{
                 display: "flex",
-                gap: 1.1,
-                background: "white",
-                borderRadius: 28,
-                padding: 0.7,
                 alignItems: "center",
+                gap: 1,
+                background: "white",
+                borderRadius: "28px",
+                padding: "4px 8px",
               }}
             >
               <img
                 src="/aifa_clr_logo.svg"
                 alt="AIFA Color Logo"
-                style={{ width: 105 }}
+                style={{ height: 24 }}
               />
+
               <IconButton onClick={handleOpenMenu} sx={{ p: 0 }}>
                 <Box
                   sx={{
                     width: 35,
                     height: 35,
-                    padding: 2.2,
                     bgcolor: "#906aff",
                     borderRadius: "50%",
                     display: "flex",
@@ -111,9 +124,10 @@ const Navbar: React.FC<NavbarProps> = () => {
                     justifyContent: "center",
                   }}
                 >
-                  <AccountCircleIcon sx={{ fontSize: 28, color: "#fff" }} />
+                  <AccountCircleIcon sx={{ color: "white", fontSize: 28 }} />
                 </Box>
               </IconButton>
+
               <Menu
                 anchorEl={anchorEl}
                 open={Boolean(anchorEl)}
@@ -133,9 +147,7 @@ const Navbar: React.FC<NavbarProps> = () => {
                 <MenuItem
                   onClick={handleLogout}
                   sx={{
-                    "&:hover": {
-                      bgcolor: "#d8c9ff",
-                    },
+                    "&:hover": { bgcolor: "#d8c9ff" },
                     borderRadius: 1,
                     display: "flex",
                     alignItems: "center",
@@ -147,13 +159,14 @@ const Navbar: React.FC<NavbarProps> = () => {
                 </MenuItem>
               </Menu>
             </Box>
-          </div>
+          </Box>
         </Toolbar>
       </AppBar>
 
       <Dialog
         open={openDialog}
         onClose={handleCancelLogout}
+        closeAfterTransition={false}
         sx={{
           "& .MuiPaper-root": {
             borderRadius: 3,
