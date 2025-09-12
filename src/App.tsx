@@ -1,10 +1,11 @@
+import { Box } from "@mui/material";
 import WelcomeSasa from "./components/WelcomeSasa"
 
 const App = () => {
   return (
-    <div>
+    <Box>
       <WelcomeSasa />
-    </div>
+    </Box>
   )
 }
 
