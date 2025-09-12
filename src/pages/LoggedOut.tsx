@@ -1,6 +1,7 @@
 import React from "react";
 import { Box, Typography, Button } from "@mui/material";
 import { useNavigate } from "react-router-dom";
+import { LoggedOutPage } from "../common/labelConstants";
 
 const LoggedOut: React.FC = () => {
   const navigate = useNavigate();
@@ -23,11 +24,11 @@ const LoggedOut: React.FC = () => {
         mb={2}
         sx={{ color: "#906aff", fontWeight: "bold" }}
       >
-        You’ve been logged out
+        {LoggedOutPage.TITLE}
       </Typography>
 
       <Typography variant="body1" mb={4} sx={{ color: "#906aff" }}>
-        Click to return to the homepage
+        {LoggedOutPage.DESCRIPTION}
       </Typography>
 
       <Button
@@ -47,7 +48,7 @@ const LoggedOut: React.FC = () => {
           },
         }}
       >
-        Return to Home
+        {LoggedOutPage.RETURN_HOME}
       </Button>
     </Box>
   );
