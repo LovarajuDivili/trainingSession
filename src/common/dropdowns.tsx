@@ -1,5 +1,3 @@
-// common/dropdowns.ts
-
 import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
 import BuildCircleIcon from "@mui/icons-material/BuildCircle";
 import CodeIcon from "@mui/icons-material/Code";
