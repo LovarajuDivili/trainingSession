@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type JSX } from "react";
 import {
   Box,
   Typography,
@@ -15,12 +15,25 @@ import AccountCircle from "@mui/icons-material/AccountCircle";
 import LogoutIcon from "@mui/icons-material/Logout";
 import SwapHorizIcon from "@mui/icons-material/SwapHoriz";
 import { useNavigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
+import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
+import BuildIcon from "@mui/icons-material/Build";
+import CodeIcon from "@mui/icons-material/Code";
+import SettingsApplicationsIcon from "@mui/icons-material/SettingsApplications";
+import SyncAltIcon from "@mui/icons-material/SyncAlt";
+import BugReportIcon from "@mui/icons-material/BugReport";
 
 
-const Header = () => {
+const Header = ({ role: propRole }: { role?: string }) => {
   const [showLogout, setShowLogout] = useState<boolean>(false);
   const [openDialog, setOpenDialog] = useState(false);
   const [openSnackbar, setOpenSnackbar] = useState(false);
+
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const role =
+    propRole || location.state?.role || window.sessionStorage.getItem("role");
 
   const handleIconClick = () => {
     setShowLogout((prev) => !prev);
@@ -33,18 +46,27 @@ const Header = () => {
   const confirmLogout = () => {
     setOpenDialog(false);
     setOpenSnackbar(true);
-    // optionally navigate after logout or clear session
     setTimeout(() => {
-      navigate("/logout"); // or wherever you want
-    }, 1500); // delay navigation to show snackbar
+      navigate("/logout"); 
+    }, 100); 
   };
 
   const cancelLogout = () => {
     setOpenDialog(false);
   };
 
-  const navigate = useNavigate();
+  const roleIcons: Record<string, JSX.Element> = {
+    admin: <AdminPanelSettingsIcon sx={{ fontSize: 18, color: "white" }} />,
+    technical: <BuildIcon sx={{ fontSize: 18, color: "white" }} />,
+    developer: <CodeIcon sx={{ fontSize: 18, color: "white" }} />,
+    functional: (
+      <SettingsApplicationsIcon sx={{ fontSize: 18, color: "white" }} />
+    ),
+    migrator: <SyncAltIcon sx={{ fontSize: 18, color: "white" }} />,
+    tester: <BugReportIcon sx={{ fontSize: 18, color: "white" }} />,
+  };
 
+  const roleIcon = role ? roleIcons[role.toLowerCase()] : null;
 
   return (
     <Box
@@ -80,9 +102,43 @@ const Header = () => {
           }}
         />
 
-        <Typography variant="h6" component="div" sx={{ color: "white" }}>
+        <Typography
+          variant="h6"
+          component="div"
+          sx={{ color: "white", paddingRight: "14px" }}
+        >
           <strong>Aifa</strong>
         </Typography>
+
+        <Divider
+          orientation="vertical"
+          variant="middle"
+          flexItem
+          sx={{
+            backgroundColor: "white",
+            width: "0px",
+          }}
+        />
+
+        {role && roleIcon && (
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              gap: 0.5,
+              ml: 2,
+              px: 1.5,
+              py: 0.3,
+              borderRadius: "12px",
+              backgroundColor: "rgba(255,255,255,0.2)",
+            }}
+          >
+            {roleIcon}
+            <Typography sx={{ color: "white", fontSize: 14, fontWeight: 500 }}>
+              {role.charAt(0).toUpperCase() + role.slice(1)}
+            </Typography>
+          </Box>
+        )}
       </Box>
 
       <Box
