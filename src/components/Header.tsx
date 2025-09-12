@@ -1,20 +1,50 @@
 import { useState } from "react";
-import { Box, Typography, IconButton, Button } from "@mui/material";
+import {
+  Box,
+  Typography,
+  IconButton,
+  Button,
+  Divider,
+  Dialog,
+  DialogTitle,
+  DialogActions,
+  Snackbar,
+  Alert,
+} from "@mui/material";
 import AccountCircle from "@mui/icons-material/AccountCircle";
 import LogoutIcon from "@mui/icons-material/Logout";
 import SwapHorizIcon from "@mui/icons-material/SwapHoriz";
-import Divider from "@mui/material/Divider";
+import { useNavigate } from "react-router-dom";
+
 
 const Header = () => {
   const [showLogout, setShowLogout] = useState<boolean>(false);
+  const [openDialog, setOpenDialog] = useState(false);
+  const [openSnackbar, setOpenSnackbar] = useState(false);
 
   const handleIconClick = () => {
     setShowLogout((prev) => !prev);
   };
 
   const handleLogout = () => {
-    console.log("Logged out");
+    setOpenDialog(true);
   };
+
+  const confirmLogout = () => {
+    setOpenDialog(false);
+    setOpenSnackbar(true);
+    // optionally navigate after logout or clear session
+    setTimeout(() => {
+      navigate("/logout"); // or wherever you want
+    }, 1500); // delay navigation to show snackbar
+  };
+
+  const cancelLogout = () => {
+    setOpenDialog(false);
+  };
+
+  const navigate = useNavigate();
+
 
   return (
     <Box
@@ -32,7 +62,14 @@ const Header = () => {
         zIndex: 1000,
       }}
     >
-      <Box sx={{ display: "flex", alignItems: "center", gap: 1,marginLeft:"10px" }}>
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          gap: 1,
+          marginLeft: "10px",
+        }}
+      >
         <Box
           component="img"
           src="/chat.svg"
@@ -54,7 +91,7 @@ const Header = () => {
           alignItems: "center",
           gap: 4,
           position: "relative",
-          marginRight:"10px"
+          marginRight: "10px",
         }}
       >
         <IconButton sx={{ color: "white" }}>
@@ -143,6 +180,32 @@ const Header = () => {
           </Box>
         </Box>
       </Box>
+      {/* Confirmation Dialog */}
+      <Dialog open={openDialog} onClose={cancelLogout}>
+        <DialogTitle>Are you sure you want to logout?</DialogTitle>
+        <DialogActions>
+          <Button onClick={cancelLogout}>Cancel</Button>
+          <Button onClick={confirmLogout} color="primary" variant="contained">
+            Confirm
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Snackbar Notification */}
+      <Snackbar
+        open={openSnackbar}
+        autoHideDuration={3000}
+        onClose={() => setOpenSnackbar(false)}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+      >
+        <Alert
+          onClose={() => setOpenSnackbar(false)}
+          severity="success"
+          sx={{ width: "100%" }}
+        >
+          Logout successful!
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };
