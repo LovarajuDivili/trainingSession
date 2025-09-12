@@ -18,6 +18,8 @@ import SyncAltIcon from "@mui/icons-material/SyncAlt";
 import BugReportIcon from "@mui/icons-material/BugReport";
 import { Select_Account, Welcome_Msgs } from "../common/labelConstants";
 import ArrowRightAltIcon from "@mui/icons-material/ArrowRightAlt";
+import { useNavigate } from "react-router-dom";
+
 
 // TODO- will do in further steps
 // const dropDowns = [
@@ -33,14 +35,30 @@ import ArrowRightAltIcon from "@mui/icons-material/ArrowRightAlt";
 
 const WelcomeSasa = () => {
   const [dropdownValue, setDropdownValue] = useState<string>("admin");
+  const navigate = useNavigate();
 
   const handleDropdownChange = (event: SelectChangeEvent) => {
     setDropdownValue(event.target.value);
   };
+  const handleProceed = () => {
+    switch (dropdownValue) {
+      case "admin":
+        navigate("/admin");
+        break;
+      case "technical":
+        navigate("/technical");
+        break;
+      default:
+        alert("Please select a valid role");
+    }
+    sessionStorage.setItem("role", dropdownValue);
+
+  navigate(`/${dropdownValue}`);
+  };
 
   return (
     <Box>
-      <Header />
+      <Header role={""} />
       <Box
         sx={{
           flexGrow: 1,
@@ -138,7 +156,7 @@ const WelcomeSasa = () => {
             borderRadius: "19px",
           }}
           disabled={!dropdownValue}
-          onClick={() => console.log("Selected account type:", dropdownValue)}
+          onClick={handleProceed}
         >
           Proceed <ArrowRightAltIcon />
         </Button>
