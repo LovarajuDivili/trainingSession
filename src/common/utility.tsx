@@ -5,6 +5,7 @@ import CodeIcon from "@mui/icons-material/Code";
 import SettingsApplicationsIcon from "@mui/icons-material/SettingsApplications";
 import SyncAltIcon from "@mui/icons-material/SyncAlt";
 import BugReportIcon from "@mui/icons-material/BugReport";
+import type { DropdownItem } from "./types";
 
 export const roleIcons: Record<string, JSX.Element> = {
     admin: <AdminPanelSettingsIcon sx={{ fontSize: 18, color: "white" }} />,
@@ -16,13 +17,6 @@ export const roleIcons: Record<string, JSX.Element> = {
     migrator: <SyncAltIcon sx={{ fontSize: 18, color: "white" }} />,
     tester: <BugReportIcon sx={{ fontSize: 18, color: "white" }} />,
   };
-
-  
-export interface DropdownItem {
-  value: string;
-  label: string;
-  icon: JSX.Element;
-}
 
 export const roleDropdowns: DropdownItem[] = [
   {
