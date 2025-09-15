@@ -16,12 +16,46 @@ export const Welcome_Msgs = {
     WELCOME_MSG : "Hello, welcome to "
 }
 
+export const Cerebro_Sasa = {
+    CEREBRO_SASA : "Cerebra Sasa"
+}
+
+export const Aifa = {
+    AIFA : "Aifa"
+}
+
 export const Select_Account = {
     SELECT_ACCOUNT : "Please select an account type to proceed: "
 }
 
+export const Account_Type = {
+    ACCOUNT_TYPE : "Account Type"
+}
 
-// If you want to use this variables in your component
-// Example:
-// import { HomePage } from 'src/common/labelConstants';
-// <Typography>{HomePage.AIFA}}</Typography>
+export const Logout = {
+    LOGOUT : "Logout"
+}
+
+export const Logout_Success = {
+    LOGOUT_SUCCESS : "Logout Sccessful"
+}
+
+export const Logout_Confirm = {
+    LOGOUT_CONFIRM : "Are you sure you want to logout?"
+}
+
+export const Confirm = {
+    CONFIRM : "Confirm"
+}
+
+export const Cancel = {
+    CANCEL : "Cancel"
+}
+
+export const Proceed = {
+    PROCEED : "Proceed"
+}
+
+export const Logged_Out = {
+    LOGGED_OUT : "You have been logged out. Please login again to continue."
+}
