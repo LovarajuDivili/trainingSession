@@ -10,28 +10,11 @@ import {
 } from "@mui/material";
 import Header from "./Header";
 import type { SelectChangeEvent } from "@mui/material";
-import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
-import BuildIcon from "@mui/icons-material/Build";
-import CodeIcon from "@mui/icons-material/Code";
-import SettingsApplicationsIcon from "@mui/icons-material/SettingsApplications";
-import SyncAltIcon from "@mui/icons-material/SyncAlt";
-import BugReportIcon from "@mui/icons-material/BugReport";
-import { Select_Account, Welcome_Msgs } from "../common/labelConstants";
+import { Account_Type, Cerebro_Sasa, Proceed, Select_Account, Welcome_Msgs } from "../common/labelConstants";
 import ArrowRightAltIcon from "@mui/icons-material/ArrowRightAlt";
 import { useNavigate } from "react-router-dom";
+import { roleDropdowns } from "../common/utility";
 
-
-// TODO- will do in further steps
-// const dropDowns = [
-//     {
-//       label: "Admin",
-//       icon: <AdminPanelSettingsIcon sx={{ color: "#1976d2" }} />,
-//     },
-//     {
-//       label: "Technical",
-//       icon: <AdminPanelSettingsIcon sx={{ color: "#1976d2" }} />,
-//     },
-//   ];
 
 const WelcomeSasa = () => {
   const [dropdownValue, setDropdownValue] = useState<string>("admin");
@@ -48,12 +31,15 @@ const WelcomeSasa = () => {
       case "technical":
         navigate("/technical");
         break;
+      case "developer":
+        navigate("/developer");
+        break;
       default:
         alert("Please select a valid role");
     }
     sessionStorage.setItem("role", dropdownValue);
 
-  navigate(`/${dropdownValue}`);
+    navigate(`/${dropdownValue}`);
   };
 
   return (
@@ -75,7 +61,7 @@ const WelcomeSasa = () => {
           gutterBottom
         >
           {Welcome_Msgs.WELCOME_MSG}
-          <span style={{ color: "#906aff" }}>Cerebro SASA</span>
+          <span style={{ color: "#906aff" }}>{Cerebro_Sasa.CEREBRO_SASA}</span>
         </Typography>
         <Typography
           sx={{ marginLeft: "-3px", fontSize: "13px" }}
@@ -90,13 +76,8 @@ const WelcomeSasa = () => {
             variant="subtitle1"
             sx={{ mb: 1, fontSize: "13px", marginLeft: "0px" }}
           >
-            <strong>Account Type</strong>
+            <strong>{Account_Type.ACCOUNT_TYPE}</strong>
           </Typography>
-          {/* {dropDowns?.map((each) => {
-            <Box>
-              <Typography>{each.label}</Typography>
-            </Box>;
-          })} */}
 
           <Select
             id="my-dropdown"
@@ -107,42 +88,12 @@ const WelcomeSasa = () => {
               borderRadius: "20px",
             }}
           >
-            <MenuItem value="admin">
-              <ListItemIcon>
-                <AdminPanelSettingsIcon sx={{ color: "#1976d2" }} />{" "}
-              </ListItemIcon>
-              Admin
-            </MenuItem>
-            <MenuItem value="technical">
-              <ListItemIcon>
-                <BuildIcon sx={{ color: "#b9d219ff" }} />
-              </ListItemIcon>
-              Technical
-            </MenuItem>
-            <MenuItem value="developer">
-              <ListItemIcon>
-                <CodeIcon sx={{ color: "black" }} />
-              </ListItemIcon>
-              Developer
-            </MenuItem>
-            <MenuItem value="functional">
-              <ListItemIcon>
-                <SettingsApplicationsIcon sx={{ color: "#ffbeb5ff" }} />
-              </ListItemIcon>
-              Functional
-            </MenuItem>
-            <MenuItem value="migrator">
-              <ListItemIcon>
-                <SyncAltIcon sx={{ color: "#19d23eff" }} />
-              </ListItemIcon>
-              Migrator
-            </MenuItem>
-            <MenuItem value="tester">
-              <ListItemIcon>
-                <BugReportIcon sx={{ color: "#d21919ff" }} />
-              </ListItemIcon>
-              Tester
-            </MenuItem>
+            {roleDropdowns.map((item) => (
+              <MenuItem key={item.value} value={item.value}>
+                <ListItemIcon>{item.icon}</ListItemIcon>
+                {item.label}
+              </MenuItem>
+            ))}
           </Select>
         </FormControl>
 
@@ -158,7 +109,7 @@ const WelcomeSasa = () => {
           disabled={!dropdownValue}
           onClick={handleProceed}
         >
-          Proceed <ArrowRightAltIcon />
+          {Proceed.PROCEED} <ArrowRightAltIcon />
         </Button>
       </Box>
     </Box>
