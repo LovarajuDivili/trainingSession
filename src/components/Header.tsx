@@ -1,20 +1,63 @@
 import { useState } from "react";
-import { Box, Typography, IconButton, Button } from "@mui/material";
+import {
+  Box,
+  Typography,
+  IconButton,
+  Button,
+  Divider,
+  Dialog,
+  DialogTitle,
+  DialogActions,
+  Snackbar,
+  Alert,
+} from "@mui/material";
 import AccountCircle from "@mui/icons-material/AccountCircle";
 import LogoutIcon from "@mui/icons-material/Logout";
 import SwapHorizIcon from "@mui/icons-material/SwapHoriz";
-import Divider from "@mui/material/Divider";
+import { useNavigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
+import { roleIcons } from "../common/utility";
+import {
+  Aifa,
+  Cancel,
+  Confirm,
+  Logout,
+  Logout_Confirm,
+  Logout_Success,
+} from "../common/labelConstants";
 
-const Header = () => {
+const Header = ({ role: propRole }: { role?: string }) => {
   const [showLogout, setShowLogout] = useState<boolean>(false);
+  const [openDialog, setOpenDialog] = useState<boolean>(false);
+  const [openSnackbar, setOpenSnackbar] = useState<boolean>(false);
+
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const role =
+    propRole || location.state?.role || window.sessionStorage.getItem("role");
 
   const handleIconClick = () => {
     setShowLogout((prev) => !prev);
   };
 
   const handleLogout = () => {
-    console.log("Logged out");
+    setOpenDialog(true);
   };
+
+  const confirmLogout = () => {
+    setOpenDialog(false);
+    setOpenSnackbar(true);
+    setTimeout(() => {
+      navigate("/logout");
+    }, 100);
+  };
+
+  const cancelLogout = () => {
+    setOpenDialog(false);
+  };
+
+  const roleIcon = role ? roleIcons[role.toLowerCase()] : null;
 
   return (
     <Box
@@ -32,7 +75,14 @@ const Header = () => {
         zIndex: 1000,
       }}
     >
-      <Box sx={{ display: "flex", alignItems: "center", gap: 1,marginLeft:"10px" }}>
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          gap: 1,
+          marginLeft: "10px",
+        }}
+      >
         <Box
           component="img"
           src="/chat.svg"
@@ -43,9 +93,43 @@ const Header = () => {
           }}
         />
 
-        <Typography variant="h6" component="div" sx={{ color: "white" }}>
-          <strong>Aifa</strong>
+        <Typography
+          variant="h6"
+          component="div"
+          sx={{ color: "white", paddingRight: "14px" }}
+        >
+          <strong>{Aifa.AIFA}</strong>
         </Typography>
+
+        <Divider
+          orientation="vertical"
+          variant="middle"
+          flexItem
+          sx={{
+            backgroundColor: "white",
+            width: "0px",
+          }}
+        />
+
+        {role && roleIcon && (
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              gap: 0.5,
+              ml: 2,
+              px: 1.5,
+              py: 0.3,
+              borderRadius: "12px",
+              backgroundColor: "rgba(255,255,255,0.2)",
+            }}
+          >
+            {roleIcon}
+            <Typography sx={{ color: "white", fontSize: 14, fontWeight: 500 }}>
+              {role.charAt(0).toUpperCase() + role.slice(1)}
+            </Typography>
+          </Box>
+        )}
       </Box>
 
       <Box
@@ -54,7 +138,7 @@ const Header = () => {
           alignItems: "center",
           gap: 4,
           position: "relative",
-          marginRight:"10px"
+          marginRight: "10px",
         }}
       >
         <IconButton sx={{ color: "white" }}>
@@ -136,13 +220,39 @@ const Header = () => {
                     },
                   }}
                 >
-                  Logout
+                  {Logout.LOGOUT}
                 </Button>
               </Box>
             )}
           </Box>
         </Box>
       </Box>
+      {/* Confirmation Dialog */}
+      <Dialog open={openDialog} onClose={cancelLogout}>
+        <DialogTitle>{Logout_Confirm.LOGOUT_CONFIRM}</DialogTitle>
+        <DialogActions>
+          <Button onClick={cancelLogout}>{Cancel.CANCEL}</Button>
+          <Button onClick={confirmLogout} color="primary" variant="contained">
+            {Confirm.CONFIRM}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Snackbar Notification */}
+      <Snackbar
+        open={openSnackbar}
+        autoHideDuration={3000}
+        onClose={() => setOpenSnackbar(false)}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+      >
+        <Alert
+          onClose={() => setOpenSnackbar(false)}
+          severity="success"
+          sx={{ width: "100%" }}
+        >
+          {Logout_Success.LOGOUT_SUCCESS}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };
