@@ -1,4 +1,4 @@
-import { useState, type JSX } from "react";
+import { useState } from "react";
 import {
   Box,
   Typography,
@@ -16,18 +16,20 @@ import LogoutIcon from "@mui/icons-material/Logout";
 import SwapHorizIcon from "@mui/icons-material/SwapHoriz";
 import { useNavigate } from "react-router-dom";
 import { useLocation } from "react-router-dom";
-import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
-import BuildIcon from "@mui/icons-material/Build";
-import CodeIcon from "@mui/icons-material/Code";
-import SettingsApplicationsIcon from "@mui/icons-material/SettingsApplications";
-import SyncAltIcon from "@mui/icons-material/SyncAlt";
-import BugReportIcon from "@mui/icons-material/BugReport";
-
+import { roleIcons } from "../common/utility";
+import {
+  Aifa,
+  Cancel,
+  Confirm,
+  Logout,
+  Logout_Confirm,
+  Logout_Success,
+} from "../common/labelConstants";
 
 const Header = ({ role: propRole }: { role?: string }) => {
   const [showLogout, setShowLogout] = useState<boolean>(false);
-  const [openDialog, setOpenDialog] = useState(false);
-  const [openSnackbar, setOpenSnackbar] = useState(false);
+  const [openDialog, setOpenDialog] = useState<boolean>(false);
+  const [openSnackbar, setOpenSnackbar] = useState<boolean>(false);
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -47,23 +49,12 @@ const Header = ({ role: propRole }: { role?: string }) => {
     setOpenDialog(false);
     setOpenSnackbar(true);
     setTimeout(() => {
-      navigate("/logout"); 
-    }, 100); 
+      navigate("/logout");
+    }, 100);
   };
 
   const cancelLogout = () => {
     setOpenDialog(false);
-  };
-
-  const roleIcons: Record<string, JSX.Element> = {
-    admin: <AdminPanelSettingsIcon sx={{ fontSize: 18, color: "white" }} />,
-    technical: <BuildIcon sx={{ fontSize: 18, color: "white" }} />,
-    developer: <CodeIcon sx={{ fontSize: 18, color: "white" }} />,
-    functional: (
-      <SettingsApplicationsIcon sx={{ fontSize: 18, color: "white" }} />
-    ),
-    migrator: <SyncAltIcon sx={{ fontSize: 18, color: "white" }} />,
-    tester: <BugReportIcon sx={{ fontSize: 18, color: "white" }} />,
   };
 
   const roleIcon = role ? roleIcons[role.toLowerCase()] : null;
@@ -107,7 +98,7 @@ const Header = ({ role: propRole }: { role?: string }) => {
           component="div"
           sx={{ color: "white", paddingRight: "14px" }}
         >
-          <strong>Aifa</strong>
+          <strong>{Aifa.AIFA}</strong>
         </Typography>
 
         <Divider
@@ -229,7 +220,7 @@ const Header = ({ role: propRole }: { role?: string }) => {
                     },
                   }}
                 >
-                  Logout
+                  {Logout.LOGOUT}
                 </Button>
               </Box>
             )}
@@ -238,11 +229,11 @@ const Header = ({ role: propRole }: { role?: string }) => {
       </Box>
       {/* Confirmation Dialog */}
       <Dialog open={openDialog} onClose={cancelLogout}>
-        <DialogTitle>Are you sure you want to logout?</DialogTitle>
+        <DialogTitle>{Logout_Confirm.LOGOUT_CONFIRM}</DialogTitle>
         <DialogActions>
-          <Button onClick={cancelLogout}>Cancel</Button>
+          <Button onClick={cancelLogout}>{Cancel.CANCEL}</Button>
           <Button onClick={confirmLogout} color="primary" variant="contained">
-            Confirm
+            {Confirm.CONFIRM}
           </Button>
         </DialogActions>
       </Dialog>
@@ -259,7 +250,7 @@ const Header = ({ role: propRole }: { role?: string }) => {
           severity="success"
           sx={{ width: "100%" }}
         >
-          Logout successful!
+          {Logout_Success.LOGOUT_SUCCESS}
         </Alert>
       </Snackbar>
     </Box>
