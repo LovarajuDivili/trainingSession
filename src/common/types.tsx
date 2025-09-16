@@ -23,3 +23,14 @@ export interface Employee {
 export interface DashboardProps {
   selectedItem: string;
 }
+
+// export interface Employee {
+//   name: string;
+//   email: string;
+//   role: string;
+//   joinDate: string;
+//   id: string;
+//   skills: string[];
+// }
+
+

@@ -1,22 +1,27 @@
-import {
-  Box,
-  List,
-  ListItem,
-  ListItemButton,
-  ListItemText,
-} from "@mui/material";
+import { Box, List, ListItem, ListItemButton, ListItemIcon, ListItemText } from "@mui/material";
+import { useNavigate, useLocation } from "react-router-dom";
+import PeopleIcon from "@mui/icons-material/People";
+import DeveloperModeIcon from "@mui/icons-material/DeveloperMode";
+import BugReportIcon from "@mui/icons-material/BugReport";
+import CloudIcon from "@mui/icons-material/Cloud";
+import AssignmentIcon from "@mui/icons-material/Assignment";
+import BarChartIcon from "@mui/icons-material/BarChart";
+import HistoryIcon from "@mui/icons-material/History";
 
 const sidebarItems = [
-  { label: "All Employees" },
-  { label: "Developers" },
-  { label: "Testers" },
-  { label: "AWS Team" },
-  { label: "Projects" },
-  { label: "Statistics" },
-  { label: "Logs" },
+  { label: "All Employees", route: "/admin/all-employees", icon: <PeopleIcon /> },
+  { label: "Developers", route: "/admin/developers", icon: <DeveloperModeIcon /> },
+  { label: "Testers", route: "/admin/testers", icon: <BugReportIcon /> },
+  { label: "AWS Team", route: "/admin/aws-team", icon: <CloudIcon /> },
+  { label: "Projects", route: "/admin/projects", icon: <AssignmentIcon /> },
+  { label: "Statistics", route: "/admin/statistics", icon: <BarChartIcon /> },
+  { label: "Logs", route: "/admin/logs", icon: <HistoryIcon /> },
 ];
 
-const Sidebar = ({ selectedItem, setSelectedItem }: { selectedItem: string; setSelectedItem: (item: string) => void }) => {
+const SideBar = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+
   return (
     <Box
       sx={{
@@ -32,16 +37,14 @@ const Sidebar = ({ selectedItem, setSelectedItem }: { selectedItem: string; setS
       <List>
         {sidebarItems.map((item) => (
           <ListItem key={item.label} disablePadding>
-            <ListItemButton onClick={() => setSelectedItem(item.label)}>
-              <ListItemText
-                primary={item.label}
-                primaryTypographyProps={{
-                  sx: {
-                    color: selectedItem === item.label ? "primary.main" : "grey.700",
-                    fontWeight: selectedItem === item.label ? "bold" : "normal",
-                  },
-                }}
-              />
+            <ListItemButton
+              selected={location.pathname === item.route}
+              onClick={() => navigate(item.route)}
+            >
+              <ListItemIcon sx={{ color: "black" }}>
+              {item.icon}
+            </ListItemIcon>
+              <ListItemText primary={item.label} />
             </ListItemButton>
           </ListItem>
         ))}
@@ -50,4 +53,4 @@ const Sidebar = ({ selectedItem, setSelectedItem }: { selectedItem: string; setS
   );
 };
 
-export default Sidebar;
+export default SideBar;

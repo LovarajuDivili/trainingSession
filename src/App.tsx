@@ -5,6 +5,7 @@ import WelcomeSasa from "./components/WelcomeSasa";
 import Admin from "./pages/Admin";
 import Technical from "./pages/Technical";
 import Logout from "./pages/Logout"
+import Dashboard from "./components/Dashboard";
 
 
 const App = () => {
@@ -13,9 +14,22 @@ const App = () => {
       <Box>
         <Routes>
           <Route path="/" element={<WelcomeSasa />} />
-          <Route path="/admin" element={<Admin />} />
+          <Route path="/admin" element={<Admin />}>
+          <Route path="all-employees" element={<Dashboard />} />
+          <Route path="developers" element={<Dashboard />} />
+          <Route path="testers" element={<Dashboard />} />
+          <Route path="aws-team" element={<Dashboard />} />
+          <Route path="projects" element={<Dashboard />} />
+          <Route path="statistics" element={<Dashboard />} />
+          <Route path="logs" element={<Dashboard />} />
+        </Route>
+
+        {/* Optional: redirect to default admin page */}
+        <Route path="*" element={<Admin />} />
+
           <Route path="/technical" element={<Technical />} />
           <Route path="/logout" element={<Logout />} />
+          <Route path="/all-employees" element={<Dashboard />} />
         </Routes>
       </Box>
     
