@@ -2,21 +2,20 @@ import { useState, useEffect } from "react";
 import {
   Box,
   Typography,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
   TextField,
   Button,
   InputAdornment,
 } from "@mui/material";
+import { useLocation } from "react-router-dom";
 import SearchIcon from "@mui/icons-material/Search";
 import AddIcon from "@mui/icons-material/Add";
-import type { Employee, DashboardProps } from "../common/types";
 import { Add_New, Loading } from "../common/labelConstants";
+import {
+  DataGrid,
+  type GridColDef,
+  type GridRenderCellParams,
+} from "@mui/x-data-grid";
+import type { Employee } from "../common/types";
 
 const fetchEmployees = (): Promise<Employee[]> => {
   return new Promise((resolve) => {
@@ -43,27 +42,73 @@ const fetchEmployees = (): Promise<Employee[]> => {
   });
 };
 
-const Dashboard = ({ selectedItem }: DashboardProps) => {
+const Dashboard = () => {
+  const location = useLocation();
+  const section = location.pathname.split("/")[2];
+
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [loading, setLoading] = useState(false);
   const [searchText, setSearchText] = useState("");
 
   useEffect(() => {
-    if (selectedItem === "All Employees") {
+    if (section === "all-employees") {
       setLoading(true);
       fetchEmployees().then((data) => {
         setEmployees(data);
         setLoading(false);
       });
     }
-  }, [selectedItem]);
+  }, [section]);
 
   const filteredEmployees = employees.filter((emp) =>
     emp.name.toLowerCase().includes(searchText.toLowerCase())
   );
 
+  const displayName = section
+    ? section.replace("-", " ").replace(/\b\w/g, (c) => c.toUpperCase())
+    : "Dashboard";
+
+  const columns: GridColDef<Employee>[] = [
+    { field: "name", headerName: "Name", flex: 1 },
+    { field: "email", headerName: "Email", flex: 1.5 },
+    { field: "role", headerName: "Role", flex: 1 },
+    { field: "joinDate", headerName: "Join Date", flex: 1 },
+    { field: "id", headerName: "ID", flex: 1 },
+    {
+      field: "skills",
+      headerName: "Skills",
+      flex: 2,
+      renderCell: (params: GridRenderCellParams<Employee>) => {
+        return (
+          <>
+            {params?.row?.skills.map((each, index) => (
+              <button
+                key={index}
+                style={{
+                  margin: "5px",
+                  backgroundColor: "black",
+                  color: "white",
+                }}
+              >
+                {each}
+              </button>
+            ))}
+          </>
+        );
+      },
+    },
+    {
+      field: "currentDate",
+      headerName: "Current Date",
+      flex: 1,
+      renderCell: (params: GridRenderCellParams) => {
+        return new Date(params.row.joinDate).toLocaleDateString();
+      },
+    },
+  ];
+
   return (
-    <Box sx={{ p: 3 }}>
+    <Box>
       {/* Dashboard Header */}
       <Box
         sx={{
@@ -79,98 +124,66 @@ const Dashboard = ({ selectedItem }: DashboardProps) => {
           zIndex: 100,
         }}
       >
-        <Typography variant="h5" gutterBottom>
-          {selectedItem}
-        </Typography>
+        <Typography variant="h5">{displayName}</Typography>
 
-        <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-          <TextField
-            placeholder="Search"
-            variant="outlined"
-            size="small"
-            sx={{ width: "300px" }}
-            value={searchText}
-            onChange={(e) => setSearchText(e.target.value)}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <SearchIcon />
-                </InputAdornment>
-              ),
-            }}
-          />
-          <Button
-            variant="contained"
-            sx={{
-              borderRadius: "20px",
-              textTransform: "none",
-              backgroundColor: "#906aff",
-              color: "white",
-              fontWeight: 500,
-              "&:hover": {
-                backgroundColor: "#7a55d8",
-              },
-            }}
-            onClick={() => alert("Add new data")}
-            endIcon={<AddIcon />}
-          >
-            {Add_New.ADD_NEW}
-          </Button>
-        </Box>
+        {section === "all-employees" && (
+          <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+            <TextField
+              placeholder="Search"
+              variant="outlined"
+              size="small"
+              sx={{ width: "300px" }}
+              value={searchText}
+              onChange={(e) => setSearchText(e.target.value)}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon />
+                  </InputAdornment>
+                ),
+              }}
+            />
+            <Button
+              variant="contained"
+              sx={{
+                borderRadius: "20px",
+                textTransform: "none",
+                backgroundColor: "#906aff",
+                color: "white",
+                fontWeight: 500,
+                "&:hover": { backgroundColor: "#7a55d8" },
+              }}
+              onClick={() => alert("Add new data")}
+              endIcon={<AddIcon />}
+            >
+              {Add_New.ADD_NEW}
+            </Button>
+          </Box>
+        )}
       </Box>
 
       {/* Dashboard Content */}
-      {selectedItem === "All Employees" ? (
-        <Box>
-          {loading ? (
-            <Typography>{Loading.LOADING}</Typography>
-          ) : (
-            <TableContainer component={Paper}>
-              <Table>
-                <TableHead>
-                  <TableRow>
-                    <TableCell>
-                      <strong>Name</strong>
-                    </TableCell>
-                    <TableCell>
-                      <strong>Email</strong>
-                    </TableCell>
-                    <TableCell>
-                      <strong>Role</strong>
-                    </TableCell>
-                    <TableCell>
-                      <strong>Join Date</strong>
-                    </TableCell>
-                    <TableCell>
-                      <strong>ID</strong>
-                    </TableCell>
-                    <TableCell>
-                      <strong>Skills</strong>
-                    </TableCell>
-                    <TableCell>
-                      <strong>Current Date</strong>
-                    </TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {filteredEmployees.map((emp) => (
-                    <TableRow key={emp.id}>
-                      <TableCell>{emp.name}</TableCell>
-                      <TableCell>{emp.email}</TableCell>
-                      <TableCell>{emp.role}</TableCell>
-                      <TableCell>{emp.joinDate}</TableCell>
-                      <TableCell>{emp.id}</TableCell>
-                      <TableCell>{emp.skills.join(", ")}</TableCell>
-                      <TableCell>{new Date().toLocaleDateString()}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
-          )}
-        </Box>
+      {section === "all-employees" ? (
+        loading ? (
+          <Typography>{Loading.LOADING}</Typography>
+        ) : (
+          <Box sx={{ height: 500, width: "100%" }}>
+            <DataGrid
+              rows={filteredEmployees}
+              columns={columns}
+              getRowId={(row) => row.id}
+              pageSizeOptions={[5, 10, 20]}
+              initialState={{
+                pagination: { paginationModel: { pageSize: 5, page: 0 } },
+              }}
+              autoHeight
+            />
+          </Box>
+        )
       ) : (
-        <Typography variant="h6"></Typography>
+        <Typography variant="h6">
+          No data available for {displayName}.
+        </Typography>
       )}
     </Box>
   );
