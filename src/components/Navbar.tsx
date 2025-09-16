@@ -20,7 +20,7 @@ import LogoutIcon from "@mui/icons-material/Logout";
 import { GoArrowSwitch } from "react-icons/go";
 
 interface NavbarProps {
-  accountType: string;
+  accountType?: string;
 }
 
 const Navbar: React.FC<NavbarProps> = ({ accountType }) => {
@@ -28,14 +28,9 @@ const Navbar: React.FC<NavbarProps> = ({ accountType }) => {
   const [openDialog, setOpenDialog] = useState(false);
   const navigate = useNavigate();
 
-  const handleOpenMenu = (event: React.MouseEvent<HTMLElement>) => {
+  const handleOpenMenu = (event: React.MouseEvent<HTMLElement>) =>
     setAnchorEl(event.currentTarget);
-  };
-
-  const handleCloseMenu = () => {
-    setAnchorEl(null);
-  };
-
+  const handleCloseMenu = () => setAnchorEl(null);
   const handleLogout = () => {
     setAnchorEl(null);
     setOpenDialog(true);
@@ -44,14 +39,11 @@ const Navbar: React.FC<NavbarProps> = ({ accountType }) => {
   const handleConfirmLogout = () => {
     document.activeElement instanceof HTMLElement &&
       document.activeElement.blur();
-
     setOpenDialog(false);
     navigate("/logout-success");
   };
 
-  const handleCancelLogout = () => {
-    setOpenDialog(false);
-  };
+  const handleCancelLogout = () => setOpenDialog(false);
 
   return (
     <>
@@ -61,6 +53,7 @@ const Navbar: React.FC<NavbarProps> = ({ accountType }) => {
           background: "linear-gradient(90deg, #906aff, #ac8fff)",
           boxShadow: "none",
           zIndex: (theme) => theme.zIndex.drawer + 1,
+          padding: 0.3,
         }}
       >
         <Toolbar
@@ -68,26 +61,30 @@ const Navbar: React.FC<NavbarProps> = ({ accountType }) => {
         >
           <Box sx={{ display: "flex", alignItems: "center", gap: 3 }}>
             <img src="/aifalogo.svg" alt="AIFA Labs" style={{ height: 32 }} />
-            <Divider
-              orientation="vertical"
-              flexItem
-              sx={{ borderColor: "rgba(255,255,255,0.6)" }}
-            />
-            <Typography
-              variant="subtitle1"
-              sx={{
-                color: "white",
-                fontSize: 15,
-                fontWeight: 600,
-                letterSpacing: 0.2,
-              }}
-            >
-              {accountType}
-            </Typography>
+            {accountType && (
+              <>
+                <Divider
+                  orientation="vertical"
+                  flexItem
+                  sx={{ borderColor: "rgba(255,255,255,0.6)" }}
+                />
+                <Typography
+                  variant="subtitle1"
+                  sx={{
+                    color: "white",
+                    fontSize: 15,
+                    fontWeight: 600,
+                    letterSpacing: 0.2,
+                  }}
+                >
+                  {accountType}
+                </Typography>
+              </>
+            )}
           </Box>
 
           <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-            <IconButton sx={{ color: "white" }}>
+            <IconButton sx={{ color: "white" }} onClick={() => navigate("/")}>
               <GoArrowSwitch style={{ fontSize: 24, color: "white" }} />
             </IconButton>
             <Divider
@@ -95,7 +92,6 @@ const Navbar: React.FC<NavbarProps> = ({ accountType }) => {
               flexItem
               sx={{ borderColor: "white" }}
             />
-
             <Box
               sx={{
                 display: "flex",
@@ -111,7 +107,6 @@ const Navbar: React.FC<NavbarProps> = ({ accountType }) => {
                 alt="AIFA Color Logo"
                 style={{ height: 24 }}
               />
-
               <IconButton onClick={handleOpenMenu} sx={{ p: 0 }}>
                 <Box
                   sx={{
@@ -127,7 +122,6 @@ const Navbar: React.FC<NavbarProps> = ({ accountType }) => {
                   <AccountCircleIcon sx={{ color: "white", fontSize: 28 }} />
                 </Box>
               </IconButton>
-
               <Menu
                 anchorEl={anchorEl}
                 open={Boolean(anchorEl)}
@@ -167,12 +161,7 @@ const Navbar: React.FC<NavbarProps> = ({ accountType }) => {
         open={openDialog}
         onClose={handleCancelLogout}
         closeAfterTransition={false}
-        sx={{
-          "& .MuiPaper-root": {
-            borderRadius: 3,
-            padding: 2,
-          },
-        }}
+        sx={{ "& .MuiPaper-root": { borderRadius: 3, padding: 2 } }}
       >
         <DialogTitle sx={{ fontWeight: 600, textAlign: "center" }}>
           Confirm Logout

@@ -11,45 +11,30 @@ import {
   ListItemIcon,
   ListItemText,
   Box,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
 } from "@mui/material";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import { GoArrowRight } from "react-icons/go";
 import { AccountSelectionProps } from "../common/types";
 import { accountTypes } from "../common/accountTypes";
-import { LABELS, DIALOG_TEXTS } from "../common/labelConstants";
+import { LABELS } from "../common/labelConstants";
 import { useNavigate } from "react-router-dom";
 
 const AccountSelection: React.FC<AccountSelectionProps> = ({
-  accountType,
   setAccountType,
 }) => {
-  const [openDialog, setOpenDialog] = useState(false);
+  const [selectedAccount, setSelectedAccount] = useState<string>("Admin"); // initial Admin
   const navigate = useNavigate();
 
   const handleChange = (event: SelectChangeEvent) => {
-    setAccountType(event.target.value as string);
+    setSelectedAccount(event.target.value as string);
   };
 
   const handleProceed = () => {
-    setOpenDialog(true);
-  };
-
-  const handleCancel = () => {
-    setOpenDialog(false);
-  };
-
-  const handleConfirm = () => {
-    document.activeElement instanceof HTMLElement &&
-      document.activeElement.blur();
-    setOpenDialog(false);
+    setAccountType(selectedAccount);
     navigate("/dashboard");
   };
 
-  const selected = accountTypes.find((item) => item.value === accountType);
+  const selected = accountTypes.find((item) => item.value === selectedAccount);
 
   return (
     <Container
@@ -58,7 +43,7 @@ const AccountSelection: React.FC<AccountSelectionProps> = ({
         display: "flex",
         alignItems: "flex-start",
         justifyContent: "center",
-        mt: 15,
+        mt: 25,
       }}
     >
       <Paper
@@ -89,7 +74,7 @@ const AccountSelection: React.FC<AccountSelectionProps> = ({
 
         <FormControl fullWidth sx={{ mb: 3 }}>
           <Select
-            value={accountType}
+            value={selectedAccount}
             onChange={handleChange}
             displayEmpty
             IconComponent={KeyboardArrowDownIcon}
@@ -134,44 +119,6 @@ const AccountSelection: React.FC<AccountSelectionProps> = ({
           <GoArrowRight style={{ fontSize: 21, marginLeft: 5 }} />
         </Button>
       </Paper>
-
-      <Dialog
-        open={openDialog}
-        onClose={handleCancel}
-        closeAfterTransition={false}
-        PaperProps={{ sx: { borderRadius: 3 } }}
-      >
-        <DialogTitle sx={{ fontWeight: 600, textAlign: "center" }}>
-          {DIALOG_TEXTS.CONFIRM_TITLE}
-        </DialogTitle>
-        <DialogContent sx={{ textAlign: "center" }}>
-          {DIALOG_TEXTS.CONFIRM_MESSAGE}{" "}
-          <span style={{ fontWeight: 600, color: "#906aff" }}>
-            {accountType}
-          </span>
-          ?
-        </DialogContent>
-        <DialogActions sx={{ justifyContent: "center" }}>
-          <Button
-            onClick={handleCancel}
-            sx={{ color: "#4b2db7", fontWeight: 600 }}
-          >
-            {DIALOG_TEXTS.CANCEL}
-          </Button>
-          <Button
-            onClick={handleConfirm}
-            variant="contained"
-            sx={{
-              background: "linear-gradient(90deg, #906aff, #ac8fff)",
-              color: "#fff",
-              fontWeight: 600,
-              "&:hover": { opacity: 0.9 },
-            }}
-          >
-            {DIALOG_TEXTS.OK}
-          </Button>
-        </DialogActions>
-      </Dialog>
     </Container>
   );
 };

@@ -1,226 +1,168 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
-  Container,
   Typography,
   TextField,
-  InputAdornment,
   Button,
-  Paper,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Divider,
+  InputAdornment,
 } from "@mui/material";
-import SearchIcon from "@mui/icons-material/Search";
-import Sidebar from "../components/Sidebar";
 import LibraryBooksIcon from "@mui/icons-material/LibraryBooks";
+import SearchIcon from "@mui/icons-material/Search";
 import AddSharpIcon from "@mui/icons-material/AddSharp";
+import { DataGrid } from "@mui/x-data-grid";
+import { useLocation } from "react-router-dom";
+import Sidebar from "../components/Sidebar";
+import { allEmployees, employeeColumns, Employee } from "../common/utilitys";
 
-type DashboardProps = {
-  accountType: string;
-};
+const Dashboard: React.FC = () => {
+  const location = useLocation();
+  const [searchQuery, setSearchQuery] = useState("");
+  const [activeSection, setActiveSection] = useState("All Employees");
+  const [rows, setRows] = useState<Employee[]>(allEmployees);
 
-const rows = [
-  {
-    name: "Gpt-4-o3",
-    url: "https://sasa-openai-d...",
-    key: "FRRDTgtrZIF55xCg...",
-    vendor: "Azure",
-    model: "o3",
-    output: 8,
-    input: 2,
-  },
-  {
-    name: "GPT-4o-55k",
-    url: "https://sasa-openai-d...",
-    key: "FRRDTgtrZIF55xCg...",
-    vendor: "Azure",
-    model: "gpt-4o",
-    output: 4.5,
-    input: 3.4,
-  },
-];
+  useEffect(() => {
+    switch (location.pathname) {
+      case "/dashboard/allemployees":
+        setActiveSection("All Employees");
+        setRows(allEmployees);
+        break;
+      case "/dashboard/developers":
+        setActiveSection("Developers");
+        setRows(allEmployees.filter((emp) => emp.role === "Developer"));
+        break;
+      case "/dashboard/testers":
+        setActiveSection("Testers");
+        setRows(allEmployees.filter((emp) => emp.role === "Tester"));
+        break;
+      case "/dashboard/awsteam":
+        setActiveSection("AWS Team");
+        setRows(allEmployees.filter((emp) => emp.role.includes("AWS")));
+        break;
+      default:
+        setActiveSection("All Employees");
+        setRows(allEmployees);
+    }
+  }, [location.pathname]);
 
-const Dashboard: React.FC<DashboardProps> = () => {
+  const filteredRows = rows.filter((row) =>
+    Object.values(row).some((val) =>
+      String(val).toLowerCase().includes(searchQuery.toLowerCase())
+    )
+  );
+
   return (
     <Box sx={{ display: "flex" }}>
       <Sidebar />
-      <Box component="main" sx={{ flexGrow: 1, p: 2, marginTop: "56px" }}>
-        <Container maxWidth="xl" disableGutters>
-          <Box
+
+      <Box
+        component="main"
+        sx={{ flexGrow: 1, mt: "56px", px: 3, marginTop: 9.5 }}
+      >
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            px: 3,
+            py: 1.5,
+            background: "white",
+            borderBottom: "1px solid #eee",
+          }}
+        >
+          <Typography
+            variant="h6"
             sx={{
               display: "flex",
               alignItems: "center",
-              justifyContent: "space-between",
-              mb: 2,
-              gap: 2,
-              background: "white",
-              padding: 1.5,
+              gap: 0.7,
+              fontWeight: 600,
             }}
           >
+            <Box
+              component="span"
+              sx={{ display: "flex", alignItems: "center", gap: 0.5 }}
+            >
+              <LibraryBooksIcon fontSize="small" /> LLM Garden
+            </Box>
+            - {activeSection}{" "}
             <Typography
-              variant="h6"
-              sx={{ display: "flex", alignItems: "center", gap: 1 }}
+              component="span"
+              variant="body1"
+              sx={{ fontWeight: 500, color: "Black" }}
             >
-              <LibraryBooksIcon />
-              LLM Garden
+              ({filteredRows.length})
             </Typography>
-            <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-              <TextField
-                placeholder="Search"
-                size="small"
-                sx={{
-                  width: 320,
-                  "& .MuiOutlinedInput-root": {
-                    borderRadius: "50px",
-                  },
-                }}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <Box
-                        sx={{
-                          bgcolor: "#e0e0e0",
-                          p: 0.5,
-                          borderRadius: "50%",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                        }}
-                      >
-                        <SearchIcon fontSize="small" />
-                      </Box>
-                    </InputAdornment>
-                  ),
-                }}
-              />
-              <Button
-                variant="contained"
-                sx={{
-                  textTransform: "none",
-                  bgcolor: "#906aff",
-                  "&:hover": { bgcolor: "#ac8fff" },
-                  borderRadius: 5,
-                  padding: 1,
-                }}
-              >
-                Add New <AddSharpIcon />
-              </Button>
-            </Box>
+          </Typography>
+
+          <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+            <TextField
+              placeholder="Search"
+              size="small"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              sx={{
+                width: 280,
+                "& .MuiOutlinedInput-root": {
+                  borderRadius: "50px",
+                  background: "#fafafa",
+                  mt: 0.3,
+                },
+              }}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon fontSize="small" />
+                  </InputAdornment>
+                ),
+              }}
+            />
+            <Button
+              variant="contained"
+              sx={{
+                textTransform: "none",
+                bgcolor: "#906aff",
+                "&:hover": { bgcolor: "#7a54f6" },
+                borderRadius: "50px",
+                px: 3,
+                py: 1,
+                mt: 0.3,
+              }}
+            >
+              Add New <AddSharpIcon sx={{ ml: 0.5 }} />
+            </Button>
           </Box>
+        </Box>
 
-          <Paper
-            elevation={0}
-            sx={{
-              borderRadius: 2,
-              overflow: "hidden",
-              border: 1,
-              borderColor: "divider",
-              marginTop: 3,
+        <Box sx={{ height: 400, mt: 2 }}>
+          <DataGrid
+            rows={filteredRows}
+            columns={employeeColumns}
+            pageSizeOptions={[5, 10]}
+            initialState={{
+              pagination: { paginationModel: { pageSize: 5 } },
             }}
-          >
-            <Box
-              sx={{
-                bgcolor: "#37424f",
-                color: "white",
-                px: 2,
-                py: 1.5,
-              }}
-            >
-              <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-                My Large Language Models (LLM)
-              </Typography>
-            </Box>
-
-            <TableContainer>
-              <Table size="medium">
-                <TableHead>
-                  <TableRow>
-                    <TableCell sx={{ fontWeight: 700, py: 2 }}>
-                      MODEL NAME
-                    </TableCell>
-                    <TableCell sx={{ fontWeight: 700, py: 2 }}>URL</TableCell>
-                    <TableCell sx={{ fontWeight: 700, py: 2 }}>KEY</TableCell>
-                    <TableCell sx={{ fontWeight: 700, py: 2 }}>
-                      VENDOR
-                    </TableCell>
-                    <TableCell sx={{ fontWeight: 700, py: 2 }}>MODEL</TableCell>
-                    <TableCell sx={{ fontWeight: 700, py: 2 }}>
-                      OUTPUT COST PER TOKEN
-                    </TableCell>
-                    <TableCell sx={{ fontWeight: 700, py: 2 }}>
-                      INPUT COST PER TOKEN
-                    </TableCell>
-                    <TableCell sx={{ fontWeight: 700, py: 2 }}></TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {rows.map((r) => (
-                    <TableRow key={r.name} hover>
-                      <TableCell sx={{ py: 1.5 }}>
-                        <Box
-                          sx={{ display: "flex", alignItems: "center", gap: 1 }}
-                        >
-                          <Typography>{r.name}</Typography>
-                          {r.name === "Gpt-4-o3" && (
-                            <Box
-                              sx={{
-                                fontSize: 11,
-                                px: 1,
-                                py: 0.25,
-                                bgcolor: "#e9ddff",
-                                color: "#6f47ff",
-                                borderRadius: 1,
-                                fontWeight: 700,
-                              }}
-                            >
-                              SET AS DEFAULT
-                            </Box>
-                          )}
-                        </Box>
-                      </TableCell>
-                      <TableCell sx={{ py: 1.5 }}>{r.url}</TableCell>
-                      <TableCell sx={{ py: 1.5 }}>{r.key}</TableCell>
-                      <TableCell sx={{ py: 1.5 }}>
-                        <Box
-                          sx={{ display: "flex", alignItems: "center", gap: 1 }}
-                        >
-                          {r.vendor}
-                        </Box>
-                      </TableCell>
-                      <TableCell sx={{ py: 1.5 }}>{r.model}</TableCell>
-                      <TableCell sx={{ py: 1.5 }}>{r.output}</TableCell>
-                      <TableCell sx={{ py: 1.5 }}>{r.input}</TableCell>
-                      <TableCell align="right" sx={{ py: 1.5 }}>
-                        ⋮
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
-
-            <Divider />
-            <Box
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                px: 2,
-                py: 1.25,
-              }}
-            >
-              <Typography variant="body2">Rows per page: 10</Typography>
-              <Typography variant="body2">
-                1–{rows.length} of {rows.length}
-              </Typography>
-            </Box>
-          </Paper>
-        </Container>
+            disableRowSelectionOnClick
+            sx={{
+              backgroundColor: "#fff",
+              border: "1px solid #e0e0e0",
+              borderRadius: 2,
+              "& .MuiDataGrid-columnHeaders": {
+                backgroundColor: "#f5f5f5",
+                fontWeight: "bold",
+                color: "#333",
+              },
+              "& .MuiDataGrid-cell": { color: "#333" },
+              "& .MuiDataGrid-row:nth-of-type(odd)": {
+                backgroundColor: "#fafafa",
+              },
+              "& .MuiDataGrid-row:hover": { backgroundColor: "#f1f1f1" },
+              "& .MuiDataGrid-footerContainer": {
+                borderTop: "1px solid #e0e0e0",
+              },
+            }}
+            autoHeight
+          />
+        </Box>
       </Box>
     </Box>
   );
