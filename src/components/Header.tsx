@@ -10,6 +10,7 @@ import {
   DialogActions,
   Snackbar,
   Alert,
+
 } from "@mui/material";
 import AccountCircle from "@mui/icons-material/AccountCircle";
 import LogoutIcon from "@mui/icons-material/Logout";
@@ -56,6 +57,10 @@ const Header = ({ role: propRole }: { role?: string }) => {
   const cancelLogout = () => {
     setOpenDialog(false);
   };
+
+  const handleSwap = () => {
+  navigate("/"); // assuming this is the route path
+};
 
   const roleIcon = role ? roleIcons[role.toLowerCase()] : null;
 
@@ -141,7 +146,7 @@ const Header = ({ role: propRole }: { role?: string }) => {
           marginRight: "10px",
         }}
       >
-        <IconButton sx={{ color: "white" }}>
+        <IconButton sx={{ color: "white" }} onClick={handleSwap}>
           <SwapHorizIcon />
         </IconButton>
 
