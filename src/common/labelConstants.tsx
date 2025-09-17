@@ -33,3 +33,7 @@ export const LoggedOutPage = {
   DESCRIPTION: "Click to return to the homepage",
   RETURN_HOME: "Return to Home",
 };
+
+export const RouteMessages = {
+  ROLE_MISSING: "Role missing in URL",
+};

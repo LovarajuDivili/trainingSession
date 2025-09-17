@@ -1,4 +1,4 @@
-// common/constants.ts
+// src/common/constants.ts
 
 export const LABELS = {
   WELCOME_TEXT: "Hello, welcome to",
@@ -11,3 +11,5 @@ export const LABELS = {
   CANCEL_BUTTON: "Cancel",
   LOGOUT_BUTTON: "Logout",
 };
+
+

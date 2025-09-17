@@ -1,213 +1,147 @@
-// src/components/Layout.tsx
 import React, { useState } from "react";
-import {
-  Box,
-  Drawer,
-  List,
-  ListItem,
-  ListItemButton,
-  ListItemText,
-  IconButton,
-  AppBar,
-  Toolbar,
-  Typography,
-  InputBase,
-  Button,
-} from "@mui/material";
-import MenuIcon from "@mui/icons-material/Menu";
+import { Box, Typography, InputBase, Button } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
-import { useNavigate, useLocation } from "react-router-dom";
+import PeopleIcon from "@mui/icons-material/People";
 
-const drawerWidth = 240;
-
-const menuItems = [
-  { label: "General Configuration", path: "/admin/general-configuration" },
-  { label: "LLM Garden", path: "/admin/llm-garden" },
-  { label: "Database", path: "/admin/database" },
-  { label: "Storage Provider", path: "/admin/storage-provider" },
-  { label: "Projects", path: "/admin/projects" },
-  { label: "Statistics", path: "/admin/statistics" },
-  { label: "Logs", path: "/admin/logs" },
-];
+import Header from "./Header";
+import Sidebar from "./Sidebar";
 
 interface LayoutProps {
   children: React.ReactNode;
-  pageTitle: string;
+  isLLMGardenPage?: boolean;
+  employeeCount?: number;
+  hideControls?: boolean; // To optionally hide search/add/count controls
 }
 
-const Layout: React.FC<LayoutProps> = ({ children, pageTitle }) => {
+const Layout: React.FC<LayoutProps> = ({
+  children,
+  isLLMGardenPage = false,
+  employeeCount = 0,
+  hideControls = false,
+}) => {
   const [mobileOpen, setMobileOpen] = useState(false);
-  const navigate = useNavigate();
-  const location = useLocation();
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
   };
 
-  const drawer = (
-    <Box sx={{ width: drawerWidth, p: 2 }}>
-      {/* Logo & Title */}
-      <Box
-        sx={{
-          display: "flex",
-          alignItems: "center",
-          mb: 4,
-          fontWeight: "bold",
-          fontSize: 18,
-          color: "#6c63ff",
-        }}
-      >
-        <img
-          src="/path-to-logo.png" // replace with actual logo path or remove
-          alt="Logo"
-          style={{ width: 32, height: 32, marginRight: 8 }}
-        />
-        Cerebro SASA
-      </Box>
-
-      <List>
-        {menuItems.map(({ label, path }) => (
-          <ListItem key={label} disablePadding>
-            <ListItemButton
-              selected={location.pathname === path}
-              onClick={() => {
-                navigate(path);
-                setMobileOpen(false);
-              }}
-            >
-              <ListItemText primary={label} />
-            </ListItemButton>
-          </ListItem>
-        ))}
-      </List>
-    </Box>
-  );
-
   return (
-    <Box sx={{ display: "flex" }}>
-      <AppBar
-        position="fixed"
-        sx={{
-          width: { sm: `calc(100% - ${drawerWidth}px)` },
-          ml: { sm: `${drawerWidth}px` },
-          backgroundColor: "#906aff",
-        }}
-      >
-        <Toolbar>
-          <IconButton
-            color="inherit"
-            edge="start"
-            onClick={handleDrawerToggle}
-            sx={{ mr: 2, display: { sm: "none" } }}
-            aria-label="open drawer"
-          >
-            <MenuIcon />
-          </IconButton>
-          <Typography
-            variant="h6"
-            noWrap
-            component="div"
-            sx={{ flexGrow: 1, fontWeight: "bold" }}
-          >
-            Cerebro SASA
-          </Typography>
-          {/* You can add user icon or other right side items here */}
-        </Toolbar>
-      </AppBar>
+    <Box sx={{ display: "flex", minHeight: "100vh" }}>
+      {/* Sidebar */}
+      <Sidebar
+        mobileOpen={mobileOpen}
+        handleDrawerToggle={handleDrawerToggle}
+        isLLMGardenPage={isLLMGardenPage}
+      />
 
-      <Box
-        component="nav"
-        sx={{ width: { sm: drawerWidth }, flexShrink: { sm: 0 } }}
-        aria-label="sidebar navigation"
-      >
-        {/* Mobile drawer */}
-        <Drawer
-          variant="temporary"
-          open={mobileOpen}
-          onClose={handleDrawerToggle}
-          ModalProps={{
-            keepMounted: true, // Better open performance on mobile.
-          }}
-          sx={{
-            display: { xs: "block", sm: "none" },
-            "& .MuiDrawer-paper": {
-              boxSizing: "border-box",
-              width: drawerWidth,
-            },
-          }}
-        >
-          {drawer}
-        </Drawer>
-
-        {/* Desktop drawer */}
-        <Drawer
-          variant="permanent"
-          sx={{
-            display: { xs: "none", sm: "block" },
-            "& .MuiDrawer-paper": {
-              boxSizing: "border-box",
-              width: drawerWidth,
-            },
-          }}
-          open
-        >
-          {drawer}
-        </Drawer>
-      </Box>
-
+      {/* Main content */}
       <Box
         component="main"
         sx={{
           flexGrow: 1,
-          p: 3,
-          width: { sm: `calc(100% - ${drawerWidth}px)` },
-          mt: 8,
+          boxSizing: "border-box",
+          bgcolor: "#f5f7fb",
         }}
       >
-        {/* Heading + Search + Add New Row */}
-        <Box
-          sx={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            mb: 3,
-          }}
-        >
-          <Typography variant="h5" sx={{ color: "#906aff", fontWeight: "bold" }}>
-            {pageTitle}
-          </Typography>
+        <Header onMenuClick={handleDrawerToggle} />
 
-          <Box sx={{ display: "flex", gap: 2 }}>
-            <Box
-              sx={{
-                position: "relative",
-                borderRadius: 1,
-                backgroundColor: "#f1ecff",
-                display: "flex",
-                alignItems: "center",
-                px: 1,
-              }}
-            >
-              <SearchIcon color="disabled" />
-              <InputBase
-                placeholder="Search…"
-                inputProps={{ "aria-label": "search" }}
-                sx={{ ml: 1, flex: 1 }}
-              />
-            </Box>
+        <Box sx={{ p: 3, mt: 8 }}>
+          {/* Conditionally render controls */}
+          {!hideControls && (
+            <>
+              {/* Search + Add New + All Employees header */}
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  mb: 2,
+                  flexWrap: "wrap",
+                  gap: 2,
+                }}
+              >
+                <Typography
+                  variant="h5"
+                  sx={{
+                    color: "black",
+                    fontWeight: "bold",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 1,
+                  }}
+                >
+                  <PeopleIcon sx={{ color: "black" }} />
+                  All Employees
+                </Typography>
 
-            <Button
-              variant="contained"
-              sx={{ backgroundColor: "#906aff" }}
-              onClick={() => alert("Add new clicked")}
-            >
-              Add New +
-            </Button>
-          </Box>
+                <Box
+                  sx={{
+                    display: "flex",
+                    gap: 2,
+                    flexWrap: "wrap",
+                    justifyContent: "flex-end",
+                    flexGrow: 1,
+                  }}
+                >
+                  <Box
+                    sx={{
+                      position: "relative",
+                      borderRadius: 1,
+                      backgroundColor: "#f1ecff",
+                      display: "flex",
+                      alignItems: "center",
+                      px: 1,
+                      minWidth: 240,
+                    }}
+                  >
+                    <SearchIcon color="disabled" />
+                    <InputBase
+                      placeholder="Search…"
+                      inputProps={{ "aria-label": "search" }}
+                      sx={{ ml: 1, flex: 1 }}
+                    />
+                  </Box>
+
+                  <Button
+                    variant="contained"
+                    sx={{ backgroundColor: "#906aff" }}
+                    onClick={() => alert("Add new clicked")}
+                  >
+                    Add New +
+                  </Button>
+                </Box>
+              </Box>
+
+              {/* Black banner with white text for All Employees (count) */}
+              {isLLMGardenPage && (
+                <Box
+                  sx={{
+                    width: "100%",
+                    backgroundColor: "#000",
+                    color: "#fff",
+                    py: 1,
+                    px: 2,
+                    borderRadius: 1,
+                    mb: 2,
+                  }}
+                >
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      fontWeight: 500,
+                      fontSize: "0.875rem",
+                    }}
+                  >
+                    All Employees {employeeCount > 0 ? `(${employeeCount})` : ""}
+                  </Typography>
+                </Box>
+              )}
+            </>
+          )}
+
+          {/* Render children */}
+          {children}
         </Box>
-
-        {/* Render page content */}
-        {children}
       </Box>
     </Box>
   );

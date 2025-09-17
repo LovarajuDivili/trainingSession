@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+// src/pages/DashboardLayout.tsx
+import React, { useState, useEffect } from "react";
 import {
   AppBar,
   Toolbar,
@@ -15,45 +16,50 @@ import {
   MenuItem,
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
-import FolderOpenIcon from "@mui/icons-material/FolderOpen";
-import SettingsIcon from "@mui/icons-material/Settings";
-import StorageIcon from "@mui/icons-material/Storage";
-import LayersIcon from "@mui/icons-material/Layers";
-import BarChartIcon from "@mui/icons-material/BarChart";
-import ReceiptIcon from "@mui/icons-material/Receipt";
-import SyncAltIcon from "@mui/icons-material/SyncAlt";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
+import SyncAltIcon from "@mui/icons-material/SyncAlt";
+import { useNavigate, useLocation } from "react-router-dom";
 
-import LLMGarden from "./LLMGarden";
+import AllEmployees from "./AllEmployees";
+import Developers from "./Developers";
+import Testers from "./Testers";
+import AWSTeam from "./AWSTeam";
+import Projects from "./Projects";
+import Statistics from "./Statistics";
+import Logs from "./Logs";
 
 const drawerWidth = 260;
 
 const menuItems = [
-  { text: "General Configuration", icon: <SettingsIcon /> },
-  { text: "LLM Garden", icon: <FolderOpenIcon /> },
-  { text: "Database", icon: <StorageIcon /> },
-  { text: "Storage Provider", icon: <LayersIcon /> },
-  { text: "Projects", icon: <ReceiptIcon /> },
-  { text: "Statistics", icon: <BarChartIcon /> },
-  { text: "Logs", icon: <ReceiptIcon /> },
+  { text: "All Employees", icon: <AccountCircleIcon />, path: "/llmgarden/all-employees" },
+  { text: "Developers", icon: <AccountCircleIcon />, path: "/llmgarden/developers" },
+  { text: "Testers", icon: <AccountCircleIcon />, path: "/llmgarden/testers" },
+  { text: "AWS Team", icon: <AccountCircleIcon />, path: "/llmgarden/aws" },
+  { text: "Projects", icon: <AccountCircleIcon />, path: "/llmgarden/projects" },
+  { text: "Statistics", icon: <AccountCircleIcon />, path: "/llmgarden/statistics" },
+  { text: "Logs", icon: <AccountCircleIcon />, path: "/llmgarden/logs" },
 ];
 
 const DashboardLayout: React.FC = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [selectedMenu, setSelectedMenu] = useState("LLM Garden");
   const [anchorElLeft, setAnchorElLeft] = useState<null | HTMLElement>(null);
   const [anchorElRight, setAnchorElRight] = useState<null | HTMLElement>(null);
+  const navigate = useNavigate();
+  const location = useLocation();
 
-  const openMenuLeft = Boolean(anchorElLeft);
-  const openMenuRight = Boolean(anchorElRight);
+  const currentPath = location.pathname;
+  const defaultPath = "/llmgarden/all-employees";
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
   };
 
-  const handleMenuClick = (label: string) => {
-    setSelectedMenu(label);
+  const handleMenuClick = (path: string) => {
+    navigate(path);
   };
+
+  const openMenuLeft = Boolean(anchorElLeft);
+  const openMenuRight = Boolean(anchorElRight);
 
   const handleProfileClickLeft = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorElLeft(event.currentTarget);
@@ -69,6 +75,18 @@ const DashboardLayout: React.FC = () => {
 
   const handleCloseMenuRight = () => {
     setAnchorElRight(null);
+  };
+
+  const handleCompareClick = () => {
+    const hasData = localStorage.getItem("employeeData");
+
+    if (hasData) {
+      localStorage.removeItem("employeeData");
+      navigate("/");
+    } else {
+      localStorage.setItem("employeeData", "true");
+      navigate("/");
+    }
   };
 
   const drawer = (
@@ -93,21 +111,21 @@ const DashboardLayout: React.FC = () => {
           },
         }}
       >
-        {menuItems.map(({ text, icon }) => (
+        {menuItems.map(({ text, icon, path }) => (
           <ListItem
             button
             key={text}
-            selected={selectedMenu === text}
-            onClick={() => handleMenuClick(text)}
+            selected={currentPath === path}
+            onClick={() => handleMenuClick(path)}
             sx={{
               borderRadius: 1,
               mb: 0.5,
-              color: selectedMenu === text ? "#906aff" : "#666",
+              color: currentPath === path ? "#906aff" : "#666",
             }}
           >
             <ListItemIcon
               sx={{
-                color: selectedMenu === text ? "#906aff" : "#666",
+                color: currentPath === path ? "#906aff" : "#666",
                 minWidth: 40,
               }}
             >
@@ -116,9 +134,9 @@ const DashboardLayout: React.FC = () => {
             <ListItemText
               primary={text}
               primaryTypographyProps={{
-                fontWeight: selectedMenu === text ? "bold" : "normal",
+                fontWeight: currentPath === path ? "bold" : "normal",
                 fontSize: 15,
-                color: selectedMenu === text ? "#906aff" : "#666",
+                color: currentPath === path ? "#906aff" : "#666",
               }}
             />
           </ListItem>
@@ -126,6 +144,33 @@ const DashboardLayout: React.FC = () => {
       </List>
     </Box>
   );
+
+  const renderPage = () => {
+    switch (currentPath) {
+      case "/llmgarden/all-employees":
+        return <AllEmployees />;
+      case "/llmgarden/developers":
+        return <Developers />;
+      case "/llmgarden/testers":
+        return <Testers />;
+      case "/llmgarden/aws":
+        return <AWSTeam />;
+      case "/llmgarden/projects":
+        return <Projects />;
+      case "/llmgarden/statistics":
+        return <Statistics />;
+      case "/llmgarden/logs":
+        return <Logs />;
+      default:
+        return <AllEmployees />;
+    }
+  };
+
+  useEffect(() => {
+    if (currentPath === "/llm-garden/Admin") {
+      navigate(defaultPath);
+    }
+  }, [currentPath, navigate]);
 
   return (
     <Box sx={{ display: "flex", height: "100vh", bgcolor: "#f5f7fb" }}>
@@ -135,7 +180,7 @@ const DashboardLayout: React.FC = () => {
         sx={{ bgcolor: "#906aff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
       >
         <Toolbar sx={{ display: "flex", justifyContent: "space-between", px: 2 }}>
-          {/* Left section */}
+          {/* Left */}
           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
             <IconButton onClick={handleDrawerToggle} sx={{ color: "#fff" }}>
               <MenuIcon />
@@ -153,13 +198,7 @@ const DashboardLayout: React.FC = () => {
             />
 
             <Box
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                gap: 1,
-                cursor: "pointer",
-                color: "#fff",
-              }}
+              sx={{ display: "flex", alignItems: "center", gap: 1, cursor: "pointer", color: "#fff" }}
               onClick={handleProfileClickLeft}
               aria-controls={openMenuLeft ? "left-profile-menu" : undefined}
               aria-haspopup="true"
@@ -189,13 +228,17 @@ const DashboardLayout: React.FC = () => {
             </Menu>
           </Box>
 
-          {/* Right section */}
+          {/* Right */}
           <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-            <IconButton sx={{ color: "white" }} size="large" aria-label="sync">
+            <IconButton
+              sx={{ color: "white" }}
+              size="large"
+              aria-label="sync"
+              onClick={handleCompareClick}
+            >
               <SyncAltIcon />
             </IconButton>
 
-            {/* White container for AiFA logo + profile */}
             <Box
               sx={{
                 bgcolor: "#fff",
@@ -244,7 +287,7 @@ const DashboardLayout: React.FC = () => {
         </Toolbar>
       </AppBar>
 
-      {/* Drawers */}
+      {/* Drawer for mobile */}
       <Drawer
         variant="temporary"
         open={mobileOpen}
@@ -252,53 +295,42 @@ const DashboardLayout: React.FC = () => {
         ModalProps={{ keepMounted: true }}
         sx={{
           display: { xs: "block", sm: "none" },
-          "& .MuiDrawer-paper": { width: drawerWidth },
+          "& .MuiDrawer-paper": { boxSizing: "border-box", width: drawerWidth },
         }}
       >
         {drawer}
       </Drawer>
 
+      {/* Drawer for desktop */}
       <Drawer
         variant="permanent"
         sx={{
           display: { xs: "none", sm: "block" },
-          "& .MuiDrawer-paper": { width: drawerWidth, boxSizing: "border-box", bgcolor: "#fff" },
+          "& .MuiDrawer-paper": {
+            boxSizing: "border-box",
+            width: drawerWidth,
+            borderRight: "none",
+            bgcolor: "#fff",
+          },
         }}
         open
       >
         {drawer}
       </Drawer>
 
-      {/* Main content */}
+      {/* Main Content */}
       <Box
         component="main"
         sx={{
           flexGrow: 1,
           p: 3,
           mt: 8,
-          ml: { sm: `${drawerWidth}px` },
-          overflowY: "auto",
           bgcolor: "#f5f7fb",
+          minHeight: "100vh",
+          overflowY: "auto",
         }}
       >
-        {selectedMenu === "LLM Garden" ? (
-          <LLMGarden />
-        ) : (
-          <Box
-            sx={{
-              p: 4,
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              height: "80vh",
-              color: "#888",
-            }}
-          >
-            <Typography variant="h5">
-              Content for "{selectedMenu}" coming soon...
-            </Typography>
-          </Box>
-        )}
+        {renderPage()}
       </Box>
     </Box>
   );
