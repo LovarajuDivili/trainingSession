@@ -10,7 +10,6 @@ import {
   DialogActions,
   Snackbar,
   Alert,
-
 } from "@mui/material";
 import AccountCircle from "@mui/icons-material/AccountCircle";
 import LogoutIcon from "@mui/icons-material/Logout";
@@ -59,8 +58,8 @@ const Header = ({ role: propRole }: { role?: string }) => {
   };
 
   const handleSwap = () => {
-  navigate("/"); // assuming this is the route path
-};
+    navigate("/"); 
+  };
 
   const roleIcon = role ? roleIcons[role.toLowerCase()] : null;
 
