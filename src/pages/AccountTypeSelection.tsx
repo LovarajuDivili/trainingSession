@@ -56,8 +56,9 @@ const AccountTypeSelection: React.FC = () => {
     setAccountType(event.target.value as string);
   };
 
+  
   const handleProceed = () => {
-    alert(`Proceeding as: ${accountType}`);
+    navigate(`/llmgarden/all-employees/${accountType.toLowerCase()}`);
   };
 
   return (
@@ -76,7 +77,7 @@ const AccountTypeSelection: React.FC = () => {
           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
             <img src="/chat.svg" alt="Chat Icon" style={{ width: 20, height: 20 }} />
             <Typography variant="h6" sx={{ fontWeight: "600", color: "#fff" }}>
-              AiFA
+              Cerebro SASA
             </Typography>
           </Box>
 
