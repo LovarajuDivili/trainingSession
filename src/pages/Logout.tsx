@@ -5,15 +5,15 @@ const Logout = () => {
   return (
     <Box
       sx={{
-        height: "100vh",                
-        display: "flex",               
-        justifyContent: "center",     
-        alignItems: "center",          
-        backgroundColor: "#f5f5f5",   
+        height: "100vh",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        backgroundColor: "#f5f5f5",
       }}
     >
       <Paper
-        elevation={3}                
+        elevation={3}
         sx={{
           padding: 4,
           borderRadius: 3,
@@ -33,4 +33,3 @@ const Logout = () => {
 };
 
 export default Logout;
-

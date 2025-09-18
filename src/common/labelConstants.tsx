@@ -59,3 +59,11 @@ export const Proceed = {
 export const Logged_Out = {
     LOGGED_OUT : "You have been logged out. Please login again to continue."
 }
+
+export const Add_New = {
+    ADD_NEW : "Add New"
+}
+
+export const Loading ={
+    LOADING: "Loading..."
+}
