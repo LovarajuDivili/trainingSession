@@ -57,6 +57,10 @@ const Header = ({ role: propRole }: { role?: string }) => {
     setOpenDialog(false);
   };
 
+  const handleSwap = () => {
+    navigate("/"); 
+  };
+
   const roleIcon = role ? roleIcons[role.toLowerCase()] : null;
 
   return (
@@ -141,7 +145,7 @@ const Header = ({ role: propRole }: { role?: string }) => {
           marginRight: "10px",
         }}
       >
-        <IconButton sx={{ color: "white" }}>
+        <IconButton sx={{ color: "white" }} onClick={handleSwap}>
           <SwapHorizIcon />
         </IconButton>
 
