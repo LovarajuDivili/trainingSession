@@ -58,7 +58,7 @@ const Header = ({ role: propRole }: { role?: string }) => {
   };
 
   const handleSwap = () => {
-    navigate("/"); 
+    navigate("/");
   };
 
   const roleIcon = role ? roleIcons[role.toLowerCase()] : null;
@@ -105,34 +105,38 @@ const Header = ({ role: propRole }: { role?: string }) => {
           <strong>{Aifa.AIFA}</strong>
         </Typography>
 
-        <Divider
-          orientation="vertical"
-          variant="middle"
-          flexItem
-          sx={{
-            backgroundColor: "white",
-            width: "0px",
-          }}
-        />
+        {role && roleIcon && location.pathname !== "/" && (
+          <>
+            <Divider
+              orientation="vertical"
+              variant="middle"
+              flexItem
+              sx={{
+                backgroundColor: "white",
+                width: "0px",
+              }}
+            />
 
-        {role && roleIcon && (
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              gap: 0.5,
-              ml: 2,
-              px: 1.5,
-              py: 0.3,
-              borderRadius: "12px",
-              backgroundColor: "rgba(255,255,255,0.2)",
-            }}
-          >
-            {roleIcon}
-            <Typography sx={{ color: "white", fontSize: 14, fontWeight: 500 }}>
-              {role.charAt(0).toUpperCase() + role.slice(1)}
-            </Typography>
-          </Box>
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                gap: 0.5,
+                ml: 2,
+                px: 1.5,
+                py: 0.3,
+                borderRadius: "12px",
+                backgroundColor: "rgba(255,255,255,0.2)",
+              }}
+            >
+              {roleIcon}
+              <Typography
+                sx={{ color: "white", fontSize: 14, fontWeight: 500 }}
+              >
+                {role.charAt(0).toUpperCase() + role.slice(1)}
+              </Typography>
+            </Box>
+          </>
         )}
       </Box>
 
