@@ -1,4 +1,3 @@
-// src/components/SideBar.tsx
 import {
   Box,
   List,
@@ -8,7 +7,7 @@ import {
   ListItemText,
 } from "@mui/material";
 import { useNavigate, useLocation } from "react-router-dom";
-import { sidebarItems } from "../common/sidebarItems"; // 👈 imported
+import { sidebarItems } from "../common/sidebarItems";
 
 const SideBar = () => {
   const navigate = useNavigate();
@@ -27,17 +26,32 @@ const SideBar = () => {
       }}
     >
       <List>
-        {sidebarItems.map((item) => (
-          <ListItem key={item.label} disablePadding>
-            <ListItemButton
-              selected={location.pathname === item.route}
-              onClick={() => navigate(item.route)}
-            >
-              <ListItemIcon sx={{ color: "black" }}>{item.icon}</ListItemIcon>
-              <ListItemText primary={item.label} />
-            </ListItemButton>
-          </ListItem>
-        ))}
+        {sidebarItems.map((item) => {
+          const isSelected = location.pathname === item.route;
+
+          return (
+            <ListItem key={item.label} disablePadding>
+              <ListItemButton
+                onClick={() => navigate(item.route)}
+                sx={{
+                  bgcolor: isSelected ? "#906aff" : "transparent",
+                  color: isSelected ? "white" : "black",
+                  "&:hover": {
+                    bgcolor: isSelected ? "#906aff" : "#f0f0f0",
+                  },
+                  borderRadius: 1,
+                  mx: 1,
+                  my: 0.5,
+                }}
+              >
+                <ListItemIcon sx={{ color: isSelected ? "white" : "black" }}>
+                  {item.icon}
+                </ListItemIcon>
+                <ListItemText primary={item.label} />
+              </ListItemButton>
+            </ListItem>
+          );
+        })}
       </List>
     </Box>
   );
