@@ -7,12 +7,15 @@ import {
   DialogTitle,
   DialogContent,
   TextField,
+  IconButton,
+  Grid,
 } from "@mui/material";
 import {
   DataGrid,
   type GridColDef,
   type GridRenderCellParams,
 } from "@mui/x-data-grid";
+import ViewCompactIcon from "@mui/icons-material/ViewCompact";
 import { Loading } from "../../common/labelConstants";
 import type { Employee } from "../../common/types";
 import DashboardHeader from "../DashboardHeader";
@@ -20,37 +23,31 @@ import { sidebarItems } from "../../common/sidebarItems";
 
 const LOCAL_STORAGE_KEY = "employees_data";
 
-const fetchEmployees = (): Promise<Employee[]> => {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve([
-        {
-          name: "John Doe",
-          email: "john@example.com",
-          role: "Developer",
-          joinDate: "2022-03-01",
-          id: "EMP001",
-          skills: ["React", "TypeScript", "Node.js"],
-        },
-        {
-          name: "Jane Smith",
-          email: "jane@example.com",
-          role: "Tester",
-          joinDate: "2021-06-15",
-          id: "EMP002",
-          skills: ["Selenium", "Cypress", "Manual Testing"],
-        },
-      ]);
-    }, 1000);
-  });
-};
+const defaultEmployees: Employee[] = [
+  {
+    name: "John Doe",
+    email: "john@example.com",
+    role: "Developer",
+    joinDate: "2022-03-01",
+    id: "EMP001",
+    skills: ["React", "TypeScript", "Node.js"],
+  },
+  {
+    name: "Jane Smith",
+    email: "jane@example.com",
+    role: "Tester",
+    joinDate: "2021-06-15",
+    id: "EMP002",
+    skills: ["Selenium", "Cypress", "Manual Testing"],
+  },
+];
 
 const AllEmployees = () => {
   const [employees, setEmployees] = useState<Employee[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading] = useState(false);
   const [searchText, setSearchText] = useState("");
+  const [cardView, setCardView] = useState(false);
 
-  // Add Employee Dialog states
   const [openDialog, setOpenDialog] = useState(false);
   const [newEmployee, setNewEmployee] = useState<Employee>({
     name: "",
@@ -61,36 +58,37 @@ const AllEmployees = () => {
     skills: [],
   });
 
-  // Load employees (localStorage > API fallback)
   useEffect(() => {
     const savedData = localStorage.getItem(LOCAL_STORAGE_KEY);
 
     if (savedData) {
-      setEmployees(JSON.parse(savedData));
+      try {
+        const parsed = JSON.parse(savedData) as Employee[];
+        const merged = [
+          ...defaultEmployees,
+          ...parsed.filter((e) => !defaultEmployees.some((d) => d.id === e.id)),
+        ];
+        setEmployees(merged);
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      } catch (err) {
+        setEmployees(defaultEmployees);
+      }
     } else {
-      setLoading(true);
-      fetchEmployees().then((data) => {
-        setEmployees(data);
-        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(data));
-        setLoading(false);
-      });
+      setEmployees(defaultEmployees);
     }
   }, []);
 
-  // Save employees to localStorage whenever they change
   useEffect(() => {
-    if (employees.length > 0) {
-      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(employees));
-    }
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(employees));
   }, [employees]);
 
-  const filteredEmployees = employees.filter((emp) =>
-    emp.name.toLowerCase().includes(searchText.toLowerCase())
+  const filteredEmployees = employees.filter(
+    (emp) =>
+      emp.name.toLowerCase().includes(searchText.toLowerCase()) ||
+      emp.role.toLowerCase().includes(searchText.toLowerCase())
   );
 
-  // Dialog handlers
   const handleOpenDialog = () => setOpenDialog(true);
-
   const handleCloseDialog = () => {
     setOpenDialog(false);
     setNewEmployee({
@@ -107,7 +105,7 @@ const AllEmployees = () => {
     if (field === "skills") {
       setNewEmployee((prev) => ({
         ...prev,
-        skills: value.split(",").map((s) => s.trim()),
+        skills: value ? value.split(",").map((s) => s.trim()) : [],
       }));
     } else {
       setNewEmployee((prev) => ({ ...prev, [field]: value }));
@@ -122,6 +120,10 @@ const AllEmployees = () => {
       newEmployee.joinDate &&
       newEmployee.id
     ) {
+      if (employees.some((e) => e.id === newEmployee.id)) {
+        alert("An employee with this ID already exists.");
+        return;
+      }
       setEmployees((prev) => [...prev, newEmployee]);
       handleCloseDialog();
     } else {
@@ -129,7 +131,6 @@ const AllEmployees = () => {
     }
   };
 
-  // DataGrid columns
   const columns: GridColDef<Employee>[] = [
     { field: "name", headerName: "Name", flex: 1 },
     { field: "email", headerName: "Email", flex: 1.5 },
@@ -142,7 +143,7 @@ const AllEmployees = () => {
       flex: 2,
       renderCell: (params: GridRenderCellParams<Employee>) => (
         <>
-          {params?.row?.skills.map((each, index) => (
+          {params?.row?.skills?.map((each, index) => (
             <button
               key={index}
               style={{
@@ -165,7 +166,9 @@ const AllEmployees = () => {
       headerName: "Current Date",
       flex: 1,
       renderCell: (params: GridRenderCellParams<Employee>) =>
-        new Date(params.row.joinDate).toLocaleDateString(),
+        params.row.joinDate
+          ? new Date(params.row.joinDate).toLocaleDateString()
+          : "",
     },
   ];
 
@@ -175,7 +178,7 @@ const AllEmployees = () => {
 
   return (
     <Box>
-      {/* Header with Add New button */}
+      {/* Header */}
       <DashboardHeader
         title={currentItem?.label || "All Employees"}
         icon={currentItem?.icon}
@@ -186,23 +189,101 @@ const AllEmployees = () => {
         showAddButton
         onAddClick={handleOpenDialog}
         addButtonLabel="Add New"
+        gridIcon={
+          <IconButton
+            onClick={() => setCardView((prev) => !prev)}
+            size="medium"
+            aria-label="toggle-compact"
+            sx={{ ml: 0.5 }}
+          >
+            <ViewCompactIcon
+              sx={{ fontSize: "35px", color: cardView ? "black" : "#666" }}
+            />
+          </IconButton>
+        }
       />
 
       {/* Page Content */}
       {loading ? (
         <Typography>{Loading.LOADING}</Typography>
       ) : (
-        <Box sx={{ height: 500, width: "100%" }}>
-          <DataGrid
-            rows={filteredEmployees}
-            columns={columns}
-            getRowId={(row) => row.id}
-            pageSizeOptions={[5, 10, 20]}
-            initialState={{
-              pagination: { paginationModel: { pageSize: 5, page: 0 } },
-            }}
-            autoHeight
-          />
+        <Box sx={{ height: cardView ? "auto" : 500, width: "100%" }}>
+          {cardView ? (
+            <Grid container spacing={2} sx={{ mt: 2 }}>
+              {filteredEmployees.map((emp) => (
+                <Grid item xs={12} sm={6} md={4} lg={3} key={emp.id}>
+                  <Box
+                    sx={{
+                      p: 2,
+                      border: "1px solid #ddd",
+                      borderRadius: 2,
+                      boxShadow: 1,
+                      backgroundColor: "#fff",
+                      height: "100%",
+                      display: "flex",
+                      flexDirection: "column",
+                      justifyContent: "space-between",
+                    }}
+                  >
+                    <Box>
+                      <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                        {emp.name}
+                      </Typography>
+                      <Typography variant="body2" sx={{ mt: 1 }}>
+                        <strong>Email:</strong> {emp.email}
+                      </Typography>
+                      <Typography variant="body2">
+                        <strong>Role:</strong> {emp.role}
+                      </Typography>
+                      <Typography variant="body2">
+                        <strong>Joined:</strong>{" "}
+                        {emp.joinDate
+                          ? new Date(emp.joinDate).toLocaleDateString()
+                          : ""}
+                      </Typography>
+                      {emp.skills?.length ? (
+                        <Box
+                          sx={{
+                            mt: 1,
+                            display: "flex",
+                            flexWrap: "wrap",
+                            gap: 1,
+                          }}
+                        >
+                          {emp.skills.map((s, i) => (
+                            <Box
+                              key={i}
+                              sx={{
+                                fontSize: 12,
+                                px: 1,
+                                py: "2px",
+                                bgcolor: "#000",
+                                color: "#fff",
+                                borderRadius: "6px",
+                              }}
+                            >
+                              {s}
+                            </Box>
+                          ))}
+                        </Box>
+                      ) : null}
+                    </Box>
+                  </Box>
+                </Grid>
+              ))}
+            </Grid>
+          ) : (
+            <DataGrid
+              rows={filteredEmployees}
+              columns={columns}
+              getRowId={(row) => row.id}
+              pageSizeOptions={[5, 10, 20]}
+              initialState={{
+                pagination: { paginationModel: { pageSize: 5, page: 0 } },
+              }}
+              autoHeight
+            />
+          )}
         </Box>
       )}
 

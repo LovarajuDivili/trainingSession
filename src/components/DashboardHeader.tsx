@@ -20,6 +20,7 @@ interface DashboardHeaderProps {
   onAddClick?: () => void;
   addButtonLabel?: string;
   rightContent?: ReactNode;
+  gridIcon?: ReactNode;
 }
 
 const DashboardHeader = ({
@@ -32,7 +33,7 @@ const DashboardHeader = ({
   showAddButton = false,
   onAddClick,
   addButtonLabel = "Add New",
-  rightContent,
+  gridIcon,
 }: DashboardHeaderProps) => {
   return (
     <Box
@@ -54,6 +55,19 @@ const DashboardHeader = ({
         <Typography variant="h5">
           {title} {count !== undefined && `(${count})`}
         </Typography>
+
+        {gridIcon && (
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              color: "black",
+              fontSize: "m",
+            }}
+          >
+            {gridIcon}
+          </Box>
+        )}
       </Box>
 
       {/* Right Actions */}
@@ -66,7 +80,7 @@ const DashboardHeader = ({
             sx={{
               width: "300px",
               "& .MuiOutlinedInput-root": {
-                borderRadius: "50px", // pill shape
+                borderRadius: "50px",
               },
             }}
             value={searchText}
@@ -98,9 +112,6 @@ const DashboardHeader = ({
             {addButtonLabel}
           </Button>
         )}
-
-        {/* Optional extra actions */}
-        {rightContent}
       </Box>
     </Box>
   );
