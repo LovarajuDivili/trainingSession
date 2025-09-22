@@ -10,11 +10,16 @@ import {
 } from "@mui/material";
 import Header from "./Header";
 import type { SelectChangeEvent } from "@mui/material";
-import { Account_Type, Cerebro_Sasa, Proceed, Select_Account, Welcome_Msgs } from "../common/labelConstants";
+import {
+  Account_Type,
+  Cerebro_Sasa,
+  Proceed,
+  Select_Account,
+  Welcome_Msgs,
+} from "../common/labelConstants";
 import ArrowRightAltIcon from "@mui/icons-material/ArrowRightAlt";
 import { useNavigate } from "react-router-dom";
 import { roleDropdowns } from "../common/utility";
-
 
 const WelcomeSasa = () => {
   const [dropdownValue, setDropdownValue] = useState<string>("admin");
@@ -33,6 +38,15 @@ const WelcomeSasa = () => {
         break;
       case "developer":
         navigate("/developer");
+        break;
+      case "functional":
+        navigate("/functional");
+        break;
+      case "migrator":
+        navigate("/migrator");
+        break;
+      case "tester":
+        navigate("/tester");
         break;
       default:
         alert("Please select a valid role");

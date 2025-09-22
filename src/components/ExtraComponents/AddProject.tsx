@@ -9,7 +9,7 @@ import {
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-const LOCAL_STORAGE_KEY = "projects_data";
+const SESSION_STORAGE_KEY = "project_data";
 
 const AddProject = () => {
   const navigate = useNavigate();
@@ -27,8 +27,17 @@ const AddProject = () => {
     setProject((prev) => ({ ...prev, [field]: value }));
   };
 
+  const isSaveDisabled = !(
+  project.projectName &&
+  project.projectOwner &&
+  project.jiraId &&
+  project.status &&
+  project.startDate &&
+  project.endDate
+);
+
   const handleSave = () => {
-    const savedData = localStorage.getItem(LOCAL_STORAGE_KEY);
+    const savedData = sessionStorage.getItem(SESSION_STORAGE_KEY);
     const projects = savedData ? JSON.parse(savedData) : [];
 
     const newProject = {
@@ -38,7 +47,10 @@ const AddProject = () => {
 
     const updatedProjects = [...projects, newProject];
 
-    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(updatedProjects));
+    sessionStorage.setItem(
+      SESSION_STORAGE_KEY,
+      JSON.stringify(updatedProjects)
+    );
 
     alert("Project added successfully!");
     navigate("/admin/projects");
@@ -50,10 +62,49 @@ const AddProject = () => {
 
   return (
     <Box sx={{ maxWidth: 1000, mx: "auto", mt: 4, p: 2 }}>
-      <Typography variant="h5" sx={{ mb: 3, fontWeight: 600 }}>
-        Add New Project
-      </Typography>
-
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          mb: "20px",
+          mt: "20px",
+        }}
+      >
+        <Typography variant="h5" sx={{ mb: 3, fontWeight: 600 }}>
+          Add New Project
+        </Typography>
+        {/* Buttons */}
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "flex-end",
+            gap: 2,
+            mt: 0,
+            mb: 1,
+          }}
+        >
+          <Button
+            variant="contained"
+            sx={{ backgroundColor: "#1976d2", textTransform: "uppercase" }}
+            onClick={handleSave}
+            disabled={isSaveDisabled}
+          >
+            Add
+          </Button>
+          <Button
+            variant="outlined"
+            sx={{
+              color: "#d81b60",
+              borderColor: "#d81b60",
+              textTransform: "uppercase",
+            }}
+            onClick={handleCancel}
+          >
+            Cancel
+          </Button>
+        </Box>
+      </Box>
       <Grid
         container
         spacing={{ xs: 2, md: 3 }}
@@ -133,35 +184,6 @@ const AddProject = () => {
           />
         </Grid>
       </Grid>
-
-      {/* Buttons */}
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "flex-end",
-          gap: 2,
-          mt: 4,
-        }}
-      >
-        <Button
-          variant="contained"
-          sx={{ backgroundColor: "#1976d2", textTransform: "uppercase" }}
-          onClick={handleSave}
-        >
-          Save
-        </Button>
-        <Button
-          variant="outlined"
-          sx={{
-            color: "#d81b60",
-            borderColor: "#d81b60",
-            textTransform: "uppercase",
-          }}
-          onClick={handleCancel}
-        >
-          Cancel
-        </Button>
-      </Box>
     </Box>
   );
 };

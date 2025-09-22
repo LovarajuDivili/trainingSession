@@ -41,8 +41,8 @@ const DashboardHeader = ({
         display: "flex",
         alignItems: "center",
         justifyContent: "space-between",
-        mb: 3,
-        p: 2,
+        mb: 2,
+        p: 1,
         borderBottom: "1px solid #ddd",
         backgroundColor: "#fff",
         position: "sticky",
@@ -50,7 +50,7 @@ const DashboardHeader = ({
         zIndex: 100,
       }}
     >
-      <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+      <Box sx={{ display: "flex", alignItems: "center", gap: 1, mt: "0px" }}>
         {icon && <Box sx={{ color: "black" }}>{icon}</Box>}
         <Typography variant="h5">
           {title} {count !== undefined && `(${count})`}
