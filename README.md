@@ -40,3 +40,34 @@ update readme
 ---> Builds the app for production
 
 npm run build
+
+
+##################################################################################################################################
+
+
+Application Run Instructions 🚀
+
+Frontend
+Open a new terminal and run:  ##  npm run dev:frontend
+
+Backend
+Open another new terminal and run:    ## npm run dev:backend
+
+
+##########################             Installing Backend Packages             #################################
+
+Navigate to the backend folder:    ## cd backend
+
+pip install -r requirements.txt
+uvicorn app.main:app --reload --port 8000
+
+
+
+
+
+###############################-----------  Backend Base URL   ------------##################################
+http://127.0.0.1:8000/v-1/application
+
+
+
+##################################################################################################################################
