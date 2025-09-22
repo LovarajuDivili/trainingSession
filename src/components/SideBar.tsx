@@ -39,7 +39,7 @@ const SideBar = () => {
                   "&:hover": {
                     bgcolor: isSelected ? "#906aff" : "#f0f0f0",
                   },
-                  borderRadius: 1,
+                  borderRadius: 10,
                   mx: 1,
                   my: 0.5,
                 }}

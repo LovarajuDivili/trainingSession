@@ -21,7 +21,7 @@ import type { Employee } from "../../common/types";
 import DashboardHeader from "../DashboardHeader";
 import { sidebarItems } from "../../common/sidebarItems";
 
-const LOCAL_STORAGE_KEY = "employees_data";
+const SESSION_STORAGE_KEY = "employee_data";
 
 const defaultEmployees: Employee[] = [
   {
@@ -40,6 +40,75 @@ const defaultEmployees: Employee[] = [
     id: "EMP002",
     skills: ["Selenium", "Cypress", "Manual Testing"],
   },
+  {
+    name: "Peter Jones",
+    email: "peter@example.com",
+    role: "Product Manager",
+    joinDate: "2020-09-10",
+    id: "EMP003",
+    skills: ["Agile", "Scrum", "Roadmapping", "Market Research"],
+  },
+  {
+    name: "Mary Lee",
+    email: "mary@example.com",
+    role: "UX Designer",
+    joinDate: "2022-01-20",
+    id: "EMP004",
+    skills: ["Figma", "User Research", "Prototyping", "Wireframing"],
+  },
+  {
+    name: "David Chen",
+    email: "david@example.com",
+    role: "DevOps Engineer",
+    joinDate: "2021-11-05",
+    id: "EMP005",
+    skills: ["AWS", "Docker", "Kubernetes", "CI/CD"],
+  },
+  {
+    name: "Sarah Davis",
+    email: "sarah@example.com",
+    role: "Data Scientist",
+    joinDate: "2023-05-12",
+    id: "EMP006",
+    skills: ["Python", "Machine Learning", "SQL", "Tableau"],
+  },
+  {
+    name: "James Wilson",
+    email: "james@example.com",
+    role: "Team Lead",
+    joinDate: "2019-08-28",
+    id: "EMP007",
+    skills: [
+      "Leadership",
+      "Project Management",
+      "Mentoring",
+      "Strategic Planning",
+    ],
+  },
+  {
+    name: "Emily White",
+    email: "emily@example.com",
+    role: "Technical Writer",
+    joinDate: "2023-02-14",
+    id: "EMP008",
+    skills: ["Documentation", "Markdown", "API Documentation", "Confluence"],
+  },
+  {
+    name: "Michael Brown",
+    email: "michael@example.com",
+    role: "Support Engineer",
+    joinDate: "2022-07-25",
+    id: "EMP009",
+    skills: ["Troubleshooting", "Customer Service", "Linux", "SQL"],
+  },
+  {
+    name: "Laura Taylor",
+    email: "laura@example.com",
+    role: "Marketing Specialist",
+    joinDate: "2021-03-30",
+    id: "EMP010",
+    skills: ["SEO", "Content Creation", "Social Media", "Email Marketing"],
+  },
 ];
 
 const AllEmployees = () => {
@@ -47,7 +116,6 @@ const AllEmployees = () => {
   const [loading] = useState(false);
   const [searchText, setSearchText] = useState("");
   const [cardView, setCardView] = useState(false);
-
   const [openDialog, setOpenDialog] = useState(false);
   const [newEmployee, setNewEmployee] = useState<Employee>({
     name: "",
@@ -59,28 +127,18 @@ const AllEmployees = () => {
   });
 
   useEffect(() => {
-    const savedData = localStorage.getItem(LOCAL_STORAGE_KEY);
+    try {
+      const savedRaw = sessionStorage.getItem(SESSION_STORAGE_KEY);
+      const sessionEmployees: Employee[] = savedRaw ? JSON.parse(savedRaw) : [];
 
-    if (savedData) {
-      try {
-        const parsed = JSON.parse(savedData) as Employee[];
-        const merged = [
-          ...defaultEmployees,
-          ...parsed.filter((e) => !defaultEmployees.some((d) => d.id === e.id)),
-        ];
-        setEmployees(merged);
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      } catch (err) {
-        setEmployees(defaultEmployees);
-      }
-    } else {
-      setEmployees(defaultEmployees);
+      const sessionFiltered = sessionEmployees.filter(
+        (se) => !defaultEmployees.some((de) => de.id === se.id)
+      );
+      setEmployees([...defaultEmployees, ...sessionFiltered]);
+    } catch {
+      setEmployees([...defaultEmployees]);
     }
   }, []);
-
-  useEffect(() => {
-    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(employees));
-  }, [employees]);
 
   const filteredEmployees = employees.filter(
     (emp) =>
@@ -101,6 +159,13 @@ const AllEmployees = () => {
     });
   };
 
+  const isSaveDisabled = !(
+    newEmployee.name &&
+    newEmployee.email &&
+    newEmployee.role &&
+    newEmployee.joinDate &&
+    newEmployee.id
+  );
   const handleChange = (field: keyof Employee, value: string) => {
     if (field === "skills") {
       setNewEmployee((prev) => ({
@@ -114,21 +179,37 @@ const AllEmployees = () => {
 
   const handleAddEmployee = () => {
     if (
-      newEmployee.name &&
-      newEmployee.email &&
-      newEmployee.role &&
-      newEmployee.joinDate &&
-      newEmployee.id
+      !newEmployee.name ||
+      !newEmployee.email ||
+      !newEmployee.role ||
+      !newEmployee.joinDate ||
+      !newEmployee.id
     ) {
-      if (employees.some((e) => e.id === newEmployee.id)) {
-        alert("An employee with this ID already exists.");
-        return;
-      }
-      setEmployees((prev) => [...prev, newEmployee]);
-      handleCloseDialog();
-    } else {
       alert("⚠️ Please fill all required fields!");
+      return;
     }
+
+    const savedRaw = sessionStorage.getItem(SESSION_STORAGE_KEY);
+    const sessionEmployees: Employee[] = savedRaw ? JSON.parse(savedRaw) : [];
+
+    const alreadyExists = [...defaultEmployees, ...sessionEmployees].some(
+      (e) => e.id === newEmployee.id
+    );
+    if (alreadyExists) {
+      alert("An employee with this ID already exists.");
+      return;
+    }
+
+    const updatedSessionEmployees = [...sessionEmployees, newEmployee];
+
+    sessionStorage.setItem(
+      SESSION_STORAGE_KEY,
+      JSON.stringify(updatedSessionEmployees)
+    );
+
+    setEmployees([...defaultEmployees, ...updatedSessionEmployees]);
+
+    handleCloseDialog();
   };
 
   const columns: GridColDef<Employee>[] = [
@@ -150,7 +231,7 @@ const AllEmployees = () => {
                 margin: "5px",
                 backgroundColor: "black",
                 color: "white",
-                padding: "4px 8px",
+                padding: "6px 6px",
                 border: "none",
                 borderRadius: "6px",
               }}
@@ -178,7 +259,6 @@ const AllEmployees = () => {
 
   return (
     <Box>
-      {/* Header */}
       <DashboardHeader
         title={currentItem?.label || "All Employees"}
         icon={currentItem?.icon}
@@ -203,26 +283,28 @@ const AllEmployees = () => {
         }
       />
 
-      {/* Page Content */}
       {loading ? (
         <Typography>{Loading.LOADING}</Typography>
       ) : (
         <Box sx={{ height: cardView ? "auto" : 500, width: "100%" }}>
           {cardView ? (
-            <Grid container spacing={2} sx={{ mt: 2 }}>
+            <Grid container spacing={2}>
               {filteredEmployees.map((emp) => (
                 <Grid item xs={12} sm={6} md={4} lg={3} key={emp.id}>
                   <Box
                     sx={{
                       p: 2,
+                      m: 1,
                       border: "1px solid #ddd",
                       borderRadius: 2,
                       boxShadow: 1,
                       backgroundColor: "#fff",
-                      height: "100%",
-                      display: "flex",
-                      flexDirection: "column",
                       justifyContent: "space-between",
+                      height: "100%",
+                      maxWidth: "180px",
+                      maxHeight: "185px",
+                      wordWrap: "break-word",
+                      overflowWrap: "break-word",
                     }}
                   >
                     <Box>
@@ -282,16 +364,24 @@ const AllEmployees = () => {
                 pagination: { paginationModel: { pageSize: 5, page: 0 } },
               }}
               autoHeight
+              sx={{
+                "& .MuiDataGrid-columnHeaders": {
+                  color: "#906aff !important",
+                  fontSize: 17,
+                },
+                "& .MuiDataGrid-columnHeaderTitle": {
+                  fontWeight: 600,
+                },
+              }}
             />
           )}
         </Box>
       )}
 
-      {/* Add Employee Dialog */}
       <Dialog
         open={openDialog}
         onClose={handleCloseDialog}
-        maxWidth="sm"
+        maxWidth="md"
         fullWidth
       >
         <Box
@@ -299,68 +389,95 @@ const AllEmployees = () => {
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
-            p: 2,
+            padding: "22px",
           }}
         >
-          <DialogTitle sx={{ p: 0 }}>Add New Employee</DialogTitle>
+          <DialogTitle sx={{ p: 0, fontSize: "25px" }}>
+            Add New Employee
+          </DialogTitle>
           <Box sx={{ display: "flex", gap: 1 }}>
             <Button onClick={handleCloseDialog}>Cancel</Button>
             <Button
               variant="contained"
               color="primary"
               onClick={handleAddEmployee}
+              disabled={isSaveDisabled}
             >
               Add
             </Button>
           </Box>
         </Box>
 
-        <DialogContent
-          sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 1 }}
-        >
-          <TextField
-            label="Name"
-            value={newEmployee.name}
-            onChange={(e) => handleChange("name", e.target.value)}
-            fullWidth
-            required
-          />
-          <TextField
-            label="Email"
-            value={newEmployee.email}
-            onChange={(e) => handleChange("email", e.target.value)}
-            fullWidth
-            required
-          />
-          <TextField
-            label="Role"
-            value={newEmployee.role}
-            onChange={(e) => handleChange("role", e.target.value)}
-            fullWidth
-            required
-          />
-          <TextField
-            type="date"
-            label="Join Date"
-            InputLabelProps={{ shrink: true }}
-            value={newEmployee.joinDate}
-            onChange={(e) => handleChange("joinDate", e.target.value)}
-            fullWidth
-            required
-          />
-          <TextField
-            label="ID"
-            value={newEmployee.id}
-            onChange={(e) => handleChange("id", e.target.value)}
-            fullWidth
-            required
-          />
-          <TextField
-            label="Skills (comma separated)"
-            value={newEmployee.skills.join(", ")}
-            onChange={(e) => handleChange("skills", e.target.value)}
-            fullWidth
-          />
+        <DialogContent sx={{ mt: 0, pt: 0 }}>
+          <Grid container spacing={2} sx={{ pr: 1 }}>
+            <Grid item size={{ xs: 2, sm: 4, md: 4 }}>
+              <Typography sx={{ fontSize: "15px", mb: 0.5 }}>Name</Typography>
+              <TextField
+                placeholder="Enter name"
+                value={newEmployee.name}
+                onChange={(e) => handleChange("name", e.target.value)}
+                fullWidth
+                required
+              />
+            </Grid>
+
+            <Grid item size={{ xs: 2, sm: 4, md: 4 }}>
+              <Typography sx={{ fontSize: "15px", mb: 0.5 }}>Email</Typography>
+              <TextField
+                placeholder="Enter email"
+                value={newEmployee.email}
+                onChange={(e) => handleChange("email", e.target.value)}
+                fullWidth
+                required
+              />
+            </Grid>
+
+            <Grid item size={{ xs: 2, sm: 4, md: 4 }}>
+              <Typography sx={{ fontSize: "15px", mb: 0.5 }}>Role</Typography>
+              <TextField
+                placeholder="Enter role"
+                value={newEmployee.role}
+                onChange={(e) => handleChange("role", e.target.value)}
+                fullWidth
+                required
+              />
+            </Grid>
+
+            <Grid item size={{ xs: 2, sm: 4, md: 4 }}>
+              <Typography sx={{ fontSize: "15px", mb: 0.5 }}>
+                Join Date
+              </Typography>
+              <TextField
+                type="date"
+                value={newEmployee.joinDate}
+                onChange={(e) => handleChange("joinDate", e.target.value)}
+                fullWidth
+                InputLabelProps={{ shrink: true }}
+                required
+              />
+            </Grid>
+
+            <Grid item size={{ xs: 2, sm: 4, md: 4 }}>
+              <Typography sx={{ fontSize: "15px", mb: 0.5 }}>ID</Typography>
+              <TextField
+                placeholder="Enter ID"
+                value={newEmployee.id}
+                onChange={(e) => handleChange("id", e.target.value)}
+                fullWidth
+                required
+              />
+            </Grid>
+
+            <Grid item size={{ xs: 2, sm: 4, md: 4 }}>
+              <Typography sx={{ fontSize: "15px", mb: 0.5 }}>Skills</Typography>
+              <TextField
+                placeholder="Enter skills, comma separated"
+                value={newEmployee.skills.join(", ")}
+                onChange={(e) => handleChange("skills", e.target.value)}
+                fullWidth
+              />
+            </Grid>
+          </Grid>
         </DialogContent>
       </Dialog>
     </Box>
