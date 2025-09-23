@@ -5,6 +5,7 @@ import {
   Grid,
   TextField,
   MenuItem,
+  Select,
 } from "@mui/material";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -120,6 +121,11 @@ const AddProject = () => {
             value={project.projectName}
             onChange={(e) => handleChange("projectName", e.target.value)}
             fullWidth
+            sx={{
+              "& .MuiOutlinedInput-root": {
+                borderRadius: "20px",
+              },
+            }}
           />
         </Grid>
 
@@ -132,6 +138,11 @@ const AddProject = () => {
             value={project.projectOwner}
             onChange={(e) => handleChange("projectOwner", e.target.value)}
             fullWidth
+            sx={{
+              "& .MuiOutlinedInput-root": {
+                borderRadius: "20px",
+              },
+            }}
           />
         </Grid>
 
@@ -142,26 +153,38 @@ const AddProject = () => {
             value={project.jiraId}
             onChange={(e) => handleChange("jiraId", e.target.value)}
             fullWidth
+            sx={{
+              "& .MuiOutlinedInput-root": {
+                borderRadius: "20px",
+              },
+            }}
           />
         </Grid>
 
         {/* Row 2 */}
         <Grid item size={{ xs: 2, sm: 4, md: 4 }}>
           <Typography sx={{ fontSize: "15px", mb: 0.5 }}>Status</Typography>
-          <TextField
-            placeholder="Select Status"
-            select
+          <Select
             value={project.status}
             onChange={(e) => handleChange("status", e.target.value)}
             fullWidth
+            sx={{
+              "& .MuiOutlinedInput-root": {
+                borderRadius: "20px",
+              },
+              "& .MuiSelect-select": {
+                color: project.status ? "inherit" : "grey", // grey when placeholder
+              },
+            }}
+            displayEmpty
           >
-            <MenuItem value="">
+            <MenuItem value="" disabled>
               <em>Select Status</em>
             </MenuItem>
             <MenuItem value="Active">Active</MenuItem>
             <MenuItem value="InActive">Inactive</MenuItem>
             <MenuItem value="InProgress">In Progress</MenuItem>
-          </TextField>
+          </Select>
         </Grid>
 
         <Grid item size={{ xs: 2, sm: 4, md: 4 }}>
@@ -171,6 +194,11 @@ const AddProject = () => {
             value={project.startDate}
             onChange={(e) => handleChange("startDate", e.target.value)}
             fullWidth
+            sx={{
+              "& .MuiOutlinedInput-root": {
+                borderRadius: "20px",
+              },
+            }}
           />
         </Grid>
 
@@ -181,6 +209,11 @@ const AddProject = () => {
             value={project.endDate}
             onChange={(e) => handleChange("endDate", e.target.value)}
             fullWidth
+            sx={{
+              "& .MuiOutlinedInput-root": {
+                borderRadius: "20px",
+              },
+            }}
           />
         </Grid>
       </Grid>

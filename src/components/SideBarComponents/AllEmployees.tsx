@@ -474,6 +474,11 @@ const AllEmployees = () => {
                 onChange={(e) => handleChange("name", e.target.value)}
                 fullWidth
                 required
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    borderRadius: "20px",
+                  },
+                }}
               />
             </Grid>
 
@@ -485,6 +490,11 @@ const AllEmployees = () => {
                 onChange={(e) => handleChange("email", e.target.value)}
                 fullWidth
                 required
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    borderRadius: "20px",
+                  },
+                }}
               />
             </Grid>
 
@@ -496,6 +506,11 @@ const AllEmployees = () => {
                 onChange={(e) => handleChange("role", e.target.value)}
                 fullWidth
                 required
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    borderRadius: "20px",
+                  },
+                }}
               />
             </Grid>
 
@@ -510,6 +525,11 @@ const AllEmployees = () => {
                 fullWidth
                 InputLabelProps={{ shrink: true }}
                 required
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    borderRadius: "20px",
+                  },
+                }}
               />
             </Grid>
 
@@ -521,6 +541,11 @@ const AllEmployees = () => {
                 onChange={(e) => handleChange("id", e.target.value)}
                 fullWidth
                 required
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    borderRadius: "20px",
+                  },
+                }}
               />
             </Grid>
 
@@ -533,6 +558,11 @@ const AllEmployees = () => {
                 onChange={(e) => setSkillInput(e.target.value)}
                 onKeyDown={handleSkillKeyDown}
                 fullWidth
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    borderRadius: "20px",
+                  },
+                }}
               />
 
               <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, mt: 1 }}>
