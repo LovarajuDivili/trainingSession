@@ -1,9 +1,14 @@
 import { Box } from "@mui/material";
 import Header from "../components/Header";
 import SideBar from "../components/SideBar";
-import { Outlet } from "react-router-dom";
+import { Navigate, Outlet, useLocation } from "react-router-dom";
 
 const Admin = () => {
+  const location = useLocation();
+
+  if (location.pathname === "/admin") {
+    return <Navigate to="/admin/all-employees" replace />;
+  }
   return (
     <Box>
       {/* Header */}
@@ -12,7 +17,7 @@ const Admin = () => {
       </Box>
 
       {/* Sidebar + Content */}
-      <Box sx={{ display: "flex", mt: "50px" }}>
+      <Box sx={{ display: "flex", mt: "40px" }}>
         <SideBar />
         <Box sx={{ flexGrow: 1, ml: "240px", p: 3 }}>
           <Outlet />
