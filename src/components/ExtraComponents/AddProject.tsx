@@ -169,11 +169,12 @@ const AddProject = () => {
             onChange={(e) => handleChange("status", e.target.value)}
             fullWidth
             sx={{
+              borderRadius: "20px",
               "& .MuiOutlinedInput-root": {
                 borderRadius: "20px",
               },
               "& .MuiSelect-select": {
-                color: project.status ? "inherit" : "grey", // grey when placeholder
+                color: project.status ? "inherit" : "grey",
               },
             }}
             displayEmpty
