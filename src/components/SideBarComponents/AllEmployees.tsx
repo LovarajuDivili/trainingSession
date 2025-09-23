@@ -9,6 +9,7 @@ import {
   TextField,
   IconButton,
   Grid,
+  Chip,
 } from "@mui/material";
 import {
   DataGrid,
@@ -125,6 +126,27 @@ const AllEmployees = () => {
     id: "",
     skills: [],
   });
+  const [skillInput, setSkillInput] = useState("");
+
+  const handleSkillKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter" && skillInput.trim() !== "") {
+      e.preventDefault();
+      if (!newEmployee.skills.includes(skillInput.trim())) {
+        setNewEmployee((prev) => ({
+          ...prev,
+          skills: [...prev.skills, skillInput.trim()],
+        }));
+      }
+      setSkillInput(""); // clear input
+    }
+  };
+
+  const handleDeleteSkill = (skillToDelete: string) => {
+    setNewEmployee((prev) => ({
+      ...prev,
+      skills: prev.skills.filter((skill) => skill !== skillToDelete),
+    }));
+  };
 
   useEffect(() => {
     try {
@@ -164,7 +186,8 @@ const AllEmployees = () => {
     newEmployee.email &&
     newEmployee.role &&
     newEmployee.joinDate &&
-    newEmployee.id
+    newEmployee.id &&
+    newEmployee.skills.length > 0
   );
   const handleChange = (field: keyof Employee, value: string) => {
     if (field === "skills") {
@@ -229,7 +252,7 @@ const AllEmployees = () => {
               key={index}
               style={{
                 margin: "5px",
-                backgroundColor: "black",
+                backgroundColor: "#906aff",
                 color: "white",
                 padding: "6px 6px",
                 border: "none",
@@ -308,9 +331,22 @@ const AllEmployees = () => {
                     }}
                   >
                     <Box>
-                      <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                        {emp.name}
-                      </Typography>
+                      <Box
+                        display="flex"
+                        justifyContent="space-between"
+                        alignItems="center"
+                      >
+                        <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                          {emp.name}
+                        </Typography>
+
+                        <Typography
+                          variant="h6"
+                          sx={{ fontWeight: 600, color: "gray" }}
+                        >
+                          {emp.name.charAt(0)}
+                        </Typography>
+                      </Box>
                       <Typography variant="body2" sx={{ mt: 1 }}>
                         <strong>Email:</strong> {emp.email}
                       </Typography>
@@ -339,7 +375,7 @@ const AllEmployees = () => {
                                 fontSize: 12,
                                 px: 1,
                                 py: "2px",
-                                bgcolor: "#000",
+                                bgcolor: "#906aff",
                                 color: "#fff",
                                 borderRadius: "6px",
                               }}
@@ -355,25 +391,26 @@ const AllEmployees = () => {
               ))}
             </Grid>
           ) : (
-            <DataGrid
-              rows={filteredEmployees}
-              columns={columns}
-              getRowId={(row) => row.id}
-              pageSizeOptions={[5, 10, 20]}
-              initialState={{
-                pagination: { paginationModel: { pageSize: 5, page: 0 } },
-              }}
-              autoHeight
-              sx={{
-                "& .MuiDataGrid-columnHeaders": {
-                  color: "#906aff !important",
-                  fontSize: 17,
-                },
-                "& .MuiDataGrid-columnHeaderTitle": {
-                  fontWeight: 600,
-                },
-              }}
-            />
+            <Box sx={{ height: "calc(100vh - 150px)", width: "100%" }}>
+              <DataGrid
+                rows={filteredEmployees}
+                columns={columns}
+                getRowId={(row) => row.id}
+                pageSizeOptions={[5, 10, 20]}
+                initialState={{
+                  pagination: { paginationModel: { pageSize: 5, page: 0 } },
+                }}
+                sx={{
+                  "& .MuiDataGrid-columnHeaders": {
+                    color: "#906aff !important",
+                    fontSize: 17,
+                  },
+                  "& .MuiDataGrid-columnHeaderTitle": {
+                    fontWeight: 600,
+                  },
+                }}
+              />
+            </Box>
           )}
         </Box>
       )}
@@ -395,13 +432,32 @@ const AllEmployees = () => {
           <DialogTitle sx={{ p: 0, fontSize: "25px" }}>
             Add New Employee
           </DialogTitle>
-          <Box sx={{ display: "flex", gap: 1 }}>
-            <Button onClick={handleCloseDialog}>Cancel</Button>
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "flex-end",
+              gap: 2,
+              mt: 0,
+              mb: 1,
+            }}
+          >
+            <Button
+              variant="outlined"
+              sx={{
+                color: "#d81b60",
+                borderColor: "#d81b60",
+                textTransform: "uppercase",
+              }}
+              onClick={handleCloseDialog}
+            >
+              Cancel
+            </Button>
             <Button
               variant="contained"
               color="primary"
               onClick={handleAddEmployee}
               disabled={isSaveDisabled}
+              sx={{ backgroundColor: "#906aff", textTransform: "uppercase" }}
             >
               Add
             </Button>
@@ -470,12 +526,26 @@ const AllEmployees = () => {
 
             <Grid item size={{ xs: 2, sm: 4, md: 4 }}>
               <Typography sx={{ fontSize: "15px", mb: 0.5 }}>Skills</Typography>
+
               <TextField
-                placeholder="Enter skills, comma separated"
-                value={newEmployee.skills.join(", ")}
-                onChange={(e) => handleChange("skills", e.target.value)}
+                placeholder="Type a skill and press Enter"
+                value={skillInput}
+                onChange={(e) => setSkillInput(e.target.value)}
+                onKeyDown={handleSkillKeyDown}
                 fullWidth
               />
+
+              <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, mt: 1 }}>
+                {newEmployee.skills.map((skill, index) => (
+                  <Chip
+                    key={index}
+                    label={skill}
+                    onDelete={() => handleDeleteSkill(skill)}
+                    color="primary"
+                    variant="outlined"
+                  />
+                ))}
+              </Box>
             </Grid>
           </Grid>
         </DialogContent>

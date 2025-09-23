@@ -58,6 +58,7 @@ const Header = ({ role: propRole }: { role?: string }) => {
   };
 
   const handleSwap = () => {
+    sessionStorage.clear();
     navigate("/");
   };
 
