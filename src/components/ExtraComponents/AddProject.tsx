@@ -28,13 +28,13 @@ const AddProject = () => {
   };
 
   const isSaveDisabled = !(
-  project.projectName &&
-  project.projectOwner &&
-  project.jiraId &&
-  project.status &&
-  project.startDate &&
-  project.endDate
-);
+    project.projectName &&
+    project.projectOwner &&
+    project.jiraId &&
+    project.status &&
+    project.startDate &&
+    project.endDate
+  );
 
   const handleSave = () => {
     const savedData = sessionStorage.getItem(SESSION_STORAGE_KEY);
@@ -85,14 +85,6 @@ const AddProject = () => {
           }}
         >
           <Button
-            variant="contained"
-            sx={{ backgroundColor: "#1976d2", textTransform: "uppercase" }}
-            onClick={handleSave}
-            disabled={isSaveDisabled}
-          >
-            Add
-          </Button>
-          <Button
             variant="outlined"
             sx={{
               color: "#d81b60",
@@ -102,6 +94,14 @@ const AddProject = () => {
             onClick={handleCancel}
           >
             Cancel
+          </Button>
+          <Button
+            variant="contained"
+            sx={{ backgroundColor: "#906aff", textTransform: "uppercase" }}
+            onClick={handleSave}
+            disabled={isSaveDisabled}
+          >
+            Add
           </Button>
         </Box>
       </Box>
@@ -149,6 +149,7 @@ const AddProject = () => {
         <Grid item size={{ xs: 2, sm: 4, md: 4 }}>
           <Typography sx={{ fontSize: "15px", mb: 0.5 }}>Status</Typography>
           <TextField
+            placeholder="Select Status"
             select
             value={project.status}
             onChange={(e) => handleChange("status", e.target.value)}
@@ -157,10 +158,9 @@ const AddProject = () => {
             <MenuItem value="">
               <em>Select Status</em>
             </MenuItem>
-            <MenuItem value="Not Started">Not Started</MenuItem>
-            <MenuItem value="In Progress">In Progress</MenuItem>
-            <MenuItem value="Completed">Completed</MenuItem>
-            <MenuItem value="On Hold">On Hold</MenuItem>
+            <MenuItem value="Active">Active</MenuItem>
+            <MenuItem value="InActive">Inactive</MenuItem>
+            <MenuItem value="InProgress">In Progress</MenuItem>
           </TextField>
         </Grid>
 

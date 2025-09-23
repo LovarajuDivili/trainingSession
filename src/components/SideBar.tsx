@@ -27,7 +27,7 @@ const SideBar = () => {
     >
       <List>
         {sidebarItems.map((item) => {
-          const isSelected = location.pathname === item.route;
+          const isSelected = location.pathname.startsWith(item.route);
 
           return (
             <ListItem key={item.label} disablePadding>

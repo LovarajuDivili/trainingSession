@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Box, Typography } from "@mui/material";
+import { Box, Button, Typography } from "@mui/material";
 import { DataGrid, type GridColDef } from "@mui/x-data-grid";
 import { useNavigate } from "react-router-dom";
 import { Loading } from "../../common/labelConstants";
@@ -26,7 +26,7 @@ const fetchProjects = (): Promise<Project[]> => {
           projectName: "Website Redesign",
           projectOwner: "Alice Johnson",
           jiraId: "JIRA-101",
-          status: "In Progress",
+          status: "Inactive",
           startDate: "2023-05-01",
           endDate: "2023-12-31",
           id: "PROJ001",
@@ -35,7 +35,7 @@ const fetchProjects = (): Promise<Project[]> => {
           projectName: "Mobile App",
           projectOwner: "Bob Williams",
           jiraId: "JIRA-202",
-          status: "Completed",
+          status: "Active",
           startDate: "2022-01-15",
           endDate: "2022-10-30",
           id: "PROJ002",
@@ -44,7 +44,7 @@ const fetchProjects = (): Promise<Project[]> => {
           projectName: "Database Migration",
           projectOwner: "Charlie Brown",
           jiraId: "JIRA-303",
-          status: "Completed",
+          status: "Active",
           startDate: "2023-01-10",
           endDate: "2023-04-15",
           id: "PROJ003",
@@ -53,7 +53,7 @@ const fetchProjects = (): Promise<Project[]> => {
           projectName: "Marketing Campaign Launch",
           projectOwner: "Diana Prince",
           jiraId: "JIRA-404",
-          status: "In Progress",
+          status: "Inactive",
           startDate: "2023-09-15",
           endDate: "2024-03-30",
           id: "PROJ004",
@@ -62,7 +62,7 @@ const fetchProjects = (): Promise<Project[]> => {
           projectName: "Cloud Infrastructure Setup",
           projectOwner: "Ethan Hunt",
           jiraId: "JIRA-505",
-          status: "On Hold",
+          status: "Inactive",
           startDate: "2024-01-20",
           endDate: "2024-06-30",
           id: "PROJ005",
@@ -71,46 +71,10 @@ const fetchProjects = (): Promise<Project[]> => {
           projectName: "Security Audit",
           projectOwner: "Fiona Glenanne",
           jiraId: "JIRA-606",
-          status: "Completed",
+          status: "Active",
           startDate: "2022-08-01",
           endDate: "2022-11-15",
           id: "PROJ006",
-        },
-        {
-          projectName: "New Feature Development (Login)",
-          projectOwner: "George Costanza",
-          jiraId: "JIRA-707",
-          status: "In Progress",
-          startDate: "2024-02-01",
-          endDate: "2024-08-31",
-          id: "PROJ007",
-        },
-        {
-          projectName: "Customer Feedback System",
-          projectOwner: "Heidi Klum",
-          jiraId: "JIRA-808",
-          status: "To Do",
-          startDate: "2024-10-01",
-          endDate: "2025-02-28",
-          id: "PROJ008",
-        },
-        {
-          projectName: "Internal Tool Integration",
-          projectOwner: "Ian Malcolm",
-          jiraId: "JIRA-909",
-          status: "In Progress",
-          startDate: "2023-11-01",
-          endDate: "2024-05-31",
-          id: "PROJ009",
-        },
-        {
-          projectName: "Bug Triage and Fixes",
-          projectOwner: "Jessica Jones",
-          jiraId: "JIRA-1010",
-          status: "In Progress",
-          startDate: "2024-01-01",
-          endDate: "2024-05-31",
-          id: "PROJ010",
         },
       ]);
     }, 1000);
@@ -121,7 +85,7 @@ const Projects = () => {
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(false);
   const [searchText, setSearchText] = useState("");
-  const navigate = useNavigate(); 
+  const navigate = useNavigate();
 
   useEffect(() => {
     const savedData = sessionStorage.getItem(SESSION_STORAGE_KEY);
@@ -154,7 +118,32 @@ const Projects = () => {
     { field: "projectName", headerName: "Project Name", flex: 1.5 },
     { field: "projectOwner", headerName: "Project Owner", flex: 1.2 },
     { field: "jiraId", headerName: "Jira ID", flex: 1 },
-    { field: "status", headerName: "Status", flex: 1 },
+    {
+      field: "status",
+      headerName: "Status",
+      flex: 1,
+      renderCell: (params) => (
+        <Button
+          variant="contained"
+          size="small"
+          sx={{
+            backgroundColor:
+              params.value === "Active"
+                ? "#47be4bff"
+                : params.value === "In Progress"
+                ? "orange"
+                : "#e12a2aff",
+            color: "white",
+            textTransform: "none",
+            fontWeight: 600,
+            borderRadius: "20px",
+            maxWidth: "20px",
+          }}
+        >
+          {params.value}
+        </Button>
+      ),
+    },
     { field: "startDate", headerName: "Start Date", flex: 1 },
     { field: "endDate", headerName: "End Date", flex: 1 },
   ];
@@ -174,13 +163,13 @@ const Projects = () => {
         onSearchChange={setSearchText}
         showAddButton
         addButtonLabel="Add New"
-        onAddClick={() => navigate("/admin/projects/add")} // ✅ navigate
+        onAddClick={() => navigate("/admin/projects/add")}
       />
 
       {loading ? (
         <Typography>{Loading.LOADING}</Typography>
       ) : (
-        <Box sx={{ height: 500, width: "100%" }}>
+        <Box sx={{ height: "calc(100vh - 150px)", width: "100%" }}>
           <DataGrid
             rows={filteredProjects}
             columns={columns}
@@ -189,7 +178,6 @@ const Projects = () => {
             initialState={{
               pagination: { paginationModel: { pageSize: 5, page: 0 } },
             }}
-            autoHeight
             sx={{
               "& .MuiDataGrid-columnHeaders": {
                 color: "#906aff !important",
