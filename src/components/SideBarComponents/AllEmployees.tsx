@@ -21,6 +21,8 @@ import { Loading } from "../../common/labelConstants";
 import type { Employee } from "../../common/types";
 import DashboardHeader from "../DashboardHeader";
 import { sidebarItems } from "../../common/sidebarItems";
+import { useAppDispatch, useAppSelector } from "../../hooks/reduxHooks";
+import { setEmployees, addEmployee } from "../../store/EmployeesSlice";
 
 const SESSION_STORAGE_KEY = "employee_data";
 
@@ -113,7 +115,6 @@ const defaultEmployees: Employee[] = [
 ];
 
 const AllEmployees = () => {
-  const [employees, setEmployees] = useState<Employee[]>([]);
   const [loading] = useState(false);
   const [searchText, setSearchText] = useState("");
   const [cardView, setCardView] = useState(false);
@@ -127,6 +128,8 @@ const AllEmployees = () => {
     skills: [],
   });
   const [skillInput, setSkillInput] = useState("");
+  const dispatch = useAppDispatch();
+  const employees = useAppSelector((state) => state.employees.employees);
 
   const handleSkillKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && skillInput.trim() !== "") {
@@ -150,17 +153,18 @@ const AllEmployees = () => {
 
   useEffect(() => {
     try {
-      const savedRaw = sessionStorage.getItem(SESSION_STORAGE_KEY);
+      const savedRaw = sessionStorage.getItem("employee_data");
       const sessionEmployees: Employee[] = savedRaw ? JSON.parse(savedRaw) : [];
 
       const sessionFiltered = sessionEmployees.filter(
         (se) => !defaultEmployees.some((de) => de.id === se.id)
       );
-      setEmployees([...defaultEmployees, ...sessionFiltered]);
+
+      dispatch(setEmployees([...defaultEmployees, ...sessionFiltered]));
     } catch {
-      setEmployees([...defaultEmployees]);
+      dispatch(setEmployees([...defaultEmployees]));
     }
-  }, []);
+  }, [dispatch]);
 
   const filteredEmployees = employees.filter(
     (emp) =>
@@ -223,14 +227,7 @@ const AllEmployees = () => {
       return;
     }
 
-    const updatedSessionEmployees = [...sessionEmployees, newEmployee];
-
-    sessionStorage.setItem(
-      SESSION_STORAGE_KEY,
-      JSON.stringify(updatedSessionEmployees)
-    );
-
-    setEmployees([...defaultEmployees, ...updatedSessionEmployees]);
+    dispatch(addEmployee(newEmployee));
 
     handleCloseDialog();
   };
