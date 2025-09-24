@@ -8,18 +8,28 @@ import {
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import AddSharpIcon from "@mui/icons-material/AddSharp";
-import LibraryBooksIcon from "@mui/icons-material/LibraryBooks";
+import ViewComfyIcon from "@mui/icons-material/ViewComfy";
 
 interface DashboardHeaderProps {
   activeSection: string;
   searchQuery: string;
   setSearchQuery: (val: string) => void;
+  onAddClick: () => void;
+  viewMode: boolean;
+  setViewMode: React.Dispatch<React.SetStateAction<boolean>>;
+  filteredCount: number;
+  isgrid: boolean;
 }
 
-const DashboardHeader: React.FC<DashboardHeaderProps> = ({
+const AdminHeader: React.FC<DashboardHeaderProps> = ({
   activeSection,
   searchQuery,
   setSearchQuery,
+  onAddClick,
+  filteredCount,
+  setViewMode,
+  viewMode,
+  isgrid,
 }) => {
   return (
     <Box
@@ -29,31 +39,48 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
         justifyContent: "space-between",
         px: 3,
         py: 2,
-        background: "white",
         borderBottom: "1px solid #eee",
       }}
     >
-      <Typography
-        variant="h6"
-        sx={{ display: "flex", alignItems: "center", gap: 1, fontWeight: 600 }}
+      <Box
+        sx={{
+          display: "flex",
+          gap: "10px",
+        }}
       >
         <Box
-          component="span"
           sx={{
-            px: 2,
-            py: 0.6,
-            borderRadius: "50px",
-            background: "#8e6bf9ff",
-            color: "white",
             display: "flex",
+            gap: 2,
+            justifyItems: "center",
             alignItems: "center",
-            gap: 0.5,
           }}
         >
-          <LibraryBooksIcon fontSize="small" /> LLM Garden
+          <Typography
+            variant="h6"
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              gap: 1,
+              fontWeight: 600,
+            }}
+          >
+            {activeSection} ({filteredCount})
+          </Typography>
+          {isgrid === true ? (
+            <Typography
+              sx={{ cursor: "pointer" }}
+              onClick={() => {
+                setViewMode(!viewMode);
+              }}
+            >
+              <ViewComfyIcon sx={{ mt: 1.2 }} />
+            </Typography>
+          ) : (
+            <></>
+          )}
         </Box>
-        - {activeSection}
-      </Typography>
+      </Box>
 
       <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
         <TextField
@@ -76,6 +103,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
             ),
           }}
         />
+
         <Button
           variant="contained"
           sx={{
@@ -86,6 +114,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
             px: 3,
             py: 1,
           }}
+          onClick={onAddClick}
         >
           Add New <AddSharpIcon sx={{ ml: 0.5 }} />
         </Button>
@@ -94,4 +123,4 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
   );
 };
 
-export default DashboardHeader;
+export default AdminHeader;

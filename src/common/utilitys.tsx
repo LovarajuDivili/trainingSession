@@ -88,22 +88,23 @@ export const columns: GridColDef[] = [
   { field: "skills", headerName: "Skills", flex: 1 },
 ];
 
-import GroupIcon from "@mui/icons-material/Group";
+import GroupsIcon from "@mui/icons-material/Groups";
 import CodeIcon from "@mui/icons-material/Code";
 import BugReportIcon from "@mui/icons-material/BugReport";
-import CloudIcon from "@mui/icons-material/Cloud";
-import FolderIcon from "@mui/icons-material/Folder";
-import BarChartIcon from "@mui/icons-material/BarChart";
-import ListAltIcon from "@mui/icons-material/ListAlt";
+import CloudQueueIcon from "@mui/icons-material/CloudQueue";
+import BusinessCenterIcon from "@mui/icons-material/BusinessCenter";
+import StackedLineChartIcon from "@mui/icons-material/StackedLineChart";
+import ViewInArIcon from "@mui/icons-material/ViewInAr";
+
 
 export const sidebarSections = [
-  { label: "All Employees", path: "allemployees", icon: <GroupIcon /> },
+  { label: "All Employees", path: "", icon: <GroupsIcon /> },
+  { label: "Projects", path: "projects", icon: <BusinessCenterIcon /> },
   { label: "Developers", path: "developers", icon: <CodeIcon /> },
   { label: "Testers", path: "testers", icon: <BugReportIcon /> },
-  { label: "AWS Team", path: "awsteam", icon: <CloudIcon /> },
-  { label: "Projects", path: "projects", icon: <FolderIcon /> },
-  { label: "Statistics", path: "statistics", icon: <BarChartIcon /> },
-  { label: "Logs", path: "logs", icon: <ListAltIcon /> },
+  { label: "AWS Team", path: "awsteam", icon: <CloudQueueIcon /> },
+  { label: "Statistics", path: "statistics", icon: <StackedLineChartIcon /> },
+  { label: "Logs", path: "logs", icon: <ViewInArIcon /> },
 ];
 
 export interface Employee {
@@ -111,8 +112,8 @@ export interface Employee {
   name: string;
   email: string;
   role: string;
-  joinDate?: string;
-  skills?: string;
+  joinDate: string;
+  skills: string[];
 }
 
 export const allEmployees: Employee[] = [
@@ -122,7 +123,7 @@ export const allEmployees: Employee[] = [
     email: "alice@example.com",
     role: "Developer",
     joinDate: "2023-01-12",
-    skills: "React, Node.js",
+    skills: ["React, Node.js"],
   },
   {
     id: 2,
@@ -130,7 +131,7 @@ export const allEmployees: Employee[] = [
     email: "bob@example.com",
     role: "Tester",
     joinDate: "2022-11-05",
-    skills: "Selenium, Cypress",
+    skills: ["Selenium, Cypress"],
   },
   {
     id: 3,
@@ -138,7 +139,7 @@ export const allEmployees: Employee[] = [
     email: "charlie@example.com",
     role: "AWS Engineer",
     joinDate: "2023-03-20",
-    skills: "EC2, S3, Lambda",
+    skills: ["EC2, S3, Lambda"],
   },
 ];
 
@@ -149,4 +150,30 @@ export const employeeColumns1: GridColDef[] = [
   { field: "role", headerName: "Role", flex: 1, minWidth: 120 },
   { field: "joinDate", headerName: "Join Date", flex: 1, minWidth: 100 },
   { field: "skills", headerName: "Skills", flex: 1, minWidth: 150 },
+];
+
+// export interface Project {
+//   id: number;
+//   projectName: string;
+//   description: string;
+// }
+
+export interface Project {
+  id: number;
+  projectName: string;
+  projectOwner: string;
+  jiraId: string;
+  startDate: string;
+  endDate: string;
+  status: string; // Active | Inactive | Not Started | In Progress
+}
+
+export const projectColumns: GridColDef[] = [
+  { field: "id", headerName: "ID", width: 70 },
+  { field: "projectName", headerName: "Project Name", flex: 1 },
+  { field: "projectOwner", headerName: "Project Owner", flex: 1 },
+  { field: "jiraId", headerName: "Jira ID", flex: 1 },
+  { field: "startDate", headerName: "Start Date", flex: 1 },
+  { field: "endDate", headerName: "End Date", flex: 1 },
+  { field: "status", headerName: "Status", flex: 1 },
 ];

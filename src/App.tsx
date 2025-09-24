@@ -1,17 +1,19 @@
 import React, { useState } from "react";
 import { ThemeProvider, CssBaseline, Box } from "@mui/material";
-import {
-  BrowserRouter,
-  Routes,
-  Route,
-  Navigate,
-  useLocation,
-} from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import theme from "./theme/theme";
-import Navbar from "./components/Navbar";
-import AccountSelection from "./components/AccountSelection";
-import Dashboard from "./pages/Dashboard";
+import Navbar from "./pages/Navbar";
+import AccountSelection from "./pages/AccountSelection";
 import LogoutSuccess from "./pages/LogoutSuccess";
+import AddProject from "./components/adminDashboard/projects/AddProject";
+import AllEmployees from "./components/adminDashboard/employees/AllEmployees";
+import Developers from "./components/adminDashboard/developers/Developers";
+import Testers from "./components/adminDashboard/testers/Testers";
+import AWSTeam from "./components/adminDashboard/awsteam/AWSTeam";
+import Logs from "./components/adminDashboard/logs/Logs";
+import Statistics from "./components/adminDashboard/statistics/Statistics";
+import AdminDasboard from "./components/adminDashboard/AdminDasboard";
+import Projects from "./components/adminDashboard/projects/Projects";
 
 const AppContent: React.FC = () => {
   const [accountType, setAccountType] = useState<string>("");
@@ -34,9 +36,18 @@ const AppContent: React.FC = () => {
               />
             }
           />
-          <Route path="/dashboard/*" element={<Dashboard />} />
+
+          <Route path="/dashboard" element={<AdminDasboard />}>
+            <Route index element={<AllEmployees />} />
+            <Route path="/dashboard/projects" element={<Projects />} />
+            <Route path="/dashboard/developers" element={<Developers />} />
+            <Route path="/dashboard/testers" element={<Testers />} />
+            <Route path="/dashboard/awsteam" element={<AWSTeam />} />
+            <Route path="/dashboard/logs" element={<Logs />} />
+            <Route path="/dashboard/statistics" element={<Statistics />} />
+            <Route path="/dashboard/projects/addnew" element={<AddProject />} />
+          </Route>
           <Route path="/logout-success" element={<LogoutSuccess />} />
-          <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </Box>
     </>

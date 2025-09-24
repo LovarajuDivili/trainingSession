@@ -22,7 +22,7 @@ import { useNavigate } from "react-router-dom";
 const AccountSelection: React.FC<AccountSelectionProps> = ({
   setAccountType,
 }) => {
-  const [selectedAccount, setSelectedAccount] = useState<string>("Admin"); // initial Admin
+  const [selectedAccount, setSelectedAccount] = useState<string>("Admin");
   const navigate = useNavigate();
 
   const handleChange = (event: SelectChangeEvent) => {
