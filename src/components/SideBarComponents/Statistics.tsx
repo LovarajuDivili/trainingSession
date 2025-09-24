@@ -12,6 +12,7 @@ const Statistics = () => {
       <DashboardHeader
         title={currentItem?.label || "Statistics"}
         icon={currentItem?.icon}
+        
       />
       <Typography sx={{ p: 2 }}>
         No data available for Statistics yet.

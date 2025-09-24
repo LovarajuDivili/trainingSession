@@ -9,11 +9,16 @@ import {
 } from "@mui/material";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAppDispatch } from "../../hooks/reduxHooks";
+import { addProject } from "../../store/ProjectsSlice";
+import type { Project } from "../../store/ProjectsSlice";
 
-const SESSION_STORAGE_KEY = "project_data";
+//const SESSION_STORAGE_KEY = "project_data";
 
 const AddProject = () => {
   const navigate = useNavigate();
+  const dispatch = useAppDispatch();
+  //const projects = useAppSelector((state) => state.projects.projects);
 
   const [project, setProject] = useState({
     projectName: "",
@@ -38,20 +43,17 @@ const AddProject = () => {
   );
 
   const handleSave = () => {
-    const savedData = sessionStorage.getItem(SESSION_STORAGE_KEY);
-    const projects = savedData ? JSON.parse(savedData) : [];
-
-    const newProject = {
+    const newProject: Project = {
       ...project,
       id: "PROJ" + Date.now(),
     };
 
-    const updatedProjects = [...projects, newProject];
+    dispatch(addProject(newProject));
 
-    sessionStorage.setItem(
-      SESSION_STORAGE_KEY,
-      JSON.stringify(updatedProjects)
-    );
+    /*sessionStorage.setItem(
+    SESSION_STORAGE_KEY,
+    JSON.stringify([...projects, newProject])
+  );*/
 
     alert("Project added successfully!");
     navigate("/admin/projects");
