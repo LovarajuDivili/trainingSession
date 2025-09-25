@@ -10,6 +10,7 @@ import {
   IconButton,
   Grid,
   Chip,
+  Divider,
 } from "@mui/material";
 import {
   DataGrid,
@@ -423,7 +424,7 @@ const AllEmployees = () => {
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
-            padding: "22px",
+            padding: "20px",
           }}
         >
           <DialogTitle sx={{ p: 0, fontSize: "25px" }}>
@@ -461,7 +462,9 @@ const AllEmployees = () => {
           </Box>
         </Box>
 
-        <DialogContent sx={{ mt: 0, pt: 0 }}>
+        <Divider />
+
+        <DialogContent sx={{ mt: 2, pt: 0 }}>
           <Grid container spacing={2} sx={{ pr: 1 }}>
             <Grid item size={{ xs: 2, sm: 4, md: 4 }}>
               <Typography sx={{ fontSize: "15px", mb: 0.5 }}>Name</Typography>
@@ -548,7 +551,6 @@ const AllEmployees = () => {
 
             <Grid item size={{ xs: 2, sm: 4, md: 4 }}>
               <Typography sx={{ fontSize: "15px", mb: 0.5 }}>Skills</Typography>
-
               <TextField
                 placeholder="Type a skill and press Enter"
                 value={skillInput}
@@ -561,8 +563,10 @@ const AllEmployees = () => {
                   },
                 }}
               />
+            </Grid>
 
-              <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, mt: 1 }}>
+            <Grid item xs={12}>
+              <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
                 {newEmployee.skills.map((skill, index) => (
                   <Chip
                     key={index}
