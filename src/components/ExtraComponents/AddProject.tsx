@@ -6,6 +6,7 @@ import {
   TextField,
   MenuItem,
   Select,
+  Divider,
 } from "@mui/material";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -13,12 +14,9 @@ import { useAppDispatch } from "../../hooks/reduxHooks";
 import { addProject } from "../../store/ProjectsSlice";
 import type { Project } from "../../store/ProjectsSlice";
 
-//const SESSION_STORAGE_KEY = "project_data";
-
 const AddProject = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
-  //const projects = useAppSelector((state) => state.projects.projects);
 
   const [project, setProject] = useState({
     projectName: "",
@@ -50,11 +48,6 @@ const AddProject = () => {
 
     dispatch(addProject(newProject));
 
-    /*sessionStorage.setItem(
-    SESSION_STORAGE_KEY,
-    JSON.stringify([...projects, newProject])
-  );*/
-
     alert("Project added successfully!");
     navigate("/admin/projects");
   };
@@ -64,29 +57,21 @@ const AddProject = () => {
   };
 
   return (
-    <Box sx={{ maxWidth: 1000, mx: "auto", mt: 4, p: 2 }}>
+    <Box sx={{ maxWidth: 1000, mx: "auto", ml: 0 }}>
       <Box
         sx={{
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
-          mb: "20px",
-          mt: "20px",
+          mb: 2,
+          mt: 2,
         }}
       >
-        <Typography variant="h5" sx={{ mb: 3, fontWeight: 600 }}>
+        <Typography variant="h5" sx={{ fontWeight: 600 }}>
           Add New Project
         </Typography>
-        {/* Buttons */}
-        <Box
-          sx={{
-            display: "flex",
-            justifyContent: "flex-end",
-            gap: 2,
-            mt: 0,
-            mb: 1,
-          }}
-        >
+
+        <Box sx={{ display: "flex", gap: 2 }}>
           <Button
             variant="outlined"
             sx={{
@@ -108,6 +93,7 @@ const AddProject = () => {
           </Button>
         </Box>
       </Box>
+      <Divider sx={{ mb: 3 }} />
       <Grid
         container
         spacing={{ xs: 2, md: 3 }}

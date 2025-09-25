@@ -172,7 +172,7 @@ const Projects = () => {
       {loading ? (
         <Typography>{Loading.LOADING}</Typography>
       ) : (
-        <Box sx={{ height: "calc(100vh - 150px)", width: "100%" }}>
+        <Box sx={{ height: "calc(97vh - 150px)", width: "100%" }}>
           <DataGrid
             rows={filteredProjects}
             columns={columns}
