@@ -1,7 +1,7 @@
 import React from "react";
 import { Box, Typography } from "@mui/material";
 
-const AWSTeam: React.FC = () => {
+const Projects: React.FC = () => {
   return (
     <Box
       sx={{
@@ -18,3 +18,5 @@ const AWSTeam: React.FC = () => {
     </Box>
   );
 };
+
+export default Projects;

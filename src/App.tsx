@@ -9,8 +9,6 @@ import ProjectsAddPage from "./pages/ProjectsAddPage";
 import DashboardLayout from "./pages/DashboardLayout";
 import Layout from "./components/Layout";
 import InProgress from "./pages/InProgress";
-
-// Correct imports from separated files
 import EmployeeProvider from "./context/EmployeeProvider";
 
 const App: React.FC = () => {

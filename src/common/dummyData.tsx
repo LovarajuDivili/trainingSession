@@ -80,6 +80,4 @@ export const employeeData: Employee[] = [
     role: "Mobile Developer",
     joinDate: "2022-11-01",
     skills: ["Swift", "Kotlin", "React Native"],
-  },
-];
 
