@@ -47,7 +47,7 @@ const defaultEmployees: Employee[] = [
   {
     name: "Peter Jones",
     email: "peter@example.com",
-    role: "Product Manager",
+    role: "Tester",
     joinDate: "2020-09-10",
     id: "EMP003",
     skills: ["Agile", "Scrum", "Roadmapping", "Market Research"],
@@ -55,7 +55,7 @@ const defaultEmployees: Employee[] = [
   {
     name: "Mary Lee",
     email: "mary@example.com",
-    role: "UX Designer",
+    role: "AWS Team",
     joinDate: "2022-01-20",
     id: "EMP004",
     skills: ["Figma", "User Research", "Prototyping", "Wireframing"],
@@ -63,7 +63,7 @@ const defaultEmployees: Employee[] = [
   {
     name: "David Chen",
     email: "david@example.com",
-    role: "DevOps Engineer",
+    role: "Developer",
     joinDate: "2021-11-05",
     id: "EMP005",
     skills: ["AWS", "Docker", "Kubernetes", "CI/CD"],
@@ -71,7 +71,7 @@ const defaultEmployees: Employee[] = [
   {
     name: "Sarah Davis",
     email: "sarah@example.com",
-    role: "Data Scientist",
+    role: "AWS Team",
     joinDate: "2023-05-12",
     id: "EMP006",
     skills: ["Python", "Machine Learning", "SQL", "Tableau"],
@@ -79,7 +79,7 @@ const defaultEmployees: Employee[] = [
   {
     name: "James Wilson",
     email: "james@example.com",
-    role: "Team Lead",
+    role: "Tester",
     joinDate: "2019-08-28",
     id: "EMP007",
     skills: [
@@ -92,7 +92,7 @@ const defaultEmployees: Employee[] = [
   {
     name: "Emily White",
     email: "emily@example.com",
-    role: "Technical Writer",
+    role: "Developer",
     joinDate: "2023-02-14",
     id: "EMP008",
     skills: ["Documentation", "Markdown", "API Documentation", "Confluence"],
@@ -100,7 +100,7 @@ const defaultEmployees: Employee[] = [
   {
     name: "Michael Brown",
     email: "michael@example.com",
-    role: "Support Engineer",
+    role: "AWS Team",
     joinDate: "2022-07-25",
     id: "EMP009",
     skills: ["Troubleshooting", "Customer Service", "Linux", "SQL"],
@@ -108,7 +108,7 @@ const defaultEmployees: Employee[] = [
   {
     name: "Laura Taylor",
     email: "laura@example.com",
-    role: "Marketing Specialist",
+    role: "Developer",
     joinDate: "2021-03-30",
     id: "EMP010",
     skills: ["SEO", "Content Creation", "Social Media", "Email Marketing"],
@@ -572,8 +572,12 @@ const AllEmployees = () => {
                     key={index}
                     label={skill}
                     onDelete={() => handleDeleteSkill(skill)}
-                    color="primary"
                     variant="outlined"
+                    sx={{
+                      backgroundColor: "white",
+                      color: "#906aff",
+                      borderColor: "#906aff",
+                    }}
                   />
                 ))}
               </Box>
