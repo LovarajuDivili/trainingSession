@@ -12,6 +12,7 @@ def start_application():
         openapi_url="/openapi.json"  # OpenAPI schema
     )
     app.include_router(api_router, prefix="/v-1/application")
+
     return app
 
 app = start_application()
