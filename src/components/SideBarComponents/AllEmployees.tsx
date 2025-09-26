@@ -23,11 +23,12 @@ import type { Employee } from "../../common/types";
 import DashboardHeader from "../DashboardHeader";
 import { sidebarItems } from "../../common/sidebarItems";
 import { useAppDispatch, useAppSelector } from "../../hooks/reduxHooks";
-import { setEmployees, addEmployee } from "../../store/EmployeesSlice";
+//import { setEmployees, addEmployee } from "../../store/EmployeesSlice";
+import { fetchEmployees, addEmployeeAPI } from "../../store/EmployeesSlice";
 
-const SESSION_STORAGE_KEY = "employee_data";
+//const SESSION_STORAGE_KEY = "employee_data";
 
-const defaultEmployees: Employee[] = [
+/*const defaultEmployees: Employee[] = [
   {
     name: "John Doe",
     email: "john@example.com",
@@ -113,7 +114,7 @@ const defaultEmployees: Employee[] = [
     id: "EMP010",
     skills: ["SEO", "Content Creation", "Social Media", "Email Marketing"],
   },
-];
+];*/
 
 const AllEmployees = () => {
   const [loading] = useState(false);
@@ -153,18 +154,7 @@ const AllEmployees = () => {
   };
 
   useEffect(() => {
-    try {
-      const savedRaw = sessionStorage.getItem("employee_data");
-      const sessionEmployees: Employee[] = savedRaw ? JSON.parse(savedRaw) : [];
-
-      const sessionFiltered = sessionEmployees.filter(
-        (se) => !defaultEmployees.some((de) => de.id === se.id)
-      );
-
-      dispatch(setEmployees([...defaultEmployees, ...sessionFiltered]));
-    } catch {
-      dispatch(setEmployees([...defaultEmployees]));
-    }
+    dispatch(fetchEmployees());
   }, [dispatch]);
 
   const filteredEmployees = employees.filter(
@@ -205,7 +195,7 @@ const AllEmployees = () => {
     }
   };
 
-  const handleAddEmployee = () => {
+  const handleAddEmployee = async () => {
     if (
       !newEmployee.name ||
       !newEmployee.email ||
@@ -217,18 +207,12 @@ const AllEmployees = () => {
       return;
     }
 
-    const savedRaw = sessionStorage.getItem(SESSION_STORAGE_KEY);
-    const sessionEmployees: Employee[] = savedRaw ? JSON.parse(savedRaw) : [];
-
-    const alreadyExists = [...defaultEmployees, ...sessionEmployees].some(
-      (e) => e.id === newEmployee.id
-    );
-    if (alreadyExists) {
-      alert("An employee with this ID already exists.");
-      return;
+    try {
+      await dispatch(addEmployeeAPI(newEmployee)).unwrap();
+      handleCloseDialog();
+    } catch (error) {
+      alert("Error adding employee: " + (error as Error).message);
     }
-
-    dispatch(addEmployee(newEmployee));
 
     handleCloseDialog();
   };

@@ -1,16 +1,16 @@
-from pymongo import MongoClient
-from dotenv import load_dotenv
+from pymongo import MongoClient # type: ignore
+from dotenv import load_dotenv # type: ignore
 import os
 
 load_dotenv()
 
-MONGO_URI = os.getenv("MONGO_URI")
-DB_NAME = os.getenv("DB_NAME")
+MONGO_URL = os.getenv("MONGO_URL","mongodb://localhost:27017/")
+DB_NAME = os.getenv("DB_NAME","sukanya_db")
 
 collections_to_create = ["users", "projects"]
 
 try:
-    client = MongoClient(MONGO_URI)
+    client = MongoClient(MONGO_URL)
     db = client[DB_NAME]
     print("✅ MongoDB connected successfully!")
 
