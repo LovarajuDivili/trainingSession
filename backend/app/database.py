@@ -1,0 +1,30 @@
+from pymongo import MongoClient
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
+
+MONGO_URI = os.getenv("MONGO_URI")
+DB_NAME = os.getenv("DB_NAME")
+
+collections_to_create = ["users", "projects"]
+
+try:
+    client = MongoClient(MONGO_URI)
+    db = client[DB_NAME]
+    print("✅ MongoDB connected successfully!")
+
+    existing_collections = db.list_collection_names()
+    print("Existing collections:", existing_collections)
+
+    # Create collections if they don't exist
+    for col in collections_to_create:
+        if col not in existing_collections:
+            db.create_collection(col)
+            print(f"✅ Collection '{col}' created")
+        else:
+            print(f"ℹ️ Collection '{col}' already exists")
+
+except Exception as e:
+    print("❌ MongoDB connection failed or error occurred:", e)
+    db = None
