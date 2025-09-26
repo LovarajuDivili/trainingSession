@@ -5,6 +5,7 @@ import { LineChart } from "@mui/x-charts/LineChart";
 import { BarChart } from "@mui/x-charts/BarChart";
 import { PieChart } from "@mui/x-charts/PieChart";
 import { useAppSelector } from "../../hooks/reduxHooks";
+import { Stats } from "../../common/labelConstants";
 
 const Statistics = () => {
   const currentItem = sidebarItems.find(
@@ -149,7 +150,7 @@ const Statistics = () => {
           <Card sx={{ flex: 1, height: "100%" }}>
             <CardContent>
               <Typography variant="h6" sx={{ mb: 2 }}>
-                Project Status Distribution
+                {Stats.PROJ_STATUS_DISTRIBUTION}
               </Typography>
               <PieChart
                 series={[
@@ -166,7 +167,7 @@ const Statistics = () => {
           <Card sx={{ flex: 1, height: "100%" }}>
             <CardContent>
               <Typography variant="h6" sx={{ mb: 2 }}>
-                Employee Role Count
+                {Stats.EMP_ROLE_COUNT}
               </Typography>
               <BarChart
                 series={[{ data: barData, color: "#1976d2" }]}
