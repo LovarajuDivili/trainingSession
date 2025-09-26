@@ -6,14 +6,18 @@ import {
   TextField,
   MenuItem,
   Select,
+  Divider,
 } from "@mui/material";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-
-const SESSION_STORAGE_KEY = "project_data";
+import { useAppDispatch } from "../../hooks/reduxHooks";
+import { addProject } from "../../store/ProjectsSlice";
+import type { Project } from "../../store/ProjectsSlice";
+import { Add_New, Cancel } from "../../common/labelConstants";
 
 const AddProject = () => {
   const navigate = useNavigate();
+  const dispatch = useAppDispatch();
 
   const [project, setProject] = useState({
     projectName: "",
@@ -38,20 +42,12 @@ const AddProject = () => {
   );
 
   const handleSave = () => {
-    const savedData = sessionStorage.getItem(SESSION_STORAGE_KEY);
-    const projects = savedData ? JSON.parse(savedData) : [];
-
-    const newProject = {
+    const newProject: Project = {
       ...project,
       id: "PROJ" + Date.now(),
     };
 
-    const updatedProjects = [...projects, newProject];
-
-    sessionStorage.setItem(
-      SESSION_STORAGE_KEY,
-      JSON.stringify(updatedProjects)
-    );
+    dispatch(addProject(newProject));
 
     alert("Project added successfully!");
     navigate("/admin/projects");
@@ -62,29 +58,21 @@ const AddProject = () => {
   };
 
   return (
-    <Box sx={{ maxWidth: 1000, mx: "auto", mt: 4, p: 2 }}>
+    <Box sx={{ width: "100%" }}>
       <Box
         sx={{
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
-          mb: "20px",
-          mt: "20px",
+          mb: 2,
+          mt: 2,
         }}
       >
-        <Typography variant="h5" sx={{ mb: 3, fontWeight: 600 }}>
-          Add New Project
+        <Typography variant="h5" sx={{ fontWeight: 600 }}>
+          {Add_New.ADD_PROJECT}
         </Typography>
-        {/* Buttons */}
-        <Box
-          sx={{
-            display: "flex",
-            justifyContent: "flex-end",
-            gap: 2,
-            mt: 0,
-            mb: 1,
-          }}
-        >
+
+        <Box sx={{ display: "flex", gap: 2 }}>
           <Button
             variant="outlined"
             sx={{
@@ -94,7 +82,7 @@ const AddProject = () => {
             }}
             onClick={handleCancel}
           >
-            Cancel
+            {Cancel.CANCEL}
           </Button>
           <Button
             variant="contained"
@@ -102,10 +90,11 @@ const AddProject = () => {
             onClick={handleSave}
             disabled={isSaveDisabled}
           >
-            Add
+            {Add_New.ADD_BUTTON}
           </Button>
         </Box>
       </Box>
+      <Divider sx={{ mb: 3 }} />
       <Grid
         container
         spacing={{ xs: 2, md: 3 }}
@@ -114,7 +103,7 @@ const AddProject = () => {
         {/* Row 1 */}
         <Grid item size={{ xs: 2, sm: 4, md: 4 }}>
           <Typography sx={{ fontSize: "15px", mb: 0.5 }}>
-            Project Name
+            {Add_New.PROJECT_NAME}
           </Typography>
           <TextField
             placeholder="Enter project name"
@@ -131,7 +120,7 @@ const AddProject = () => {
 
         <Grid item size={{ xs: 2, sm: 4, md: 4 }}>
           <Typography sx={{ fontSize: "15px", mb: 0.5 }}>
-            Project Owner
+            {Add_New.PROJECT_OWNER}
           </Typography>
           <TextField
             placeholder="Enter project owner"

@@ -9,19 +9,45 @@ const Admin = () => {
   if (location.pathname === "/admin") {
     return <Navigate to="/admin/all-employees" replace />;
   }
+
   return (
     <Box>
-      {/* Header */}
-      <Box sx={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 1000 }}>
+      <Box
+        sx={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          right: 0,
+          zIndex: 1000,
+          height: "60px",
+        }}
+      >
         <Header role={""} />
       </Box>
 
-      {/* Sidebar + Content */}
-      <Box sx={{ display: "flex", mt: "40px" }}>
+      <Box
+        sx={{
+          position: "fixed",
+          top: "60px",
+          left: 0,
+          bottom: 0,
+          width: "240px",
+          zIndex: 900,
+        }}
+      >
         <SideBar />
-        <Box sx={{ flexGrow: 1, ml: "240px", p: 3 }}>
-          <Outlet />
-        </Box>
+      </Box>
+
+      <Box
+        sx={{
+          marginTop: "60px",
+          marginLeft: "240px",
+          padding: 3,
+          height: "calc(100vh - 60px)",
+          overflow: "auto",
+        }}
+      >
+        <Outlet />
       </Box>
     </Box>
   );
