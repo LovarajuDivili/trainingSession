@@ -70,7 +70,6 @@ const DashboardHeader = ({
         )}
       </Box>
 
-      {/* Right Actions */}
       <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
         {showSearch && (
           <TextField

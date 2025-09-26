@@ -10,6 +10,7 @@ import {
   IconButton,
   Grid,
   Chip,
+  Divider,
 } from "@mui/material";
 import {
   DataGrid,
@@ -21,6 +22,8 @@ import { Loading } from "../../common/labelConstants";
 import type { Employee } from "../../common/types";
 import DashboardHeader from "../DashboardHeader";
 import { sidebarItems } from "../../common/sidebarItems";
+import { useAppDispatch, useAppSelector } from "../../hooks/reduxHooks";
+import { setEmployees, addEmployee } from "../../store/EmployeesSlice";
 
 const SESSION_STORAGE_KEY = "employee_data";
 
@@ -44,7 +47,7 @@ const defaultEmployees: Employee[] = [
   {
     name: "Peter Jones",
     email: "peter@example.com",
-    role: "Product Manager",
+    role: "Tester",
     joinDate: "2020-09-10",
     id: "EMP003",
     skills: ["Agile", "Scrum", "Roadmapping", "Market Research"],
@@ -52,7 +55,7 @@ const defaultEmployees: Employee[] = [
   {
     name: "Mary Lee",
     email: "mary@example.com",
-    role: "UX Designer",
+    role: "AWS Team",
     joinDate: "2022-01-20",
     id: "EMP004",
     skills: ["Figma", "User Research", "Prototyping", "Wireframing"],
@@ -60,7 +63,7 @@ const defaultEmployees: Employee[] = [
   {
     name: "David Chen",
     email: "david@example.com",
-    role: "DevOps Engineer",
+    role: "Developer",
     joinDate: "2021-11-05",
     id: "EMP005",
     skills: ["AWS", "Docker", "Kubernetes", "CI/CD"],
@@ -68,7 +71,7 @@ const defaultEmployees: Employee[] = [
   {
     name: "Sarah Davis",
     email: "sarah@example.com",
-    role: "Data Scientist",
+    role: "AWS Team",
     joinDate: "2023-05-12",
     id: "EMP006",
     skills: ["Python", "Machine Learning", "SQL", "Tableau"],
@@ -76,7 +79,7 @@ const defaultEmployees: Employee[] = [
   {
     name: "James Wilson",
     email: "james@example.com",
-    role: "Team Lead",
+    role: "Tester",
     joinDate: "2019-08-28",
     id: "EMP007",
     skills: [
@@ -89,7 +92,7 @@ const defaultEmployees: Employee[] = [
   {
     name: "Emily White",
     email: "emily@example.com",
-    role: "Technical Writer",
+    role: "Developer",
     joinDate: "2023-02-14",
     id: "EMP008",
     skills: ["Documentation", "Markdown", "API Documentation", "Confluence"],
@@ -97,7 +100,7 @@ const defaultEmployees: Employee[] = [
   {
     name: "Michael Brown",
     email: "michael@example.com",
-    role: "Support Engineer",
+    role: "AWS Team",
     joinDate: "2022-07-25",
     id: "EMP009",
     skills: ["Troubleshooting", "Customer Service", "Linux", "SQL"],
@@ -105,7 +108,7 @@ const defaultEmployees: Employee[] = [
   {
     name: "Laura Taylor",
     email: "laura@example.com",
-    role: "Marketing Specialist",
+    role: "Developer",
     joinDate: "2021-03-30",
     id: "EMP010",
     skills: ["SEO", "Content Creation", "Social Media", "Email Marketing"],
@@ -113,7 +116,6 @@ const defaultEmployees: Employee[] = [
 ];
 
 const AllEmployees = () => {
-  const [employees, setEmployees] = useState<Employee[]>([]);
   const [loading] = useState(false);
   const [searchText, setSearchText] = useState("");
   const [cardView, setCardView] = useState(false);
@@ -127,6 +129,8 @@ const AllEmployees = () => {
     skills: [],
   });
   const [skillInput, setSkillInput] = useState("");
+  const dispatch = useAppDispatch();
+  const employees = useAppSelector((state) => state.employees.employees);
 
   const handleSkillKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && skillInput.trim() !== "") {
@@ -150,17 +154,18 @@ const AllEmployees = () => {
 
   useEffect(() => {
     try {
-      const savedRaw = sessionStorage.getItem(SESSION_STORAGE_KEY);
+      const savedRaw = sessionStorage.getItem("employee_data");
       const sessionEmployees: Employee[] = savedRaw ? JSON.parse(savedRaw) : [];
 
       const sessionFiltered = sessionEmployees.filter(
         (se) => !defaultEmployees.some((de) => de.id === se.id)
       );
-      setEmployees([...defaultEmployees, ...sessionFiltered]);
+
+      dispatch(setEmployees([...defaultEmployees, ...sessionFiltered]));
     } catch {
-      setEmployees([...defaultEmployees]);
+      dispatch(setEmployees([...defaultEmployees]));
     }
-  }, []);
+  }, [dispatch]);
 
   const filteredEmployees = employees.filter(
     (emp) =>
@@ -223,14 +228,7 @@ const AllEmployees = () => {
       return;
     }
 
-    const updatedSessionEmployees = [...sessionEmployees, newEmployee];
-
-    sessionStorage.setItem(
-      SESSION_STORAGE_KEY,
-      JSON.stringify(updatedSessionEmployees)
-    );
-
-    setEmployees([...defaultEmployees, ...updatedSessionEmployees]);
+    dispatch(addEmployee(newEmployee));
 
     handleCloseDialog();
   };
@@ -426,7 +424,7 @@ const AllEmployees = () => {
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
-            padding: "22px",
+            padding: "20px",
           }}
         >
           <DialogTitle sx={{ p: 0, fontSize: "25px" }}>
@@ -464,7 +462,9 @@ const AllEmployees = () => {
           </Box>
         </Box>
 
-        <DialogContent sx={{ mt: 0, pt: 0 }}>
+        <Divider />
+
+        <DialogContent sx={{ mt: 2, pt: 0 }}>
           <Grid container spacing={2} sx={{ pr: 1 }}>
             <Grid item size={{ xs: 2, sm: 4, md: 4 }}>
               <Typography sx={{ fontSize: "15px", mb: 0.5 }}>Name</Typography>
@@ -551,7 +551,6 @@ const AllEmployees = () => {
 
             <Grid item size={{ xs: 2, sm: 4, md: 4 }}>
               <Typography sx={{ fontSize: "15px", mb: 0.5 }}>Skills</Typography>
-
               <TextField
                 placeholder="Type a skill and press Enter"
                 value={skillInput}
@@ -564,15 +563,21 @@ const AllEmployees = () => {
                   },
                 }}
               />
+            </Grid>
 
-              <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, mt: 1 }}>
+            <Grid item xs={12}>
+              <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
                 {newEmployee.skills.map((skill, index) => (
                   <Chip
                     key={index}
                     label={skill}
                     onDelete={() => handleDeleteSkill(skill)}
-                    color="primary"
                     variant="outlined"
+                    sx={{
+                      backgroundColor: "white",
+                      color: "#906aff",
+                      borderColor: "#906aff",
+                    }}
                   />
                 ))}
               </Box>

@@ -5,6 +5,8 @@ import { useNavigate } from "react-router-dom";
 import { Loading } from "../../common/labelConstants";
 import DashboardHeader from "../DashboardHeader";
 import { sidebarItems } from "../../common/sidebarItems";
+import { useAppDispatch, useAppSelector } from "../../hooks/reduxHooks";
+import { setProjects } from "../../store/ProjectsSlice";
 
 interface Project {
   projectName: string;
@@ -82,25 +84,26 @@ const fetchProjects = (): Promise<Project[]> => {
 };
 
 const Projects = () => {
-  const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(false);
   const [searchText, setSearchText] = useState("");
   const navigate = useNavigate();
+  const dispatch = useAppDispatch();
+  const projects = useAppSelector((state) => state.projects.projects);
 
   useEffect(() => {
     const savedData = sessionStorage.getItem(SESSION_STORAGE_KEY);
 
     if (savedData) {
-      setProjects(JSON.parse(savedData));
+      dispatch(setProjects(JSON.parse(savedData)));
     } else {
       setLoading(true);
       fetchProjects().then((data) => {
-        setProjects(data);
+        dispatch(setProjects(data));
         sessionStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(data));
         setLoading(false);
       });
     }
-  }, []);
+  }, [dispatch]);
 
   useEffect(() => {
     if (projects.length > 0) {
@@ -169,7 +172,7 @@ const Projects = () => {
       {loading ? (
         <Typography>{Loading.LOADING}</Typography>
       ) : (
-        <Box sx={{ height: "calc(100vh - 150px)", width: "100%" }}>
+        <Box sx={{ height: "calc(97vh - 150px)", width: "100%" }}>
           <DataGrid
             rows={filteredProjects}
             columns={columns}
