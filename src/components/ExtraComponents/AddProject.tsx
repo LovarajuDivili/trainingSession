@@ -13,6 +13,7 @@ import { useNavigate } from "react-router-dom";
 import { useAppDispatch } from "../../hooks/reduxHooks";
 import { addProject } from "../../store/ProjectsSlice";
 import type { Project } from "../../store/ProjectsSlice";
+import { Add_New, Cancel } from "../../common/labelConstants";
 
 const AddProject = () => {
   const navigate = useNavigate();
@@ -57,7 +58,7 @@ const AddProject = () => {
   };
 
   return (
-    <Box sx={{ maxWidth: 1000, mx: "auto", ml: 0 }}>
+    <Box sx={{ width: "100%" }}>
       <Box
         sx={{
           display: "flex",
@@ -68,7 +69,7 @@ const AddProject = () => {
         }}
       >
         <Typography variant="h5" sx={{ fontWeight: 600 }}>
-          Add New Project
+          {Add_New.ADD_PROJECT}
         </Typography>
 
         <Box sx={{ display: "flex", gap: 2 }}>
@@ -81,7 +82,7 @@ const AddProject = () => {
             }}
             onClick={handleCancel}
           >
-            Cancel
+            {Cancel.CANCEL}
           </Button>
           <Button
             variant="contained"
@@ -89,7 +90,7 @@ const AddProject = () => {
             onClick={handleSave}
             disabled={isSaveDisabled}
           >
-            Add
+            {Add_New.ADD_BUTTON}
           </Button>
         </Box>
       </Box>
@@ -102,7 +103,7 @@ const AddProject = () => {
         {/* Row 1 */}
         <Grid item size={{ xs: 2, sm: 4, md: 4 }}>
           <Typography sx={{ fontSize: "15px", mb: 0.5 }}>
-            Project Name
+            {Add_New.PROJECT_NAME}
           </Typography>
           <TextField
             placeholder="Enter project name"
@@ -119,7 +120,7 @@ const AddProject = () => {
 
         <Grid item size={{ xs: 2, sm: 4, md: 4 }}>
           <Typography sx={{ fontSize: "15px", mb: 0.5 }}>
-            Project Owner
+            {Add_New.PROJECT_OWNER}
           </Typography>
           <TextField
             placeholder="Enter project owner"
