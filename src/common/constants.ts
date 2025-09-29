@@ -1,5 +1,3 @@
-// src/common/constants.ts
-
 export const LABELS = {
   WELCOME_TEXT: "Hello, welcome to",
   COMPANY_NAME: "Cerebro SASA",
@@ -11,5 +9,4 @@ export const LABELS = {
   CANCEL_BUTTON: "Cancel",
   LOGOUT_BUTTON: "Logout",
 };
-
 

@@ -1,4 +1,3 @@
-// src/common/labelConstants.tsx
 
 export const HomePage = {
   AIFA: "AIFA",
@@ -37,3 +36,5 @@ export const LoggedOutPage = {
 export const RouteMessages = {
   ROLE_MISSING: "Role missing in URL",
 };
+
+

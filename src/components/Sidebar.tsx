@@ -1,53 +1,52 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Drawer,
   List,
   ListItem,
   ListItemButton,
+  ListItemIcon,
   ListItemText,
 } from "@mui/material";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, useParams } from "react-router-dom";
 
-import { menuItems as llmGardenMenu } from "../common/utility"; // centralized menus
-
-const drawerWidth = 240;
+import { menuItems } from "../common/utility"; // ✅ Adjust path as needed
 
 interface SidebarProps {
   mobileOpen: boolean;
   handleDrawerToggle: () => void;
-  isLLMGardenPage?: boolean;
+  drawerWidth: number;
 }
 
 const Sidebar: React.FC<SidebarProps> = ({
   mobileOpen,
   handleDrawerToggle,
-  isLLMGardenPage = false,
+  drawerWidth,
 }) => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { role = "" } = useParams(); // fallback to empty string to avoid undefined
 
-  const menuItems = isLLMGardenPage ? llmGardenMenu : [];
+  const [selectedLabel, setSelectedLabel] = useState<string | null>(null);
+
+  useEffect(() => {
+    const currentItem = menuItems.find((item) =>
+      location.pathname.endsWith(item.route)
+    );
+    if (currentItem) {
+      setSelectedLabel(currentItem.text);
+    }
+  }, [location.pathname]);
 
   const drawer = (
-    <Box
-      sx={{
-        width: drawerWidth,
-        height: "100%",
-        p: 2,
-        textAlign: "center",
-        overflow: "hidden", // Prevent scrollbars
-      }}
-    >
+    <Box sx={{ width: drawerWidth }}>
+      {/* Logo Section */}
       <Box
         sx={{
           display: "flex",
           alignItems: "center",
-          mb: 4,
-          fontWeight: "bold",
-          fontSize: 18,
-          color: "#6c63ff",
           justifyContent: "center",
+          py: 3,
         }}
       >
         <img
@@ -55,31 +54,38 @@ const Sidebar: React.FC<SidebarProps> = ({
           alt="Logo"
           style={{ width: 32, height: 32, marginRight: 8 }}
         />
-        Cerebro SASA
+        <Box sx={{ fontWeight: "bold", fontSize: 18, color: "#6c63ff" }}>
+          Cerebro SASA
+        </Box>
       </Box>
 
-      <List sx={{ overflow: "hidden" }}>
-        {menuItems.map(({ text, path, icon }) => {
-          // Check if current menu item is "All Employees"
-          const isAllEmployees = text === "All Employees";
-
-          // Check if current path matches or starts with All Employees path
-          const isSelected = isAllEmployees
-            ? location.pathname.startsWith("/llmgarden/all-employees")
-            : location.pathname === path;
+      {/* Menu List */}
+      <List>
+        {menuItems.map(({ text, icon, getPath }) => {
+          const path = getPath(role);
+          const isSelected = selectedLabel === text;
 
           return (
             <ListItem key={text} disablePadding>
               <ListItemButton
                 selected={isSelected}
                 onClick={() => {
+                  setSelectedLabel(text);
                   navigate(path);
                   handleDrawerToggle();
                 }}
                 sx={{
+                  mx: 1,
+                  my: 0.5,
+                  px: 2,
+                  py: 1.2,
+                  borderRadius: "12px",
                   "&.Mui-selected": {
                     backgroundColor: "#906aff",
                     color: "#ffffff",
+                    "& .MuiListItemIcon-root, & .MuiListItemText-primary": {
+                      color: "#ffffff",
+                    },
                   },
                   "&.Mui-selected:hover": {
                     backgroundColor: "#7c58e1",
@@ -89,11 +95,15 @@ const Sidebar: React.FC<SidebarProps> = ({
                   },
                 }}
               >
-                {icon}
-                <ListItemText
-                  primary={text}
-                  sx={{ textAlign: "center", ml: 1 }}
-                />
+                <ListItemIcon
+                  sx={{
+                    minWidth: 36,
+                    color: isSelected ? "#ffffff" : "inherit",
+                  }}
+                >
+                  {icon}
+                </ListItemIcon>
+                <ListItemText primary={text} />
               </ListItemButton>
             </ListItem>
           );
@@ -103,14 +113,8 @@ const Sidebar: React.FC<SidebarProps> = ({
   );
 
   return (
-    <Box
-      component="nav"
-      sx={{
-        width: { sm: drawerWidth },
-        flexShrink: { sm: 0 },
-      }}
-    >
-      {/* Mobile Drawer */}
+    <Box component="nav" sx={{ width: { sm: drawerWidth }, flexShrink: { sm: 0 } }}>
+      {/* Temporary drawer for mobile */}
       <Drawer
         variant="temporary"
         open={mobileOpen}
@@ -121,14 +125,13 @@ const Sidebar: React.FC<SidebarProps> = ({
           "& .MuiDrawer-paper": {
             boxSizing: "border-box",
             width: drawerWidth,
-            overflow: "hidden",
           },
         }}
       >
         {drawer}
       </Drawer>
 
-      {/* Desktop Drawer */}
+      {/* Permanent drawer for desktop */}
       <Drawer
         variant="permanent"
         sx={{
@@ -136,7 +139,7 @@ const Sidebar: React.FC<SidebarProps> = ({
           "& .MuiDrawer-paper": {
             boxSizing: "border-box",
             width: drawerWidth,
-            overflow: "hidden",
+            borderRight: "none",
           },
         }}
         open
@@ -148,3 +151,5 @@ const Sidebar: React.FC<SidebarProps> = ({
 };
 
 export default Sidebar;
+
+

@@ -10,5 +10,4 @@ export interface Employee {
   role: string;
   joinDate: string;
   skills: string[];
-  currentDate: string;
 }

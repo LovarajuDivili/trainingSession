@@ -1,45 +1,33 @@
 import React, { useState } from "react";
 import {
-  AppBar,
-  Toolbar,
-  IconButton,
-  Typography,
   Box,
   Button,
   Select,
   MenuItem,
   FormControl,
-  Menu,
   Dialog,
   DialogTitle,
   DialogContent,
   DialogContentText,
   DialogActions,
+  Typography,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
-import AccountCircleIcon from "@mui/icons-material/AccountCircle";
-import LogoutIcon from "@mui/icons-material/Logout";
-import SwapHorizIcon from "@mui/icons-material/SwapHoriz";
+import { type SelectChangeEvent } from "@mui/material/Select";
 import { roles } from "../common/dropdowns";
 import { AccountSelection, LogoutDialog } from "../common/labelConstants";
+import Header from "../components/Header"; // ✅ Import Header
+import "../components/Header.scss"; // Header styles
+
+const HEADER_HEIGHT = 64;
 
 const AccountTypeSelection: React.FC = () => {
   const [accountType, setAccountType] = useState("Admin");
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false);
-  const openMenu = Boolean(anchorEl);
+
   const navigate = useNavigate();
 
-  const handleProfileClick = (event: React.MouseEvent<HTMLElement>) => {
-    setAnchorEl(event.currentTarget);
-  };
-
-  const handleCloseMenu = () => {
-    setAnchorEl(null);
-  };
-
   const handleLogout = () => {
-    handleCloseMenu();
     setLogoutConfirmOpen(true);
   };
 
@@ -52,140 +40,31 @@ const AccountTypeSelection: React.FC = () => {
     setLogoutConfirmOpen(false);
   };
 
-  const handleChange = (event: React.ChangeEvent<{ value: unknown }>) => {
+  const handleChange = (event: SelectChangeEvent) => {
     setAccountType(event.target.value as string);
   };
 
-  
   const handleProceed = () => {
-    navigate(`/llmgarden/all-employees/${accountType.toLowerCase()}`);
+    localStorage.setItem("accountType", accountType);
+    navigate(`/dashboard/${accountType.toLowerCase()}`);
   };
 
   return (
     <>
       {/* Header */}
-      <AppBar position="static" sx={{ bgcolor: "#906aff", borderRadius: 0 }}>
-        <Toolbar
-          sx={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            paddingLeft: 2,
-            paddingRight: 2,
-          }}
-        >
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-            <img src="/chat.svg" alt="Chat Icon" style={{ width: 20, height: 20 }} />
-            <Typography variant="h6" sx={{ fontWeight: "600", color: "#fff" }}>
-              Cerebro SASA
-            </Typography>
-          </Box>
+      <Header onMenuClick={handleLogout} />
 
-          <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-            <SwapHorizIcon sx={{ color: "#fff", fontSize: 28, cursor: "pointer" }} />
-
-            <Box
-              sx={{
-                bgcolor: "#fff",
-                borderRadius: 3,
-                display: "flex",
-                alignItems: "center",
-                gap: 1,
-                px: 2,
-                py: 0.5,
-              }}
-            >
-              <img
-                src="/aifa_clr_logo.svg"
-                alt="AIFA Logo"
-                style={{ width: 90, height: 40, objectFit: "contain" }}
-              />
-              <IconButton
-                onClick={handleProfileClick}
-                sx={{ bgcolor: "#fff", borderRadius: "50%", p: 0.5, ml: 0.5 }}
-              >
-                <AccountCircleIcon sx={{ fontSize: 32, color: "#906aff" }} />
-              </IconButton>
-            </Box>
-          </Box>
-
-          {/* Profile Menu */}
-          <Menu
-            anchorEl={anchorEl}
-            open={openMenu}
-            onClose={handleCloseMenu}
-            PaperProps={{
-              elevation: 8,
-              sx: {
-                borderRadius: 3,
-                mt: 1,
-                minWidth: 150,
-              },
-            }}
-            anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-            transformOrigin={{ vertical: "top", horizontal: "right" }}
-          >
-            <MenuItem
-              onClick={handleLogout}
-              sx={{
-                borderRadius: 3,
-                px: 3,
-                py: 1.5,
-                display: "flex",
-                alignItems: "center",
-                gap: 1,
-                color: "#000",
-                fontWeight: "600",
-                fontSize: "1rem",
-              }}
-            >
-              <LogoutIcon fontSize="medium" />
-              {LogoutDialog.LOGOUT_BUTTON}
-            </MenuItem>
-          </Menu>
-        </Toolbar>
-      </AppBar>
-
-      {/* Logout Confirmation Dialog */}
-      <Dialog open={logoutConfirmOpen} onClose={cancelLogout}>
-        <DialogTitle>{LogoutDialog.CONFIRM_TITLE}</DialogTitle>
-        <DialogContent>
-          <DialogContentText>{LogoutDialog.CONFIRM_MESSAGE}</DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button
-            onClick={cancelLogout}
-            sx={{
-              color: "#906aff",
-              fontWeight: "bold",
-              textTransform: "none",
-              border: "1px solid #906aff",
-              borderRadius: 2,
-              px: 2,
-              "&:hover": {
-                backgroundColor: "#f1ecff",
-                borderColor: "#ac8fff",
-              },
-            }}
-          >
-            {LogoutDialog.CANCEL_BUTTON}
-          </Button>
-
-          <Button onClick={confirmLogout} color="error" variant="contained">
-            {LogoutDialog.LOGOUT_BUTTON}
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      {/* Center Content */}
+      {/* Main Content Area with scroll and padding to accommodate header */}
       <Box
         sx={{
-          minHeight: "calc(100vh - 64px)",
+          mt: `${HEADER_HEIGHT}px`, // Push content below fixed header
+          minHeight: `calc(100vh - ${HEADER_HEIGHT}px)`,
           backgroundColor: "#f8f9fa",
           display: "flex",
           justifyContent: "center",
           alignItems: "center",
           px: 3,
+          overflowY: "auto",
         }}
       >
         <Box sx={{ maxWidth: 400, width: "100%" }}>
@@ -200,7 +79,10 @@ const AccountTypeSelection: React.FC = () => {
             {AccountSelection.SELECT_PROMPT}
           </Typography>
 
-          <Typography variant="subtitle2" sx={{ textAlign: "left", mb: 1, fontWeight: 600 }}>
+          <Typography
+            variant="subtitle2"
+            sx={{ textAlign: "left", mb: 1, fontWeight: 600 }}
+          >
             {AccountSelection.ACCOUNT_TYPE_LABEL}
           </Typography>
 
@@ -236,7 +118,9 @@ const AccountTypeSelection: React.FC = () => {
               bgcolor: "#906aff",
               color: "#fff",
               fontWeight: "bold",
-              "&:hover": { bgcolor: "#ac8fff" },
+              "&:hover": {
+                bgcolor: "#ac8fff",
+              },
               borderRadius: 10,
             }}
           >
@@ -244,6 +128,22 @@ const AccountTypeSelection: React.FC = () => {
           </Button>
         </Box>
       </Box>
+
+      {/* Logout Confirmation Dialog */}
+      <Dialog open={logoutConfirmOpen} onClose={cancelLogout}>
+        <DialogTitle>{LogoutDialog.CONFIRM_TITLE}</DialogTitle>
+        <DialogContent>
+          <DialogContentText>{LogoutDialog.CONFIRM_MESSAGE}</DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={cancelLogout} sx={{ color: "#906aff", fontWeight: "bold" }}>
+            {LogoutDialog.CANCEL_BUTTON}
+          </Button>
+          <Button onClick={confirmLogout} color="error" variant="contained">
+            {LogoutDialog.LOGOUT_BUTTON}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </>
   );
 };

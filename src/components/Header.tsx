@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import MenuIcon from "@mui/icons-material/Menu";
-import SyncAltIcon from "@mui/icons-material/SyncAlt";
+import SwapHorizIcon from "@mui/icons-material/SwapHoriz";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import { useNavigate, useLocation } from "react-router-dom";
 import "./Header.scss";
@@ -9,28 +9,36 @@ interface HeaderProps {
   onMenuClick?: () => void;
 }
 
+const validRoles = ["admin", "developer", "technical"];
+
 const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [accountType, setAccountType] = useState("Admin");
 
   useEffect(() => {
-    // Check if current route matches /llmgarden/all-employees/:role
     const pathParts = location.pathname.split("/");
-
     const roleIndex = pathParts.findIndex((part) => part === "all-employees");
-    const potentialRole = pathParts[roleIndex + 1]; // next segment
 
-    const validRoles = ["admin", "developer", "tester"];
-    if (validRoles.includes(potentialRole?.toLowerCase())) {
-      const capitalized =
-        potentialRole.charAt(0).toUpperCase() + potentialRole.slice(1).toLowerCase();
+    if (roleIndex !== -1 && pathParts.length > roleIndex + 1) {
+      const potentialRole = pathParts[roleIndex + 1].toLowerCase();
 
-      setAccountType(capitalized);
-      localStorage.setItem("accountType", capitalized);
+      if (validRoles.includes(potentialRole)) {
+        // Capitalize first letter
+        const capitalized = potentialRole.charAt(0).toUpperCase() + potentialRole.slice(1);
+        setAccountType(capitalized);
+        localStorage.setItem("accountType", capitalized);
+        return;
+      }
+    }
+
+    // Fallback to stored or default
+    const stored = localStorage.getItem("accountType");
+    if (stored && validRoles.includes(stored.toLowerCase())) {
+      setAccountType(stored);
     } else {
-      const stored = localStorage.getItem("accountType");
-      setAccountType(stored || "Admin");
+      setAccountType("Admin");
+      localStorage.setItem("accountType", "Admin");
     }
   }, [location.pathname]);
 
@@ -40,7 +48,7 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
   };
 
   const handleRoleClick = () => {
-    navigate(`/llmgarden/all-employees/${accountType.toLowerCase()}`);
+    navigate(`/all-employees/${accountType.toLowerCase()}`);
   };
 
   return (
@@ -50,12 +58,14 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
           <MenuIcon />
         </div>
 
-        <img src="/chat.svg" alt="Cerebro Logo" className="logo" />
-        <span className="app-title">Cerebro SASA</span>
+        <img
+          src="/aifalogo.svg"
+          alt="AIFA Logo"
+          style={{ width: 90, height: 40, objectFit: "contain" }}
+        />
 
         <div className="vertical-divider" />
 
-        {/* Role Label */}
         <div
           className="admin-section"
           onClick={handleRoleClick}
@@ -67,10 +77,8 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
         </div>
       </div>
 
-      {/* Right Section */}
       <div className="right-section">
-        <SyncAltIcon
-          className="sync-icon"
+        <SwapHorizIcon
           onClick={() => {
             if (localStorage.getItem("employeeData")) {
               localStorage.removeItem("employeeData");
@@ -80,8 +88,10 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
             navigate("/");
           }}
           aria-label="Compare/Sync"
-          style={{ cursor: "pointer" }}
+          sx={{ color: "#fff", fontSize: 28, cursor: "pointer" }}
         />
+
+        <div className="vertical-divider" />
 
         <div className="aifa-box">
           <img src="/aifa_clr_logo.svg" alt="AIFA Logo" className="aifa-logo" />

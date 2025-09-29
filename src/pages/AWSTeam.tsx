@@ -18,5 +18,3 @@ const AWSTeam: React.FC = () => {
     </Box>
   );
 };
-
-export default AWSTeam;

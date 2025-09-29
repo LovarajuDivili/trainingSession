@@ -8,7 +8,6 @@ export const employeeData: Employee[] = [
     role: "Frontend Developer",
     joinDate: "2022-05-01",
     skills: ["React", "TypeScript", "CSS"],
-    currentDate: "2025-09-16",
   },
   {
     id: "E002",
@@ -17,7 +16,6 @@ export const employeeData: Employee[] = [
     role: "Backend Developer",
     joinDate: "2021-09-15",
     skills: ["Node.js", "Express", "MongoDB"],
-    currentDate: "2025-09-16",
   },
   {
     id: "E003",
@@ -26,7 +24,6 @@ export const employeeData: Employee[] = [
     role: "QA Engineer",
     joinDate: "2023-01-10",
     skills: ["Jest", "Cypress", "Selenium"],
-    currentDate: "2025-09-16",
   },
   {
     id: "E004",
@@ -35,7 +32,6 @@ export const employeeData: Employee[] = [
     role: "DevOps Engineer",
     joinDate: "2020-08-24",
     skills: ["AWS", "Docker", "Kubernetes"],
-    currentDate: "2025-09-16",
   },
   {
     id: "E005",
@@ -44,7 +40,6 @@ export const employeeData: Employee[] = [
     role: "Project Manager",
     joinDate: "2019-12-11",
     skills: ["Agile", "Scrum", "Communication"],
-    currentDate: "2025-09-16",
   },
   {
     id: "E006",
@@ -53,7 +48,6 @@ export const employeeData: Employee[] = [
     role: "Full Stack Developer",
     joinDate: "2022-03-05",
     skills: ["React", "Node.js", "GraphQL"],
-    currentDate: "2025-09-16",
   },
   {
     id: "E007",
@@ -62,7 +56,6 @@ export const employeeData: Employee[] = [
     role: "UX Designer",
     joinDate: "2023-06-20",
     skills: ["Figma", "Sketch", "User Research"],
-    currentDate: "2025-09-16",
   },
   {
     id: "E008",
@@ -71,7 +64,6 @@ export const employeeData: Employee[] = [
     role: "Security Analyst",
     joinDate: "2021-10-30",
     skills: ["Penetration Testing", "Firewalls", "Encryption"],
-    currentDate: "2025-09-16",
   },
   {
     id: "E009",
@@ -80,7 +72,6 @@ export const employeeData: Employee[] = [
     role: "Data Scientist",
     joinDate: "2020-07-14",
     skills: ["Python", "Machine Learning", "Data Visualization"],
-    currentDate: "2025-09-16",
   },
   {
     id: "E010",
@@ -89,6 +80,4 @@ export const employeeData: Employee[] = [
     role: "Mobile Developer",
     joinDate: "2022-11-01",
     skills: ["Swift", "Kotlin", "React Native"],
-    currentDate: "2025-09-16",
-  },
-];
+
