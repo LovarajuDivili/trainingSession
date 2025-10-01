@@ -23,98 +23,7 @@ import type { Employee } from "../../common/types";
 import DashboardHeader from "../DashboardHeader";
 import { sidebarItems } from "../../common/sidebarItems";
 import { useAppDispatch, useAppSelector } from "../../hooks/reduxHooks";
-//import { setEmployees, addEmployee } from "../../store/EmployeesSlice";
 import { fetchEmployees, addEmployeeAPI } from "../../store/EmployeesSlice";
-
-//const SESSION_STORAGE_KEY = "employee_data";
-
-/*const defaultEmployees: Employee[] = [
-  {
-    name: "John Doe",
-    email: "john@example.com",
-    role: "Developer",
-    joinDate: "2022-03-01",
-    id: "EMP001",
-    skills: ["React", "TypeScript", "Node.js"],
-  },
-  {
-    name: "Jane Smith",
-    email: "jane@example.com",
-    role: "Tester",
-    joinDate: "2021-06-15",
-    id: "EMP002",
-    skills: ["Selenium", "Cypress", "Manual Testing"],
-  },
-  {
-    name: "Peter Jones",
-    email: "peter@example.com",
-    role: "Tester",
-    joinDate: "2020-09-10",
-    id: "EMP003",
-    skills: ["Agile", "Scrum", "Roadmapping", "Market Research"],
-  },
-  {
-    name: "Mary Lee",
-    email: "mary@example.com",
-    role: "AWS Team",
-    joinDate: "2022-01-20",
-    id: "EMP004",
-    skills: ["Figma", "User Research", "Prototyping", "Wireframing"],
-  },
-  {
-    name: "David Chen",
-    email: "david@example.com",
-    role: "Developer",
-    joinDate: "2021-11-05",
-    id: "EMP005",
-    skills: ["AWS", "Docker", "Kubernetes", "CI/CD"],
-  },
-  {
-    name: "Sarah Davis",
-    email: "sarah@example.com",
-    role: "AWS Team",
-    joinDate: "2023-05-12",
-    id: "EMP006",
-    skills: ["Python", "Machine Learning", "SQL", "Tableau"],
-  },
-  {
-    name: "James Wilson",
-    email: "james@example.com",
-    role: "Tester",
-    joinDate: "2019-08-28",
-    id: "EMP007",
-    skills: [
-      "Leadership",
-      "Project Management",
-      "Mentoring",
-      "Strategic Planning",
-    ],
-  },
-  {
-    name: "Emily White",
-    email: "emily@example.com",
-    role: "Developer",
-    joinDate: "2023-02-14",
-    id: "EMP008",
-    skills: ["Documentation", "Markdown", "API Documentation", "Confluence"],
-  },
-  {
-    name: "Michael Brown",
-    email: "michael@example.com",
-    role: "AWS Team",
-    joinDate: "2022-07-25",
-    id: "EMP009",
-    skills: ["Troubleshooting", "Customer Service", "Linux", "SQL"],
-  },
-  {
-    name: "Laura Taylor",
-    email: "laura@example.com",
-    role: "Developer",
-    joinDate: "2021-03-30",
-    id: "EMP010",
-    skills: ["SEO", "Content Creation", "Social Media", "Email Marketing"],
-  },
-];*/
 
 const AllEmployees = () => {
   const [loading] = useState(false);
@@ -209,12 +118,13 @@ const AllEmployees = () => {
 
     try {
       await dispatch(addEmployeeAPI(newEmployee)).unwrap();
+      dispatch(fetchEmployees());
       handleCloseDialog();
-    } catch (error) {
-      alert("Error adding employee: " + (error as Error).message);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (error: any) {
+      console.error("Error adding employee:", error);
+      alert("Error adding employee: " + (error.message || "Unknown error"));
     }
-
-    handleCloseDialog();
   };
 
   const columns: GridColDef<Employee>[] = [

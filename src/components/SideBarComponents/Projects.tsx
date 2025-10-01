@@ -6,110 +6,18 @@ import { Loading } from "../../common/labelConstants";
 import DashboardHeader from "../DashboardHeader";
 import { sidebarItems } from "../../common/sidebarItems";
 import { useAppDispatch, useAppSelector } from "../../hooks/reduxHooks";
-import { setProjects } from "../../store/ProjectsSlice";
-
-interface Project {
-  projectName: string;
-  projectOwner: string;
-  jiraId: string;
-  status: string;
-  startDate: string;
-  endDate: string;
-  id: string;
-}
-
-const SESSION_STORAGE_KEY = "project_data";
-
-const fetchProjects = (): Promise<Project[]> => {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve([
-        {
-          projectName: "Website Redesign",
-          projectOwner: "Alice Johnson",
-          jiraId: "JIRA-101",
-          status: "Inactive",
-          startDate: "2023-05-01",
-          endDate: "2023-12-31",
-          id: "PROJ001",
-        },
-        {
-          projectName: "Mobile App",
-          projectOwner: "Bob Williams",
-          jiraId: "JIRA-202",
-          status: "Active",
-          startDate: "2022-01-15",
-          endDate: "2022-10-30",
-          id: "PROJ002",
-        },
-        {
-          projectName: "Database Migration",
-          projectOwner: "Charlie Brown",
-          jiraId: "JIRA-303",
-          status: "Active",
-          startDate: "2023-01-10",
-          endDate: "2023-04-15",
-          id: "PROJ003",
-        },
-        {
-          projectName: "Marketing Campaign Launch",
-          projectOwner: "Diana Prince",
-          jiraId: "JIRA-404",
-          status: "Inactive",
-          startDate: "2023-09-15",
-          endDate: "2024-03-30",
-          id: "PROJ004",
-        },
-        {
-          projectName: "Cloud Infrastructure Setup",
-          projectOwner: "Ethan Hunt",
-          jiraId: "JIRA-505",
-          status: "Inactive",
-          startDate: "2024-01-20",
-          endDate: "2024-06-30",
-          id: "PROJ005",
-        },
-        {
-          projectName: "Security Audit",
-          projectOwner: "Fiona Glenanne",
-          jiraId: "JIRA-606",
-          status: "Active",
-          startDate: "2022-08-01",
-          endDate: "2022-11-15",
-          id: "PROJ006",
-        },
-      ]);
-    }, 1000);
-  });
-};
+import { fetchProjects } from "../../store/ProjectsSlice";
 
 const Projects = () => {
-  const [loading, setLoading] = useState(false);
   const [searchText, setSearchText] = useState("");
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
-  const projects = useAppSelector((state) => state.projects.projects);
+  const { projects, loading } = useAppSelector((state) => state.projects);
 
   useEffect(() => {
-    const savedData = sessionStorage.getItem(SESSION_STORAGE_KEY);
-
-    if (savedData) {
-      dispatch(setProjects(JSON.parse(savedData)));
-    } else {
-      setLoading(true);
-      fetchProjects().then((data) => {
-        dispatch(setProjects(data));
-        sessionStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(data));
-        setLoading(false);
-      });
-    }
+    // Fetch projects from MongoDB backend
+    dispatch(fetchProjects());
   }, [dispatch]);
-
-  useEffect(() => {
-    if (projects.length > 0) {
-      sessionStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(projects));
-    }
-  }, [projects]);
 
   const filteredProjects = projects.filter(
     (proj) =>
@@ -117,7 +25,7 @@ const Projects = () => {
       proj.jiraId.toLowerCase().includes(searchText.toLowerCase())
   );
 
-  const columns: GridColDef<Project>[] = [
+  const columns: GridColDef[] = [
     { field: "projectName", headerName: "Project Name", flex: 1.5 },
     { field: "projectOwner", headerName: "Project Owner", flex: 1.2 },
     { field: "jiraId", headerName: "Jira ID", flex: 1 },

@@ -11,7 +11,7 @@ import {
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAppDispatch } from "../../hooks/reduxHooks";
-import { addProject } from "../../store/ProjectsSlice";
+import { addProjectAPI } from "../../store/ProjectsSlice";
 import type { Project } from "../../store/ProjectsSlice";
 import { Add_New, Cancel } from "../../common/labelConstants";
 
@@ -28,6 +28,8 @@ const AddProject = () => {
     endDate: "",
   });
 
+  const [loading, setLoading] = useState(false);
+
   const handleChange = (field: string, value: string) => {
     setProject((prev) => ({ ...prev, [field]: value }));
   };
@@ -41,16 +43,23 @@ const AddProject = () => {
     project.endDate
   );
 
-  const handleSave = () => {
+  const handleSave = async () => {
     const newProject: Project = {
       ...project,
       id: "PROJ" + Date.now(),
     };
 
-    dispatch(addProject(newProject));
-
-    alert("Project added successfully!");
-    navigate("/admin/projects");
+    setLoading(true);
+    try {
+      await dispatch(addProjectAPI(newProject)).unwrap();
+      alert("Project added successfully!");
+      navigate("/admin/projects");
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (error: any) {
+      alert("Error adding project: " + (error.message || "Unknown error"));
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleCancel = () => {
@@ -81,6 +90,7 @@ const AddProject = () => {
               textTransform: "uppercase",
             }}
             onClick={handleCancel}
+            disabled={loading}
           >
             {Cancel.CANCEL}
           </Button>
