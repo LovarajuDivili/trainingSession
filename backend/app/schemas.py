@@ -34,3 +34,30 @@ class EmployeeResponse(EmployeeBase):
     
     class Config:
         from_attributes = True
+
+
+class ProjectBase(BaseModel):
+    projectName: str
+    projectOwner: str
+    jiraId: str
+    status: str
+    startDate: str
+    endDate: str
+    id: str
+
+class ProjectCreate(ProjectBase):
+    pass
+
+class ProjectUpdate(BaseModel):
+    projectName: Optional[str] = None
+    projectOwner: Optional[str] = None
+    jiraId: Optional[str] = None
+    status: Optional[str] = None
+    startDate: Optional[str] = None
+    endDate: Optional[str] = None
+
+class ProjectResponse(ProjectBase):
+    created_at: Optional[datetime] = None
+    
+    class Config:
+        from_attributes = True

@@ -8,7 +8,7 @@ from app.schemas import EmployeeCreate,EmployeeUpdate
 
 router = APIRouter(prefix="/employees", tags=["employees"])
 
-# ------------------- GET ALL EMPLOYEES -------------------
+
 @router.get("/", response_model=dict)
 async def get_employees():
     try:
@@ -20,14 +20,17 @@ async def get_employees():
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-# ------------------- CREATE EMPLOYEE -------------------
+from fastapi.responses import JSONResponse
+
 @router.post("/", response_model=dict)
 async def create_employee(employee: EmployeeCreate):
     try:
-        # Check if employee with same ID already exists
         existing_employee = db["employees"].find_one({"id": employee.id})
         if existing_employee:
-            raise HTTPException(status_code=400, detail="Employee with this ID already exists")
+            return JSONResponse(
+                status_code=400,
+                content={"detail": "Employee with this ID already exists"}
+            )
 
         employee_data = {
             "name": employee.name,
@@ -38,16 +41,26 @@ async def create_employee(employee: EmployeeCreate):
             "skills": employee.skills,
             "created_at": datetime.utcnow()
         }
-        
+
         result = db["employees"].insert_one(employee_data)
         new_employee = db["employees"].find_one({"_id": result.inserted_id})
-        return {"status": "success", "data": convert_objectid(new_employee)}
-    except HTTPException:
-        raise
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
 
-# ------------------- GET EMPLOYEE BY ID -------------------
+        if not new_employee:
+            return JSONResponse(
+                status_code=500,
+                content={"detail": "Failed to fetch inserted employee"}
+            )
+
+        return {"status": "success", "data": convert_objectid(new_employee)}
+
+    except Exception as e:
+        return JSONResponse(
+            status_code=500,
+            content={"detail": str(e)}
+        )
+
+
+
 @router.get("/{employee_id}", response_model=dict)
 async def get_employee_by_id(employee_id: str):
     try:
@@ -58,11 +71,11 @@ async def get_employee_by_id(employee_id: str):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-# ------------------- UPDATE EMPLOYEE BY ID -------------------
+
 @router.put("/{employee_id}", response_model=dict)
 async def update_employee(employee_id: str, update_data: EmployeeUpdate):
     try:
-        # Remove None values from update data
+        
         update_fields = {k: v for k, v in update_data.dict().items() if v is not None}
         
         if not update_fields:
@@ -80,7 +93,7 @@ async def update_employee(employee_id: str, update_data: EmployeeUpdate):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-# ------------------- DELETE EMPLOYEE BY ID -------------------
+
 @router.delete("/{employee_id}", response_model=dict)
 async def delete_employee(employee_id: str):
     try:
@@ -91,7 +104,7 @@ async def delete_employee(employee_id: str):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-# ------------------- SEARCH EMPLOYEES -------------------
+
 @router.get("/search/", response_model=dict)
 async def search_employees(name: str = None, role: str = None):
     try:

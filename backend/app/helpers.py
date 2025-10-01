@@ -1,8 +1,11 @@
 from bson import ObjectId
 
-def convert_objectid(doc: dict) -> dict:
+def convert_objectid(doc):
     if not doc:
         return None
+    if "_id" in doc:
+        doc["_id"] = str(doc["_id"])
+    return doc
 
     new_doc = {}
     for key, value in doc.items():
