@@ -75,3 +75,8 @@ export const Stats = {
   EMP_ROLE_COUNT: "Employee Role Count",
   PROJ_STATUS_DISTRIBUTION: "Project Status Distribution",
 };
+
+export const Errors = {
+  FAILED_TO_ADD: "Failed to add employee",
+  FAILED_TO_FETCH: "Failed to fetch employee",
+};
