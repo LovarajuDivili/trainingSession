@@ -4,6 +4,7 @@ import {
   createAsyncThunk,
   type PayloadAction,
 } from "@reduxjs/toolkit";
+import { Errors } from "../common/labelConstants";
 
 export interface Project {
   projectName: string;
@@ -105,7 +106,7 @@ const projectsSlice = createSlice({
       })
       .addCase(fetchProjects.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.error.message || "Failed to fetch projects";
+        state.error = action.error.message || Errors.FAILED_TO_FETCH;
       })
       .addCase(addProjectAPI.pending, (state) => {
         state.loading = true;
@@ -117,7 +118,7 @@ const projectsSlice = createSlice({
       })
       .addCase(addProjectAPI.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload || "Failed to add project";
+        state.error = action.payload || Errors.FAILED_TO_ADD;
       });
   },
 });
