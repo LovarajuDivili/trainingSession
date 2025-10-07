@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException, Depends
-from ...database import db
+from ..database import db
 from bson import ObjectId
 from datetime import datetime
 from app.helpers import convert_objectid

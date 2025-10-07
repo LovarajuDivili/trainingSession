@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   Box,
   Typography,
@@ -54,7 +55,6 @@ const AddProject = () => {
       await dispatch(addProjectAPI(newProject)).unwrap();
       alert("Project added successfully!");
       navigate("/admin/projects");
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       alert("Error adding project: " + (error.message || "Unknown error"));
     } finally {
