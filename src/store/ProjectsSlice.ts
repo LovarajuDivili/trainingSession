@@ -4,6 +4,7 @@ import {
   type PayloadAction,
 } from "@reduxjs/toolkit";
 import { Errors } from "../common/labelConstants";
+import { API_BASE } from "../common/apiService";
 
 export interface Project {
   projectName: string;
@@ -26,8 +27,6 @@ const initialState: ProjectsState = {
   loading: false,
   error: null,
 };
-
-const API_BASE = "http://localhost:8000/v-1/application";
 
 export const fetchProjects = createAsyncThunk(
   "projects/fetchProjects",
