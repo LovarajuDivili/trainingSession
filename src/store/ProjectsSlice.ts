@@ -1,4 +1,3 @@
-// src/store/projectsSlice.ts
 import {
   createSlice,
   createAsyncThunk,
