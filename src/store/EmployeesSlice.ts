@@ -6,8 +6,8 @@ import {
 import type { Employee } from "../common/types";
 import { Errors } from "../common/labelConstants";
 
-// Async thunks for API calls
-const API_BASE = "/api"; // This will proxy to http://localhost:8000/v-1/application
+
+const API_BASE = "/api"; 
 export const fetchEmployees = createAsyncThunk(
   "employees/fetchEmployees",
   async () => {
