@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException
 from ..database import db
 from bson import ObjectId
 from datetime import datetime
