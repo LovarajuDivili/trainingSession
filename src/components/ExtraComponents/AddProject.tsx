@@ -182,7 +182,7 @@ const AddProject = () => {
               <em>Select Status</em>
             </MenuItem>
             <MenuItem value="Active">Active</MenuItem>
-            <MenuItem value="InActive">Inactive</MenuItem>
+            <MenuItem value="InActive">InActive</MenuItem>
             <MenuItem value="InProgress">In Progress</MenuItem>
           </Select>
         </Grid>

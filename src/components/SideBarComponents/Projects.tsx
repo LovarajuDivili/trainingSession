@@ -41,14 +41,16 @@ const Projects = () => {
             backgroundColor:
               params.value === "Active"
                 ? "#47be4bff"
-                : params.value === "In Progress"
-                ? "orange"
-                : "#e12a2aff",
+                : params.value === "InProgress"
+                ? "#e1aa2aff"
+                : params.value === "InActive"
+                ? "#e12a2aff"
+                : null,
             color: "white",
             textTransform: "none",
             fontWeight: 600,
             borderRadius: "20px",
-            maxWidth: "20px",
+            width: "80px",
           }}
         >
           {params.value}
