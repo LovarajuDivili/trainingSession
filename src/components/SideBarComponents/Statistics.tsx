@@ -4,66 +4,56 @@ import { sidebarItems } from "../../common/sidebarItems";
 import { LineChart } from "@mui/x-charts/LineChart";
 import { BarChart } from "@mui/x-charts/BarChart";
 import { PieChart } from "@mui/x-charts/PieChart";
-import { useAppSelector } from "../../hooks/reduxHooks";
+import { useAppDispatch, useAppSelector } from "../../hooks/reduxHooks";
 import { Stats } from "../../common/labelConstants";
+import { fetchStatistics } from "../../store/StatisticsSlice";
+import { useEffect } from "react";
 
 const Statistics = () => {
+  const dispatch = useAppDispatch();
   const currentItem = sidebarItems.find(
     (item) => item.route === "/admin/statistics"
   );
 
-  const employees = useAppSelector((state) => state.employees.employees);
-  const projects = useAppSelector((state) => state.projects.projects || []);
+  const {
+    employeeRoleCounts,
+    projectStatusCounts,
+    totalEmployees,
+    totalProjects,
+    loading,
+  } = useAppSelector((state) => state.statistics);
 
-  const employeeRoleCounts = employees.reduce(
-    (acc, emp) => {
-      if (emp.role === "Developer") acc.Developers++;
-      else if (emp.role === "AWS Team") acc.AWSTeam++;
-      else if (emp.role === "Tester") acc.Testers++;
-      acc.AllEmployees++;
-      return acc;
-    },
-    { AllEmployees: 0, Developers: 0, AWSTeam: 0, Testers: 0 }
-  );
-
-  const projectStatusCounts = projects.reduce(
-    (acc, project) => {
-      if (project.status === "Active") acc.Active++;
-      else if (project.status === "Inactive") acc.Inactive++;
-      else if (project.status === "In Progress") acc.InProgress++;
-      return acc;
-    },
-    { Active: 0, Inactive: 0, InProgress: 0 }
-  );
-
+  useEffect(() => {
+    dispatch(fetchStatistics());
+  }, [dispatch]);
   const cardData = [
     {
-      title: "All Employees",
-      value: employees.length.toString(),
+      title: "AllEmployees",
+      value: (totalEmployees ?? 0).toString(),
       data: [100, 120, 90, 150, 130],
       color: "#1976d2",
     },
     {
       title: "Projects",
-      value: projects.length.toString(),
+      value: totalProjects.toString(),
       data: [80, 95, 70, 120, 110],
       color: "#d32f2f",
     },
     {
       title: "Developers",
-      value: employeeRoleCounts.Developers,
+      value: (employeeRoleCounts.Developers ?? 0).toString(),
       data: [50, 60, 45, 70, 65],
       color: "#388e3c",
     },
     {
       title: "AWS Team",
-      value: employeeRoleCounts.AWSTeam,
+      value: employeeRoleCounts.AWSTeam.toString(),
       data: [120, 140, 110, 160, 150],
       color: "#f57c00",
     },
     {
       title: "Testers",
-      value: employeeRoleCounts.Testers,
+      value: employeeRoleCounts.Testers.toString(),
       data: [30, 40, 25, 50, 45],
       color: "#7b1fa2",
     },
@@ -76,7 +66,7 @@ const Statistics = () => {
     employeeRoleCounts.Testers,
   ];
 
-  const barLabels = ["Employees", "Developers", "AWS", "Testers"];
+  const barLabels = ["Employees", "Devs", "AWS", "Testers"];
 
   const pieData = [
     {
@@ -92,12 +82,15 @@ const Statistics = () => {
       color: "#e12a2a",
     },
     {
-      id: "In Progress",
+      id: "InProgress",
       value: projectStatusCounts.InProgress,
-      label: "In Progress",
+      label: "InProgress",
       color: "orange",
     },
   ];
+  if (loading) {
+    return <Typography>Loading statistics...</Typography>;
+  }
 
   return (
     <Box sx={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
