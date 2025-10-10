@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useEffect } from "react";
 import {
   Box,
@@ -11,6 +12,7 @@ import {
   Grid,
   Chip,
   Divider,
+  Checkbox,
 } from "@mui/material";
 import {
   DataGrid,
@@ -23,13 +25,24 @@ import type { Employee } from "../../common/types";
 import DashboardHeader from "../DashboardHeader";
 import { sidebarItems } from "../../common/sidebarItems";
 import { useAppDispatch, useAppSelector } from "../../hooks/reduxHooks";
-import { fetchEmployees, addEmployeeAPI } from "../../store/EmployeesSlice";
+import {
+  fetchEmployees,
+  addEmployeeAPI,
+  deleteEmployeeAPI,
+  updateEmployeeAPI,
+} from "../../store/EmployeesSlice";
+import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/Delete";
 
 const AllEmployees = () => {
   const [loading] = useState(false);
   const [searchText, setSearchText] = useState("");
   const [cardView, setCardView] = useState(false);
   const [openDialog, setOpenDialog] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [employeeToDelete, setEmployeeToDelete] = useState<string | null>(null);
+  const [confirmChecked, setConfirmChecked] = useState(false);
   const [newEmployee, setNewEmployee] = useState<Employee>({
     name: "",
     email: "",
@@ -51,7 +64,7 @@ const AllEmployees = () => {
           skills: [...prev.skills, skillInput.trim()],
         }));
       }
-      setSkillInput(""); // clear input
+      setSkillInput("");
     }
   };
 
@@ -72,9 +85,26 @@ const AllEmployees = () => {
       emp.role.toLowerCase().includes(searchText.toLowerCase())
   );
 
-  const handleOpenDialog = () => setOpenDialog(true);
+  const handleOpenDialog = (employee?: Employee) => {
+    if (employee) {
+      setIsEditing(true);
+      setNewEmployee(employee);
+    } else {
+      setIsEditing(false);
+      setNewEmployee({
+        name: "",
+        email: "",
+        role: "",
+        joinDate: "",
+        id: "",
+        skills: [],
+      });
+    }
+    setOpenDialog(true);
+  };
   const handleCloseDialog = () => {
     setOpenDialog(false);
+    setIsEditing(false);
     setNewEmployee({
       name: "",
       email: "",
@@ -83,6 +113,15 @@ const AllEmployees = () => {
       id: "",
       skills: [],
     });
+    setSkillInput("");
+  };
+
+  const handleAddClick = () => {
+    handleOpenDialog();
+  };
+
+  const handleEditEmployee = (employee: Employee) => {
+    handleOpenDialog(employee);
   };
 
   const isSaveDisabled = !(
@@ -94,17 +133,10 @@ const AllEmployees = () => {
     newEmployee.skills.length > 0
   );
   const handleChange = (field: keyof Employee, value: string) => {
-    if (field === "skills") {
-      setNewEmployee((prev) => ({
-        ...prev,
-        skills: value ? value.split(",").map((s) => s.trim()) : [],
-      }));
-    } else {
-      setNewEmployee((prev) => ({ ...prev, [field]: value }));
-    }
+    setNewEmployee((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleAddEmployee = async () => {
+  const handleSaveEmployee = async () => {
     if (
       !newEmployee.name ||
       !newEmployee.email ||
@@ -117,15 +149,50 @@ const AllEmployees = () => {
     }
 
     try {
-      await dispatch(addEmployeeAPI(newEmployee)).unwrap();
+      if (isEditing) {
+        await dispatch(updateEmployeeAPI(newEmployee)).unwrap();
+      } else {
+        await dispatch(addEmployeeAPI(newEmployee)).unwrap();
+      }
       dispatch(fetchEmployees());
       handleCloseDialog();
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
-      console.error("Error adding employee:", error);
-      alert("Error adding employee: " + (error.message || "Unknown error"));
+      console.error("Error saving employee:", error);
+      alert(
+        error?.detail || `⚠️ Failed to ${isEditing ? "update" : "add"} employee`
+      );
     }
   };
+
+  const handleDeleteEmployee = async (employeeId: string) => {
+    setEmployeeToDelete(employeeId);
+    setDeleteConfirmOpen(true);
+    setConfirmChecked(false); // Reset checkbox when dialog opens
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!employeeToDelete) return;
+
+    try {
+      await dispatch(deleteEmployeeAPI(employeeToDelete)).unwrap();
+      dispatch(fetchEmployees());
+      setDeleteConfirmOpen(false);
+      setEmployeeToDelete(null);
+      setConfirmChecked(false);
+    } catch (error: any) {
+      console.error("Error deleting employee:", error);
+      alert(error?.detail || "⚠️ Failed to delete employee");
+    }
+  };
+
+  const handleCancelDelete = () => {
+    setDeleteConfirmOpen(false);
+    setEmployeeToDelete(null);
+    setConfirmChecked(false);
+  };
+
+  const dialogTitle = isEditing ? "Edit Employee" : "Add New Employee";
+  const saveButtonLabel = isEditing ? "Update" : "Add";
 
   const columns: GridColDef<Employee>[] = [
     { field: "name", headerName: "Name", flex: 1 },
@@ -157,6 +224,7 @@ const AllEmployees = () => {
         </>
       ),
     },
+
     {
       field: "currentDate",
       headerName: "Current Date",
@@ -165,6 +233,29 @@ const AllEmployees = () => {
         params.row.joinDate
           ? new Date(params.row.joinDate).toLocaleDateString()
           : "",
+    },
+    {
+      field: "actions",
+      headerName: "Actions",
+      flex: 1,
+      sortable: false,
+      filterable: false,
+      renderCell: (params: GridRenderCellParams<Employee>) => (
+        <Box>
+          <IconButton
+            color="primary"
+            onClick={() => handleEditEmployee(params.row)}
+          >
+            <EditIcon />
+          </IconButton>
+          <IconButton
+            color="error"
+            onClick={() => handleDeleteEmployee(params.row.id)}
+          >
+            <DeleteIcon />
+          </IconButton>
+        </Box>
+      ),
     },
   ];
 
@@ -182,7 +273,7 @@ const AllEmployees = () => {
         searchText={searchText}
         onSearchChange={setSearchText}
         showAddButton
-        onAddClick={handleOpenDialog}
+        onAddClick={handleAddClick}
         addButtonLabel="Add New"
         gridIcon={
           <IconButton
@@ -322,7 +413,7 @@ const AllEmployees = () => {
           }}
         >
           <DialogTitle sx={{ p: 0, fontSize: "25px" }}>
-            Add New Employee
+            {dialogTitle}
           </DialogTitle>
           <Box
             sx={{
@@ -347,11 +438,11 @@ const AllEmployees = () => {
             <Button
               variant="contained"
               color="primary"
-              onClick={handleAddEmployee}
+              onClick={handleSaveEmployee}
               disabled={isSaveDisabled}
               sx={{ backgroundColor: "#906aff", textTransform: "uppercase" }}
             >
-              Add
+              {saveButtonLabel}
             </Button>
           </Box>
         </Box>
@@ -478,6 +569,67 @@ const AllEmployees = () => {
             </Grid>
           </Grid>
         </DialogContent>
+      </Dialog>
+      {/* Delete Confirmation Dialog */}
+      <Dialog
+        open={deleteConfirmOpen}
+        onClose={handleCancelDelete}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle sx={{ fontSize: "20px", fontWeight: 600 }}>
+          Confirm Delete
+        </DialogTitle>
+        <DialogContent>
+          <Typography sx={{ mb: 2 }}>
+            Are you sure you want to delete this employee? This action cannot be
+            undone.
+          </Typography>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+            <Checkbox
+              id="confirm-delete"
+              checked={confirmChecked}
+              onChange={(e) => setConfirmChecked(e.target.checked)}
+              size="small"
+            />
+            <Typography
+              component="label"
+              htmlFor="confirm-delete"
+              sx={{ cursor: "pointer" }}
+            >
+              Yes, I want to delete this employee
+            </Typography>
+          </Box>
+        </DialogContent>
+        <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 2, p: 2 }}>
+          <Button
+            variant="outlined"
+            onClick={handleCancelDelete}
+            sx={{
+              color: "#666",
+              borderColor: "#666",
+              textTransform: "uppercase",
+            }}
+          >
+            Cancel
+          </Button>
+          <Button
+            variant="contained"
+            color="error"
+            onClick={handleConfirmDelete}
+            disabled={!confirmChecked}
+            sx={{
+              backgroundColor: "#d81b1bff",
+              textTransform: "uppercase",
+              "&:disabled": {
+                backgroundColor: "#f5f5f5",
+                color: "#999",
+              },
+            }}
+          >
+            Delete
+          </Button>
+        </Box>
       </Dialog>
     </Box>
   );
