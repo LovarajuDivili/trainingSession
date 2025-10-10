@@ -72,6 +72,67 @@ export const addProjectAPI = createAsyncThunk<
   }
 });
 
+export const updateProjectAPI = createAsyncThunk<
+  Project,
+  Project,
+  { rejectValue: string }
+>("projects/updateProject", async (project, { rejectWithValue }) => {
+  try {
+    const response = await fetch(`${API_BASE}/projects/${project.id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(project),
+    });
+
+    if (!response.ok) {
+      let errorMsg = "Failed to update project";
+      try {
+        const errorData = await response.json();
+        errorMsg = errorData?.detail || errorMsg;
+      } catch {
+        errorMsg = response.statusText || errorMsg;
+      }
+      return rejectWithValue(errorMsg);
+    }
+
+    const data = await response.json();
+    return data.data;
+  } catch (err) {
+    return rejectWithValue(
+      err instanceof Error ? err.message : "Unknown error"
+    );
+  }
+});
+
+export const deleteProjectAPI = createAsyncThunk<
+  string,
+  string,
+  { rejectValue: string }
+>("projects/deleteProject", async (projectId: string, { rejectWithValue }) => {
+  try {
+    const response = await fetch(`${API_BASE}/projects/${projectId}`, {
+      method: "DELETE",
+    });
+
+    if (!response.ok) {
+      let errorMsg = "Failed to delete project";
+      try {
+        const errorData = await response.json();
+        errorMsg = errorData?.detail || errorMsg;
+      } catch {
+        errorMsg = response.statusText || errorMsg;
+      }
+      return rejectWithValue(errorMsg);
+    }
+
+    return projectId;
+  } catch (err) {
+    return rejectWithValue(
+      err instanceof Error ? err.message : "Unknown error"
+    );
+  }
+});
+
 const projectsSlice = createSlice({
   name: "projects",
   initialState,
@@ -117,6 +178,37 @@ const projectsSlice = createSlice({
       .addCase(addProjectAPI.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload || Errors.FAILED_TO_ADD;
+      })
+      .addCase(updateProjectAPI.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(updateProjectAPI.fulfilled, (state, action) => {
+        state.loading = false;
+        const index = state.projects.findIndex(
+          (proj) => proj.id === action.payload.id
+        );
+        if (index !== -1) {
+          state.projects[index] = action.payload;
+        }
+      })
+      .addCase(updateProjectAPI.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload || Errors.FAILED_TO_UPDATE;
+      })
+      .addCase(deleteProjectAPI.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(deleteProjectAPI.fulfilled, (state, action) => {
+        state.loading = false;
+        state.projects = state.projects.filter(
+          (proj) => proj.id !== action.payload
+        );
+      })
+      .addCase(deleteProjectAPI.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload || Errors.FAILED_TO_DELETE;
       });
   },
 });

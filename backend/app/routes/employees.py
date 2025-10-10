@@ -9,7 +9,7 @@ from app.schemas import EmployeeCreate,EmployeeUpdate
 router = APIRouter(prefix="/employees", tags=["employees"])
 
 
-@router.get("/", response_model=dict)
+@router.get("/get_all/", response_model=dict)
 async def get_employees():
     try:
         employees_cursor = db["employees"].find()
@@ -22,10 +22,18 @@ async def get_employees():
 
 from fastapi.responses import JSONResponse
 
-@router.post("/", response_model=dict)
+@router.post("/create/", response_model=dict)
 async def create_employee(employee: EmployeeCreate):
     try:
+        existing_employee_email = db["employees"].find_one({"email": employee.email})
+        if existing_employee_email:
+            return JSONResponse(
+                status_code=400,
+                content={"detail": "Employee with this email already exists"}
+            )
+
         existing_employee = db["employees"].find_one({"id": employee.id})
+    
         if existing_employee:
             return JSONResponse(
                 status_code=400,
@@ -61,7 +69,7 @@ async def create_employee(employee: EmployeeCreate):
 
 
 
-@router.get("/{employee_id}", response_model=dict)
+@router.get("/get_by_id/{employee_id}", response_model=dict)
 async def get_employee_by_id(employee_id: str):
     try:
         employee = db["employees"].find_one({"id": employee_id})
@@ -72,11 +80,11 @@ async def get_employee_by_id(employee_id: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.put("/{employee_id}", response_model=dict)
+@router.put("/update/{employee_id}", response_model=dict)
 async def update_employee(employee_id: str, update_data: EmployeeUpdate):
     try:
         
-        update_fields = {k: v for k, v in update_data.dict().items() if v is not None}
+        update_fields = {k: v for k, v in update_data.dict().items() if v is not None and k != "id"}
         
         if not update_fields:
             raise HTTPException(status_code=400, detail="No fields to update")
@@ -94,14 +102,19 @@ async def update_employee(employee_id: str, update_data: EmployeeUpdate):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.delete("/{employee_id}", response_model=dict)
+@router.delete("/delete/{employee_id}", response_model=dict)
 async def delete_employee(employee_id: str):
     try:
+        print(f"Attempting to delete employee with ID: {employee_id}")
         delete_result = db["employees"].delete_one({"id": employee_id})
+        print(f"Delete result - matched: {delete_result.deleted_count}, deleted: {delete_result.deleted_count}")
+        
         if delete_result.deleted_count == 0:
             raise HTTPException(status_code=404, detail="Employee not found")
+        
         return {"status": "success", "message": "Employee deleted successfully"}
     except Exception as e:
+        print(f"Error in delete endpoint: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 

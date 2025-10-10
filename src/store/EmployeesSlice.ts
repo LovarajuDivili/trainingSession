@@ -6,12 +6,11 @@ import {
 import type { Employee } from "../common/types";
 import { Errors } from "../common/labelConstants";
 
-
-const API_BASE = "/api"; 
+const API_BASE = "/api";
 export const fetchEmployees = createAsyncThunk(
   "employees/fetchEmployees",
   async () => {
-    const response = await fetch(`${API_BASE}/employees`);
+    const response = await fetch(`${API_BASE}/employees/get_all/`);
     const data = await response.json();
     return data.data;
   }
@@ -20,11 +19,11 @@ export const fetchEmployees = createAsyncThunk(
 export const addEmployeeAPI = createAsyncThunk<
   Employee,
   Employee,
-  { rejectValue: string }
+  { rejectValue: { detail: string } }
 >("employees/addEmployee", async (employee, { rejectWithValue }) => {
   try {
     console.log("Sending employee data:", employee);
-    const response = await fetch(`${API_BASE}/employees`, {
+    const response = await fetch(`${API_BASE}/employees/create`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(employee),
@@ -33,15 +32,14 @@ export const addEmployeeAPI = createAsyncThunk<
     console.log("Response status:", response.status);
 
     if (!response.ok) {
-      let errorMsg = "Failed to add employee";
+      let errorData;
       try {
-        const errorData = await response.json();
+        errorData = await response.json();
         console.log("Error response:", errorData);
-        errorMsg = errorData?.detail || errorMsg;
       } catch {
-        errorMsg = response.statusText || errorMsg;
+        errorData = response.statusText || "Failed to add employee";
       }
-      return rejectWithValue(errorMsg);
+      return rejectWithValue(errorData);
     }
 
     const data = await response.json();
@@ -49,19 +47,89 @@ export const addEmployeeAPI = createAsyncThunk<
     return data.data;
   } catch (err) {
     console.error("Fetch error:", err);
-    return rejectWithValue(
-      err instanceof Error ? err.message : "Unknown error"
-    );
+    return rejectWithValue({
+      detail: err instanceof Error ? err.message : "Unknown error",
+    });
   }
 });
 
-export const deleteEmployeeAPI = createAsyncThunk(
-  "employees/deleteEmployee",
-  async (employeeId: string) => {
-    await fetch(`/api/employees/${employeeId}`, {
-      method: "DELETE",
+export const updateEmployeeAPI = createAsyncThunk<
+  Employee,
+  Employee,
+  { rejectValue: { detail: string } }
+>("employees/updateEmployee", async (employee, { rejectWithValue }) => {
+  try {
+    console.log("Updating employee data:", employee);
+    const response = await fetch(
+      `${API_BASE}/employees/update/${employee.id}`,
+      {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(employee),
+      }
+    );
+
+    console.log("Update response status:", response.status);
+
+    if (!response.ok) {
+      let errorData;
+      try {
+        errorData = await response.json();
+        console.log("Update error response:", errorData);
+      } catch {
+        errorData = response.statusText || "Failed to update employee";
+      }
+      return rejectWithValue(errorData);
+    }
+
+    const data = await response.json();
+    console.log("Update success response:", data);
+    return data.data;
+  } catch (err) {
+    console.error("Update fetch error:", err);
+    return rejectWithValue({
+      detail: err instanceof Error ? err.message : "Unknown error",
     });
-    return employeeId;
+  }
+});
+
+export const deleteEmployeeAPI = createAsyncThunk<
+  string,
+  string,
+  { rejectValue: { detail: string } }
+>(
+  "employees/deleteEmployee",
+  async (employeeId: string, { rejectWithValue }) => {
+    try {
+      const response = await fetch(
+        `${API_BASE}/employees/delete/${employeeId}`,
+        {
+          method: "DELETE",
+        }
+      );
+
+      console.log("Delete response status:", response.status);
+
+      if (!response.ok) {
+        let errorData;
+        try {
+          errorData = await response.json();
+          console.log("Delete error response:", errorData);
+        } catch {
+          errorData = response.statusText || "Failed to delete employee";
+        }
+        return rejectWithValue(errorData);
+      }
+
+      const data = await response.json();
+      console.log("Delete success response:", data);
+      return employeeId;
+    } catch (err) {
+      console.error("Delete fetch error:", err);
+      return rejectWithValue({
+        detail: err instanceof Error ? err.message : "Unknown error",
+      });
+    }
   }
 );
 
@@ -107,8 +175,37 @@ const employeesSlice = createSlice({
       })
       .addCase(addEmployeeAPI.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload || Errors.FAILED_TO_ADD;
-      });
+        state.error = action.payload?.detail || Errors.FAILED_TO_ADD;
+      })
+      .addCase(updateEmployeeAPI.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(updateEmployeeAPI.fulfilled, (state, action) => {
+        state.loading = false;
+        const index = state.employees.findIndex(
+          (emp) => emp.id === action.payload.id
+        );
+        if (index !== -1) {
+          state.employees[index] = action.payload;
+        }
+      })
+      .addCase(updateEmployeeAPI.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload?.detail || Errors.FAILED_TO_UPDATE;
+      })
+      .addCase(deleteEmployeeAPI.pending, (state) => {
+      state.loading = true;
+      state.error = null;
+    })
+    .addCase(deleteEmployeeAPI.fulfilled, (state, action) => {
+      state.loading = false;
+      state.employees = state.employees.filter(emp => emp.id !== action.payload);
+    })
+    .addCase(deleteEmployeeAPI.rejected, (state, action) => {
+      state.loading = false;
+      state.error = action.payload?.detail || Errors.FAILED_TO_DELETE;
+    });
   },
 });
 

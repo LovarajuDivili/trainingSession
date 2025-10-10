@@ -79,4 +79,6 @@ export const Stats = {
 export const Errors = {
   FAILED_TO_ADD: "Failed to add employee",
   FAILED_TO_FETCH: "Failed to fetch employee",
+  FAILED_TO_UPDATE: "Failed to update employee",
+  FAILED_TO_DELETE: "Failed to delete employee",
 };
