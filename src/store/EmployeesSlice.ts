@@ -195,17 +195,19 @@ const employeesSlice = createSlice({
         state.error = action.payload?.detail || Errors.FAILED_TO_UPDATE;
       })
       .addCase(deleteEmployeeAPI.pending, (state) => {
-      state.loading = true;
-      state.error = null;
-    })
-    .addCase(deleteEmployeeAPI.fulfilled, (state, action) => {
-      state.loading = false;
-      state.employees = state.employees.filter(emp => emp.id !== action.payload);
-    })
-    .addCase(deleteEmployeeAPI.rejected, (state, action) => {
-      state.loading = false;
-      state.error = action.payload?.detail || Errors.FAILED_TO_DELETE;
-    });
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(deleteEmployeeAPI.fulfilled, (state, action) => {
+        state.loading = false;
+        state.employees = state.employees.filter(
+          (emp) => emp.id !== action.payload
+        );
+      })
+      .addCase(deleteEmployeeAPI.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload?.detail || Errors.FAILED_TO_DELETE;
+      });
   },
 });
 

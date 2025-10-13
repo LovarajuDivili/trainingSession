@@ -31,7 +31,7 @@ const initialState: ProjectsState = {
 export const fetchProjects = createAsyncThunk(
   "projects/fetchProjects",
   async () => {
-    const response = await fetch(`${API_BASE}/projects`);
+    const response = await fetch(`${API_BASE}/projects/get_all/`);
     if (!response.ok) {
       throw new Error(`Failed to fetch projects: ${response.status}`);
     }
@@ -46,26 +46,42 @@ export const addProjectAPI = createAsyncThunk<
   { rejectValue: string }
 >("projects/addProject", async (project, { rejectWithValue }) => {
   try {
-    const response = await fetch(`${API_BASE}/projects`, {
+    console.log("Sending project data:", project);
+    const response = await fetch(`${API_BASE}/projects/create/`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(project),
     });
 
+    console.log("Response status:", response.status);
+
     if (!response.ok) {
-      let errorMsg = "Failed to add project";
+      let errorData;
       try {
-        const errorData = await response.json();
-        errorMsg = errorData?.detail || errorMsg;
-      } catch {
-        errorMsg = response.statusText || errorMsg;
+        const text = await response.text();
+        console.log("Raw error text:", text);
+        errorData = JSON.parse(text);
+      } catch (parseError) {
+        console.log("Failed to parse error response:", parseError);
+        return rejectWithValue(response.statusText || "Failed to add project");
       }
-      return rejectWithValue(errorMsg);
+
+      if (errorData.detail) {
+        return rejectWithValue(errorData.detail);
+      } else if (errorData.message) {
+        return rejectWithValue(errorData.message);
+      } else {
+        return rejectWithValue(
+          `Error ${response.status}: ${response.statusText}`
+        );
+      }
     }
 
     const data = await response.json();
+    console.log("Success response:", data);
     return data.data;
   } catch (err) {
+    console.error("Fetch error:", err);
     return rejectWithValue(
       err instanceof Error ? err.message : "Unknown error"
     );
@@ -78,26 +94,39 @@ export const updateProjectAPI = createAsyncThunk<
   { rejectValue: string }
 >("projects/updateProject", async (project, { rejectWithValue }) => {
   try {
-    const response = await fetch(`${API_BASE}/projects/${project.id}`, {
+    console.log("Updating project data:", project);
+    const response = await fetch(`${API_BASE}/projects/update/${project.id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(project),
     });
 
     if (!response.ok) {
-      let errorMsg = "Failed to update project";
+      let errorData;
       try {
-        const errorData = await response.json();
-        errorMsg = errorData?.detail || errorMsg;
+        errorData = await response.json();
+        console.log("Update error response:", errorData);
+        // Handle different error response formats
+        if (errorData.detail) {
+          return rejectWithValue(errorData.detail);
+        } else if (errorData.message) {
+          return rejectWithValue(errorData.message);
+        } else if (typeof errorData === "string") {
+          return rejectWithValue(errorData);
+        } else {
+          return rejectWithValue(`HTTP error! status: ${response.status}`);
+        }
       } catch {
-        errorMsg = response.statusText || errorMsg;
+        errorData = response.statusText || "Failed to update project";
+        return rejectWithValue(errorData);
       }
-      return rejectWithValue(errorMsg);
     }
 
     const data = await response.json();
+    console.log("Update success response:", data);
     return data.data;
   } catch (err) {
+    console.error("Update fetch error:", err);
     return rejectWithValue(
       err instanceof Error ? err.message : "Unknown error"
     );
@@ -110,23 +139,28 @@ export const deleteProjectAPI = createAsyncThunk<
   { rejectValue: string }
 >("projects/deleteProject", async (projectId: string, { rejectWithValue }) => {
   try {
-    const response = await fetch(`${API_BASE}/projects/${projectId}`, {
+    const response = await fetch(`${API_BASE}/projects/delete/${projectId}`, {
       method: "DELETE",
     });
 
+    console.log("Delete response status:", response.status);
+
     if (!response.ok) {
-      let errorMsg = "Failed to delete project";
+      let errorData;
       try {
-        const errorData = await response.json();
-        errorMsg = errorData?.detail || errorMsg;
+        errorData = await response.json();
+        console.log("Delete error response:", errorData);
       } catch {
-        errorMsg = response.statusText || errorMsg;
+        errorData = response.statusText || "Failed to delete project";
       }
-      return rejectWithValue(errorMsg);
+      return rejectWithValue(errorData.detail || errorData);
     }
 
+    const data = await response.json();
+    console.log("Delete success response:", data);
     return projectId;
   } catch (err) {
+    console.error("Delete fetch error:", err);
     return rejectWithValue(
       err instanceof Error ? err.message : "Unknown error"
     );
