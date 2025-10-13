@@ -104,9 +104,11 @@ const AddProject = ({
         navigate("/admin/projects");
       }
     } catch (error: any) {
+      const errorMessage = error.payload || error.message || "Unknown error";
+
+      console.error("Project operation error:", error);
       alert(
-        `Error ${isEditing ? "updating" : "adding"} project: ` +
-          (error.message || "Unknown error")
+        `Error ${isEditing ? "updating" : "adding"} project: ${errorMessage}`
       );
     } finally {
       setLoading(false);
@@ -124,7 +126,6 @@ const AddProject = ({
   const title = isEditing ? "Edit Project" : Add_New.ADD_PROJECT;
   const buttonLabel = isEditing ? "Update" : Add_New.ADD_BUTTON;
 
-  // Dialog mode (used in Projects.tsx)
   if (onClose) {
     return (
       <Dialog open={open} onClose={handleCancel} maxWidth="md" fullWidth>

@@ -1,6 +1,15 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useEffect } from "react";
-import { Box, Button, Checkbox, Dialog, DialogContent, DialogTitle, IconButton, Typography } from "@mui/material";
+import {
+  Box,
+  Button,
+  Checkbox,
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  IconButton,
+  Typography,
+} from "@mui/material";
 import {
   DataGrid,
   type GridColDef,
@@ -11,11 +20,14 @@ import { Loading } from "../../common/labelConstants";
 import DashboardHeader from "../DashboardHeader";
 import { sidebarItems } from "../../common/sidebarItems";
 import { useAppDispatch, useAppSelector } from "../../hooks/reduxHooks";
-import { deleteProjectAPI, fetchProjects, type Project } from "../../store/ProjectsSlice";
+import {
+  deleteProjectAPI,
+  fetchProjects,
+  type Project,
+} from "../../store/ProjectsSlice";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import AddProject from "../ExtraComponents/AddProject";
-
 
 const Projects = () => {
   const [searchText, setSearchText] = useState("");
@@ -171,7 +183,7 @@ const Projects = () => {
             getRowId={(row) => row.id}
             pageSizeOptions={[5, 10, 20]}
             initialState={{
-              pagination: { paginationModel: { pageSize: 5, page: 0 } },
+              pagination: { paginationModel: { pageSize: 10, page: 0 } },
             }}
             sx={{
               "& .MuiDataGrid-columnHeaders": {

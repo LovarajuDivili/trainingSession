@@ -1,14 +1,15 @@
 from fastapi import APIRouter, HTTPException
+from fastapi.responses import JSONResponse
 from ..database import db
 from bson import ObjectId
 from datetime import datetime
-from app.helpers import convert_objectid
+from app.helpers import convert_objectid, validate_project_uniqueness
 from typing import List
-from app.schemas import ProjectCreate, ProjectUpdate
+from app.schemas import ProjectBase, ProjectCreate, ProjectUpdate
 
 router = APIRouter(prefix="/projects", tags=["projects"])
 
-@router.get("/", response_model=dict)
+@router.get("/get_all/", response_model=dict)
 async def get_projects():
     try:
         projects_cursor = db["projects"].find()
@@ -19,40 +20,20 @@ async def get_projects():
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/", response_model=dict)
-async def create_project(project: ProjectCreate):
+@router.post("/create/")
+async def create_project(project: ProjectBase):
     try:
-        # Check if project with same ID already exists
-        existing_project = db["projects"].find_one({"id": project.id})
-        if existing_project:
-            return {
-                "status": "error",
-                "detail": "Project with this ID already exists"
-            }
-
-        project_data = {
-            "projectName": project.projectName,
-            "projectOwner": project.projectOwner,
-            "jiraId": project.jiraId,
-            "status": project.status,
-            "startDate": project.startDate,
-            "endDate": project.endDate,
-            "id": project.id,
-            "created_at": datetime.utcnow()
-        }
-
-        result = db["projects"].insert_one(project_data)
-        new_project = db["projects"].find_one({"_id": result.inserted_id})
-
-        if not new_project:
-            raise HTTPException(status_code=500, detail="Failed to fetch inserted project")
-
-        return {"status": "success", "data": convert_objectid(new_project)}
-
+        validate_project_uniqueness(project)
+        project_dict = project.dict()
+        project_dict["id"] = "PROJ" + str(int(datetime.now().timestamp() * 1000))
+        result = db["projects"].insert_one(project_dict)
+        project_dict["_id"] = str(result.inserted_id)
+        return {"message": "Project created successfully", "data": convert_objectid(project_dict)}
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
-@router.get("/{project_id}", response_model=dict)
+@router.get("/get_by_id/{project_id}", response_model=dict)
 async def get_project_by_id(project_id: str):
     try:
         project = db["projects"].find_one({"id": project_id})
@@ -62,27 +43,26 @@ async def get_project_by_id(project_id: str):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.put("/{project_id}", response_model=dict)
-async def update_project(project_id: str, update_data: ProjectUpdate):
+@router.put("/update/{id}")
+async def update_project(id: str, project: ProjectUpdate):
     try:
-        update_fields = {k: v for k, v in update_data.dict().items() if v is not None}
-        
-        if not update_fields:
-            raise HTTPException(status_code=400, detail="No fields to update")
-            
-        update_result = db["projects"].update_one(
-            {"id": project_id},
-            {"$set": update_fields}
-        )
-        if update_result.matched_count == 0:
+        existing_project = db["projects"].find_one({"id": id})
+        if not existing_project:
             raise HTTPException(status_code=404, detail="Project not found")
 
-        updated_project = db["projects"].find_one({"id": project_id})
-        return {"status": "success", "data": convert_objectid(updated_project)}
+        validate_project_uniqueness(project, exclude_id=id)
+
+        update_data = {k: v for k, v in project.dict().items() if v is not None}
+        db["projects"].update_one({"id": id}, {"$set": update_data})
+
+        updated_project = db["projects"].find_one({"id": id})
+        return {"message": "Project updated successfully", "data": convert_objectid(updated_project)}
+
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
-@router.delete("/{project_id}", response_model=dict)
+@router.delete("/delete/{project_id}", response_model=dict)
 async def delete_project(project_id: str):
     try:
         delete_result = db["projects"].delete_one({"id": project_id})
