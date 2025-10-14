@@ -33,12 +33,19 @@ import {
 } from "../../store/EmployeesSlice";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
+import CloseIcon from "@mui/icons-material/Close";
+import { Snackbar, Alert } from "@mui/material";
 
 const AllEmployees = () => {
   const [loading] = useState(false);
   const [searchText, setSearchText] = useState("");
   const [cardView, setCardView] = useState(false);
   const [openDialog, setOpenDialog] = useState(false);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [snackbarSeverity, setSnackbarSeverity] = useState<"error" | "success">(
+    "success"
+  );
   const [isEditing, setIsEditing] = useState(false);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [employeeToDelete, setEmployeeToDelete] = useState<string | null>(null);
@@ -85,18 +92,31 @@ const AllEmployees = () => {
       emp.role.toLowerCase().includes(searchText.toLowerCase())
   );
 
+  const handleSnackbarClose = (_?: any, reason?: string) => {
+    if (reason === "clickaway") return;
+    setSnackbarOpen(false);
+  };
+
   const handleOpenDialog = (employee?: Employee) => {
     if (employee) {
       setIsEditing(true);
       setNewEmployee(employee);
     } else {
       setIsEditing(false);
+      const numericIds = employees
+        .map((emp) => parseInt(emp.id.replace("EMP", ""), 10))
+        .filter((num) => !isNaN(num));
+
+      const nextNumber =
+        numericIds.length > 0 ? Math.max(...numericIds) + 1 : 1;
+
+      const nextId = `EMP${nextNumber}`;
       setNewEmployee({
         name: "",
         email: "",
         role: "",
         joinDate: "",
-        id: "",
+        id: String(nextId),
         skills: [],
       });
     }
@@ -144,23 +164,35 @@ const AllEmployees = () => {
       !newEmployee.joinDate ||
       !newEmployee.id
     ) {
-      alert("⚠️ Please fill all required fields!");
+      setSnackbarMessage("⚠️ Please fill all required fields!");
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
       return;
     }
 
     try {
       if (isEditing) {
         await dispatch(updateEmployeeAPI(newEmployee)).unwrap();
+        setSnackbarMessage("Employee updated successfully!");
+        setSnackbarSeverity("success");
       } else {
         await dispatch(addEmployeeAPI(newEmployee)).unwrap();
+        setSnackbarMessage("Employee added successfully!");
+        setSnackbarSeverity("success");
       }
+
       dispatch(fetchEmployees());
       handleCloseDialog();
+      setSnackbarOpen(true);
     } catch (error: any) {
       console.error("Error saving employee:", error);
-      alert(
-        error?.detail || `⚠️ Failed to ${isEditing ? "update" : "add"} employee`
-      );
+
+      // ✅ Show API error in Snackbar
+      const message =
+        error?.detail || `Failed to ${isEditing ? "update" : "add"} employee`;
+      setSnackbarMessage(message);
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
     }
   };
 
@@ -192,7 +224,7 @@ const AllEmployees = () => {
   };
 
   const dialogTitle = isEditing ? "Edit Employee" : "Add New Employee";
-  const saveButtonLabel = isEditing ? "Update" : "Add";
+  const saveButtonLabel = isEditing ? "Save" : "Add";
 
   const columns: GridColDef<Employee>[] = [
     { field: "name", headerName: "Name", flex: 1 },
@@ -319,17 +351,35 @@ const AllEmployees = () => {
                         justifyContent="space-between"
                         alignItems="center"
                       >
-                        <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                        <Typography
+                          variant="h6"
+                          sx={{ fontWeight: 600, color: "#906aff" }}
+                        >
                           {emp.name}
                         </Typography>
 
-                        <Typography
-                          variant="h6"
-                          sx={{ fontWeight: 600, color: "gray" }}
+                        <Box
+                          sx={{
+                            width: 30,
+                            height: 30,
+                            borderRadius: "50%",
+                            backgroundColor: "lightgray",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                          }}
                         >
-                          {emp.name.charAt(0)}
-                        </Typography>
+                          <Typography
+                            variant="h6"
+                            sx={{ fontWeight: 600, color: "white" }}
+                          >
+                            {emp.name.charAt(0).toUpperCase()}{" "}
+                          </Typography>
+                        </Box>
                       </Box>
+                      <Typography variant="body2" sx={{ mt: 1 }}>
+                        <strong>Emp Id:</strong> {emp.id}
+                      </Typography>
                       <Typography variant="body2" sx={{ mt: 1 }}>
                         <strong>Email:</strong> {emp.email}
                       </Typography>
@@ -526,6 +576,7 @@ const AllEmployees = () => {
                 onChange={(e) => handleChange("id", e.target.value)}
                 fullWidth
                 required
+                InputProps={{ readOnly: true }}
                 sx={{
                   "& .MuiOutlinedInput-root": {
                     borderRadius: "20px",
@@ -577,13 +628,38 @@ const AllEmployees = () => {
         maxWidth="sm"
         fullWidth
       >
-        <DialogTitle sx={{ fontSize: "20px", fontWeight: 600 }}>
+        <DialogTitle
+          sx={{
+            fontSize: "20px",
+            fontWeight: 600,
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
           Confirm Delete
+          <IconButton
+            onClick={handleCancelDelete}
+            size="small"
+            sx={{
+              backgroundColor: "#f5f5f5",
+              color: "#d81b1b",
+              "&:hover": { backgroundColor: "#f44336", color: "#fff" },
+              width: 28,
+              height: 28,
+              borderRadius: "50%",
+            }}
+          >
+            <CloseIcon sx={{ fontSize: "18px" }} />
+          </IconButton>
         </DialogTitle>
         <DialogContent>
           <Typography sx={{ mb: 2 }}>
-            Are you sure you want to delete this employee? This action cannot be
-            undone.
+            Are you sure you want to delete{" "}
+            <strong>
+              {employees.find((emp) => emp.id === employeeToDelete)?.name || ""}
+            </strong>
+            ? This action cannot be undone.
           </Typography>
           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
             <Checkbox
@@ -597,7 +673,11 @@ const AllEmployees = () => {
               htmlFor="confirm-delete"
               sx={{ cursor: "pointer" }}
             >
-              Yes, I want to delete this employee
+              Yes, I want to delete{" "}
+              <strong>
+                {employees.find((emp) => emp.id === employeeToDelete)?.name ||
+                  ""}
+              </strong>
             </Typography>
           </Box>
         </DialogContent>
@@ -631,6 +711,21 @@ const AllEmployees = () => {
           </Button>
         </Box>
       </Dialog>
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={2000}
+        onClose={handleSnackbarClose}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+      >
+        <Alert
+          onClose={handleSnackbarClose}
+          severity={snackbarSeverity}
+          sx={{ width: "100%" }}
+          variant="filled"
+        >
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };
