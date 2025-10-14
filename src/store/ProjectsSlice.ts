@@ -6,13 +6,15 @@ import {
 import { Errors } from "../common/labelConstants";
 import { API_BASE } from "../common/apiService";
 
-export interface Project {
+export interface ProjectBase {
   projectName: string;
   projectOwner: string;
   jiraId: string;
   status: string;
   startDate: string;
   endDate: string;
+}
+export interface Project extends ProjectBase {
   id: string;
 }
 
@@ -42,7 +44,7 @@ export const fetchProjects = createAsyncThunk(
 
 export const addProjectAPI = createAsyncThunk<
   Project,
-  Project,
+  ProjectBase,
   { rejectValue: string }
 >("projects/addProject", async (project, { rejectWithValue }) => {
   try {

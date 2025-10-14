@@ -27,18 +27,16 @@ import {
 } from "../../store/ProjectsSlice";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
-import AddProject from "../ExtraComponents/AddProject";
 
 const Projects = () => {
   const [searchText, setSearchText] = useState("");
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const { projects, loading } = useAppSelector((state) => state.projects);
-  const [openDialog, setOpenDialog] = useState(false);
+
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [projectToDelete, setProjectToDelete] = useState<string | null>(null);
   const [confirmChecked, setConfirmChecked] = useState(false);
-  const [currentProject, setCurrentProject] = useState<Project | null>(null);
 
   useEffect(() => {
     dispatch(fetchProjects());
@@ -50,18 +48,11 @@ const Projects = () => {
       proj.jiraId.toLowerCase().includes(searchText.toLowerCase())
   );
 
-  const handleOpenEditDialog = (project: Project) => {
-    setCurrentProject(project);
-    setOpenDialog(true);
-  };
-
-  const handleCloseDialog = () => {
-    setOpenDialog(false);
-    setCurrentProject(null);
-  };
-
   const handleEditProject = (project: Project) => {
-    handleOpenEditDialog(project);
+    // Navigate to the add project route with state
+    navigate("/admin/projects/add", {
+      state: { isEditing: true, projectData: project },
+    });
   };
 
   const handleDeleteProject = async (projectId: string) => {
@@ -89,11 +80,6 @@ const Projects = () => {
     setDeleteConfirmOpen(false);
     setProjectToDelete(null);
     setConfirmChecked(false);
-  };
-
-  const handleEditSuccess = () => {
-    dispatch(fetchProjects());
-    handleCloseDialog();
   };
 
   const columns: GridColDef[] = [
@@ -197,13 +183,6 @@ const Projects = () => {
           />
         </Box>
       )}
-      <AddProject
-        open={openDialog}
-        onClose={handleCloseDialog}
-        project={currentProject}
-        isEditing={true}
-        onSuccess={handleEditSuccess}
-      />
 
       {/* Delete Confirmation Dialog */}
       <Dialog

@@ -16,8 +16,10 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAppDispatch } from "../../hooks/reduxHooks";
 import { addProjectAPI, updateProjectAPI } from "../../store/ProjectsSlice";
-import type { Project } from "../../store/ProjectsSlice";
+import type { Project, ProjectBase } from "../../store/ProjectsSlice";
 import { Add_New, Cancel } from "../../common/labelConstants";
+import { useLocation } from "react-router-dom";
+import { Snackbar, Alert } from "@mui/material";
 
 interface AddProjectProps {
   open?: boolean;
@@ -36,6 +38,13 @@ const AddProject = ({
 }: AddProjectProps) => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
+  const location = useLocation();
+  const state = location.state as
+    | { isEditing?: boolean; projectData?: Project }
+    | undefined;
+
+  const isEditingMode = isEditing || state?.isEditing || false;
+  const projectFromState = state?.projectData || project;
 
   const [projects, setProject] = useState({
     projectName: "",
@@ -47,16 +56,21 @@ const AddProject = ({
   });
 
   const [loading, setLoading] = useState(false);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error">(
+    "success"
+  );
 
   useEffect(() => {
-    if (project) {
+    if (projectFromState) {
       setProject({
-        projectName: project.projectName || "",
-        projectOwner: project.projectOwner || "",
-        jiraId: project.jiraId || "",
-        status: project.status || "",
-        startDate: project.startDate || "",
-        endDate: project.endDate || "",
+        projectName: projectFromState.projectName || "",
+        projectOwner: projectFromState.projectOwner || "",
+        jiraId: projectFromState.jiraId || "",
+        status: projectFromState.status || "",
+        startDate: projectFromState.startDate || "",
+        endDate: projectFromState.endDate || "",
       });
     } else {
       setProject({
@@ -68,7 +82,7 @@ const AddProject = ({
         endDate: "",
       });
     }
-  }, [project]);
+  }, [projectFromState]);
 
   const handleChange = (field: string, value: string) => {
     setProject((prev) => ({ ...prev, [field]: value }));
@@ -83,33 +97,40 @@ const AddProject = ({
     projects.endDate
   );
 
+  const handleSnackbarClose = () => {
+    setSnackbarOpen(false);
+  };
+
   const handleSave = async () => {
-    const projectData: Project = {
-      ...projects,
-      id: isEditing && project ? project.id : "PROJ" + Date.now(),
-    };
-
     setLoading(true);
+
     try {
-      if (isEditing) {
+      if (isEditingMode && project?.id) {
+        const projectData: Project = {
+          ...projects,
+          id: project.id,
+        };
         await dispatch(updateProjectAPI(projectData)).unwrap();
+        setSnackbarMessage("Project updated successfully");
+        setSnackbarSeverity("success");
       } else {
-        await dispatch(addProjectAPI(projectData)).unwrap();
+        const projectData: ProjectBase = { ...projects };
+        await dispatch(addProjectAPI(projectData as any)).unwrap();
+        setSnackbarMessage("Project added successfully");
+        setSnackbarSeverity("success");
       }
 
-      if (onSuccess) {
-        onSuccess();
-      } else {
-        alert(`Project ${isEditing ? "updated" : "added"} successfully!`);
-        navigate("/admin/projects");
-      }
+      setSnackbarOpen(true);
+
+      if (onSuccess) onSuccess();
+      else navigate("/admin/projects");
     } catch (error: any) {
-      const errorMessage = error.payload || error.message || "Unknown error";
-
-      console.error("Project operation error:", error);
-      alert(
-        `Error ${isEditing ? "updating" : "adding"} project: ${errorMessage}`
-      );
+      // Display server-side validation or other errors in snackbar
+      const message =
+        error?.detail || error?.message || "Unknown error occurred";
+      setSnackbarMessage(message);
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
     } finally {
       setLoading(false);
     }
@@ -123,8 +144,8 @@ const AddProject = ({
     }
   };
 
-  const title = isEditing ? "Edit Project" : Add_New.ADD_PROJECT;
-  const buttonLabel = isEditing ? "Update" : Add_New.ADD_BUTTON;
+  const title = isEditingMode ? "Edit Project" : Add_New.ADD_PROJECT;
+  const buttonLabel = isEditingMode ? "Save" : Add_New.ADD_BUTTON;
 
   if (onClose) {
     return (
@@ -167,6 +188,21 @@ const AddProject = ({
         <DialogContent sx={{ mt: 2, pt: 0 }}>
           <ProjectFormFields projects={projects} handleChange={handleChange} />
         </DialogContent>
+        <Snackbar
+          open={snackbarOpen}
+          autoHideDuration={4000}
+          onClose={handleSnackbarClose}
+          anchorOrigin={{ vertical: "top", horizontal: "center" }}
+        >
+          <Alert
+            onClose={handleSnackbarClose}
+            severity={snackbarSeverity}
+            sx={{ width: "100%" }}
+            variant="filled"
+          >
+            {snackbarMessage}
+          </Alert>
+        </Snackbar>
       </Dialog>
     );
   }
@@ -182,7 +218,7 @@ const AddProject = ({
         }}
       >
         <Typography variant="h5" sx={{ fontWeight: 600 }}>
-          {Add_New.ADD_PROJECT}
+          {title}
         </Typography>
 
         <Box sx={{ display: "flex", gap: 2 }}>
@@ -204,7 +240,7 @@ const AddProject = ({
             onClick={handleSave}
             disabled={isSaveDisabled}
           >
-            {Add_New.ADD_BUTTON}
+            {buttonLabel}
           </Button>
         </Box>
       </Box>
