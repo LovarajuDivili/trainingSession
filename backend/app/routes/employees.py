@@ -5,9 +5,9 @@ from datetime import datetime
 from app.helpers import convert_objectid
 from typing import List
 from app.schemas import EmployeeCreate,EmployeeUpdate
+from fastapi.responses import JSONResponse
 
 router = APIRouter(prefix="/employees", tags=["employees"])
-
 
 @router.get("/get_all/", response_model=dict)
 async def get_employees():
@@ -20,8 +20,6 @@ async def get_employees():
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-from fastapi.responses import JSONResponse
-
 @router.post("/create/", response_model=dict)
 async def create_employee(employee: EmployeeCreate):
     try:
@@ -31,15 +29,12 @@ async def create_employee(employee: EmployeeCreate):
                 status_code=400,
                 content={"detail": "Employee with this email already exists"}
             )
-
         existing_employee = db["employees"].find_one({"id": employee.id})
-    
         if existing_employee:
             return JSONResponse(
                 status_code=400,
                 content={"detail": "Employee with this ID already exists"}
             )
-
         employee_data = {
             "name": employee.name,
             "email": employee.email,
@@ -49,25 +44,19 @@ async def create_employee(employee: EmployeeCreate):
             "skills": employee.skills,
             "created_at": datetime.utcnow()
         }
-
         result = db["employees"].insert_one(employee_data)
         new_employee = db["employees"].find_one({"_id": result.inserted_id})
-
         if not new_employee:
             return JSONResponse(
                 status_code=500,
                 content={"detail": "Failed to fetch inserted employee"}
             )
-
         return {"status": "success", "data": convert_objectid(new_employee)}
-
     except Exception as e:
         return JSONResponse(
             status_code=500,
             content={"detail": str(e)}
         )
-
-
 
 @router.get("/get_by_id/{employee_id}", response_model=dict)
 async def get_employee_by_id(employee_id: str):
@@ -79,11 +68,9 @@ async def get_employee_by_id(employee_id: str):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-
 @router.put("/update/{employee_id}", response_model=dict)
 async def update_employee(employee_id: str, update_data: EmployeeUpdate):
-    try:
-        
+    try: 
         update_fields = {k: v for k, v in update_data.dict().items() if v is not None and k != "id"}
         
         if not update_fields:
