@@ -1,33 +1,29 @@
-import { Box, Typography, Paper } from "@mui/material";
-import { Logged_Out, Logout_Success } from "../common/labelConstants";
+import { useEffect } from "react";
+import { useAuth } from "../contexts/AuthContext";
+import { Box, CircularProgress, Typography } from "@mui/material";
+import { useNavigate } from "react-router-dom";
 
 const Logout = () => {
+  const { logout } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    logout();
+    navigate("/signin");
+  }, [logout, navigate]);
+
   return (
     <Box
-      sx={{
-        height: "100vh",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        backgroundColor: "#f5f5f5",
-      }}
+      display="flex"
+      flexDirection="column"
+      alignItems="center"
+      justifyContent="center"
+      height="100vh"
     >
-      <Paper
-        elevation={3}
-        sx={{
-          padding: 4,
-          borderRadius: 3,
-          textAlign: "center",
-          minWidth: "300px",
-        }}
-      >
-        <Typography variant="h6" sx={{ mb: 2, color: "#333" }}>
-          {Logout_Success.LOGOUT_SUCCESS}
-        </Typography>
-        <Typography variant="body2" sx={{ color: "#666" }}>
-          {Logged_Out.LOGGED_OUT}
-        </Typography>
-      </Paper>
+      <CircularProgress />
+      <Typography variant="h6" sx={{ mt: 2 }}>
+        Logging out...
+      </Typography>
     </Box>
   );
 };

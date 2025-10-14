@@ -24,6 +24,9 @@ try:
             print(f"✅Collection '{col}' created")
         else:
             print(f"ℹ️Collection '{col}' already exists")
+            
+    db.users.create_index("email", unique=True)
+    print("✅ Unique index created on users.email")
 
 except Exception as e:
     print("❌MongoDB connection failed or error occurred:", e)
