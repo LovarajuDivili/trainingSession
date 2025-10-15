@@ -1,6 +1,7 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
+from fastapi.responses import JSONResponse
 from .routeLayout import api_router
 
 def start_application():
@@ -18,6 +19,17 @@ def start_application():
         allow_methods=["*"],
         allow_headers=["*"],
     )
+
+    @app.exception_handler(Exception)
+    async def global_exception_handler(request: Request, exc: Exception):
+        # Print the actual error for debugging
+        print(f"Global error handler: {str(exc)}")
+        return JSONResponse(
+            status_code=500,
+            content={"detail": "Internal Server Error"}
+        )
+
+    app.include_router(api_router, prefix="/v-1/application")
 
     app.include_router(api_router, prefix="/v-1/application")
     
