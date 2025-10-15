@@ -70,6 +70,7 @@ export default function SignUp(props: { disableCustomTheme?: boolean }) {
   const [nameError, setNameError] = React.useState(false);
   const [nameErrorMessage, setNameErrorMessage] = React.useState("");
   const [error, setError] = React.useState("");
+  const [success, setSuccess] = React.useState("");
 
   const validateInputs = () => {
     const email = document.getElementById("email") as HTMLInputElement;
@@ -122,7 +123,12 @@ export default function SignUp(props: { disableCustomTheme?: boolean }) {
 
     try {
       await signup(name, email, password);
-      navigate("/welcome");
+
+      setSuccess("Account created successfully! Redirecting to sign in...");
+
+      setTimeout(() => {
+        navigate("/signin");
+      }, 2000);
     } catch (error: any) {
       setError(error.message);
     }
@@ -139,6 +145,20 @@ export default function SignUp(props: { disableCustomTheme?: boolean }) {
           >
             Sign up
           </Typography>
+          <Snackbar
+            open={!!success}
+            autoHideDuration={3000}
+            onClose={() => setSuccess("")}
+            anchorOrigin={{ vertical: "top", horizontal: "center" }}
+          >
+            <Alert
+              onClose={() => setSuccess("")}
+              severity="success"
+              sx={{ width: "100%" }}
+            >
+              {success}
+            </Alert>
+          </Snackbar>
           <Snackbar
             open={!!error}
             autoHideDuration={6000}

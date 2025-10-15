@@ -63,7 +63,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
       // Replace with your actual API endpoint
       const response = await axios.post(
-        "http://localhost:5000/api/auth/login",
+        "http://localhost:8000/v-1/application/auth/login",
         {
           email,
           password,
@@ -93,7 +93,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
       // Replace with your actual API endpoint
       const response = await axios.post(
-        "http://localhost:5000/api/auth/signup",
+        "http://localhost:8000/v-1/application/auth/signup",
         {
           name,
           email,
@@ -101,18 +101,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         }
       );
 
-      const { access_token: token, user: userData } = response.data;
+      console.log("Signup successful:", response.data);
 
-      // Store token and user data
-      localStorage.setItem("token", token);
-      localStorage.setItem("user", JSON.stringify(userData));
-
-      // Set default authorization header
-      axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-
-      setUser(userData);
+      return response.data;
     } catch (error: any) {
-      throw new Error(error.response?.data?.message || "Signup failed");
+      throw new Error(error.response?.data?.detail || "Signup failed");
     } finally {
       setIsLoading(false);
     }
