@@ -134,9 +134,23 @@ export default function SignIn(props: { disableCustomTheme?: boolean }) {
       <SignInContainer direction="column" justifyContent="space-between">
         <Card variant="outlined">
           <Typography
+            component="h6"
+            variant="h6"
+            sx={{
+              width: "100%",
+              fontSize: "1.5rem", 
+              color: "#906aff",
+            }}
+          >
+            Aifa
+          </Typography>
+          <Typography
             component="h1"
-            variant="h4"
-            sx={{ width: "100%", fontSize: "clamp(2rem, 10vw, 2.15rem)" }}
+            variant="h2"
+            sx={{
+              width: "100%",
+              fontSize: "2.5rem", 
+            }}
           >
             Sign in
           </Typography>

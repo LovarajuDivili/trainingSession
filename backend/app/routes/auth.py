@@ -34,10 +34,9 @@ def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(securit
             headers={"WWW-Authenticate": "Bearer"},
         )
     
-    # Convert ObjectId to string for JSON serialization
     user["id"] = str(user["_id"])
     del user["_id"]
-    del user["password"]  # Remove password from response
+    del user["password"]  
     
     return user
 
@@ -96,15 +95,14 @@ async def signup(user_data: UserCreate):
 @router.post("/login", response_model=Token)
 async def login(user_data: UserLogin):
     try:
-        # Find user by email
+        
         user = db.users.find_one({"email": user_data.email})
         if not user or not verify_password(user_data.password, user["password"]):
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Incorrect email or password"
             )
-        
-        # Create user response without password
+       
         user_response = {
             "id": str(user["_id"]),
             "name": user["name"],
@@ -113,7 +111,7 @@ async def login(user_data: UserLogin):
             "created_at": user["created_at"]
         }
         
-        # Create access token
+       
         access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
         access_token = create_access_token(
             data={"sub": user_data.email}, expires_delta=access_token_expires
