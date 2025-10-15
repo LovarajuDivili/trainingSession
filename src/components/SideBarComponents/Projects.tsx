@@ -43,7 +43,7 @@ const Projects = () => {
   }, [dispatch]);
 
   const filteredProjects = projects.filter(
-    (proj) =>
+    (proj: { projectName: string; jiraId: string }) =>
       proj.projectName.toLowerCase().includes(searchText.toLowerCase()) ||
       proj.jiraId.toLowerCase().includes(searchText.toLowerCase())
   );
@@ -196,8 +196,12 @@ const Projects = () => {
         </DialogTitle>
         <DialogContent>
           <Typography sx={{ mb: 2 }}>
-            Are you sure you want to delete this project? This action cannot be
-            undone.
+            Are you sure you want to delete{" "}
+            <strong>
+              {projects.find((proj) => proj.id === projectToDelete)
+                ?.projectName || ""}
+            </strong>
+            ? This action cannot be undone.
           </Typography>
           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
             <Checkbox
@@ -211,7 +215,11 @@ const Projects = () => {
               htmlFor="confirm-delete-project"
               sx={{ cursor: "pointer" }}
             >
-              Yes, I want to delete this project
+              Yes, I want to delete{" "}
+              <strong>
+                {projects.find((proj) => proj.id === projectToDelete)
+                  ?.projectName || ""}
+              </strong>
             </Typography>
           </Box>
         </DialogContent>

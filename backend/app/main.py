@@ -22,7 +22,7 @@ def start_application():
 
     @app.exception_handler(Exception)
     async def global_exception_handler(request: Request, exc: Exception):
-        # Print the actual error for debugging
+        
         print(f"Global error handler: {str(exc)}")
         return JSONResponse(
             status_code=500,
