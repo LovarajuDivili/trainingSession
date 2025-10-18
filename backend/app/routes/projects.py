@@ -53,6 +53,9 @@ async def update_project(id: str, project: ProjectUpdate):
         validate_project_uniqueness(project, exclude_id=id)
 
         update_data = {k: v for k, v in project.dict().items() if v is not None}
+
+        if not update_data:
+            raise HTTPException(status_code=400, detail="No valid fields to update")
         db["projects"].update_one({"id": id}, {"$set": update_data})
 
         updated_project = db["projects"].find_one({"id": id})
@@ -62,6 +65,7 @@ async def update_project(id: str, project: ProjectUpdate):
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+    
 @router.delete("/delete/{project_id}", response_model=dict)
 async def delete_project(project_id: str):
     try:

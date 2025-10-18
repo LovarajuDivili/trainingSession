@@ -8,15 +8,12 @@ import {
   MenuItem,
   Select,
   Divider,
-  DialogContent,
-  Dialog,
-  DialogTitle,
 } from "@mui/material";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAppDispatch } from "../../hooks/reduxHooks";
 import { addProjectAPI, updateProjectAPI } from "../../store/ProjectsSlice";
-import type { Project, ProjectBase } from "../../store/ProjectsSlice";
+import type { Project } from "../../store/ProjectsSlice";
 import { Add_New, Cancel } from "../../common/labelConstants";
 import { useLocation } from "react-router-dom";
 import { Snackbar, Alert } from "@mui/material";
@@ -25,28 +22,27 @@ interface AddProjectProps {
   open?: boolean;
   onClose?: () => void;
   project?: Project | null;
-  isEditing?: boolean;
   onSuccess?: () => void;
 }
 
 const AddProject = ({
-  open = false,
   onClose,
   project = null,
-  isEditing = false,
   onSuccess,
 }: AddProjectProps) => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const location = useLocation();
+
   const state = location.state as
     | { isEditing?: boolean; projectData?: Project }
     | undefined;
-
-  const isEditingMode = isEditing || state?.isEditing || false;
   const projectFromState = state?.projectData || project;
 
-  const [projects, setProject] = useState({
+  const isEditingMode = Boolean(projectFromState?.id);
+  const editingId = projectFromState?.id || null;
+
+  const [formValues, setFormValues] = useState({
     projectName: "",
     projectOwner: "",
     jiraId: "",
@@ -64,7 +60,7 @@ const AddProject = ({
 
   useEffect(() => {
     if (projectFromState) {
-      setProject({
+      setFormValues({
         projectName: projectFromState.projectName || "",
         projectOwner: projectFromState.projectOwner || "",
         jiraId: projectFromState.jiraId || "",
@@ -73,7 +69,7 @@ const AddProject = ({
         endDate: projectFromState.endDate || "",
       });
     } else {
-      setProject({
+      setFormValues({
         projectName: "",
         projectOwner: "",
         jiraId: "",
@@ -85,47 +81,45 @@ const AddProject = ({
   }, [projectFromState]);
 
   const handleChange = (field: string, value: string) => {
-    setProject((prev) => ({ ...prev, [field]: value }));
+    setFormValues((prev) => ({ ...prev, [field]: value }));
   };
 
   const isSaveDisabled = !(
-    projects.projectName &&
-    projects.projectOwner &&
-    projects.jiraId &&
-    projects.status &&
-    projects.startDate &&
-    projects.endDate
+    formValues.projectName.trim() &&
+    formValues.projectOwner.trim() &&
+    formValues.jiraId.trim() &&
+    formValues.status &&
+    formValues.startDate &&
+    formValues.endDate
   );
-
-  const handleSnackbarClose = () => {
-    setSnackbarOpen(false);
-  };
 
   const handleSave = async () => {
     setLoading(true);
 
+    const projectData = {
+      projectName: formValues.projectName.trim(),
+      projectOwner: formValues.projectOwner.trim(),
+      jiraId: formValues.jiraId.trim(),
+      status: formValues.status,
+      startDate: formValues.startDate,
+      endDate: formValues.endDate,
+    };
     try {
-      if (isEditingMode && project?.id) {
-        const projectData: Project = {
-          ...projects,
-          id: project.id,
-        };
-        await dispatch(updateProjectAPI(projectData)).unwrap();
+      if (isEditingMode && editingId) {
+        // Update flow
+        await dispatch(
+          updateProjectAPI({ id: editingId, projectData })
+        ).unwrap();
         setSnackbarMessage("Project updated successfully");
         setSnackbarSeverity("success");
       } else {
-        const projectData: ProjectBase = { ...projects };
-        await dispatch(addProjectAPI(projectData as any)).unwrap();
+        // Create flow
+        await dispatch(addProjectAPI(projectData)).unwrap();
         setSnackbarMessage("Project added successfully");
         setSnackbarSeverity("success");
       }
-
       setSnackbarOpen(true);
-
-      if (onSuccess) onSuccess();
-      else navigate("/admin/projects");
     } catch (error: any) {
-      // Display server-side validation or other errors in snackbar
       const message =
         error?.detail || error?.message || "Unknown error occurred";
       setSnackbarMessage(message);
@@ -144,68 +138,17 @@ const AddProject = ({
     }
   };
 
+  const handleSnackbarClose = () => {
+    setSnackbarOpen(false);
+    if (snackbarSeverity === "success") {
+      if (onSuccess) onSuccess();
+      else navigate("/admin/projects");
+    }
+  };
+
   const title = isEditingMode ? "Edit Project" : Add_New.ADD_PROJECT;
   const buttonLabel = isEditingMode ? "Save" : Add_New.ADD_BUTTON;
 
-  if (onClose) {
-    return (
-      <Dialog open={open} onClose={handleCancel} maxWidth="md" fullWidth>
-        <Box
-          sx={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            padding: "20px",
-          }}
-        >
-          <DialogTitle sx={{ p: 0, fontSize: "25px" }}>{title}</DialogTitle>
-          <Box sx={{ display: "flex", gap: 2 }}>
-            <Button
-              variant="outlined"
-              sx={{
-                color: "#d81b60",
-                borderColor: "#d81b60",
-                textTransform: "uppercase",
-              }}
-              onClick={handleCancel}
-              disabled={loading}
-            >
-              {Cancel.CANCEL}
-            </Button>
-            <Button
-              variant="contained"
-              sx={{ backgroundColor: "#906aff", textTransform: "uppercase" }}
-              onClick={handleSave}
-              disabled={isSaveDisabled || loading}
-            >
-              {buttonLabel}
-            </Button>
-          </Box>
-        </Box>
-
-        <Divider />
-
-        <DialogContent sx={{ mt: 2, pt: 0 }}>
-          <ProjectFormFields projects={projects} handleChange={handleChange} />
-        </DialogContent>
-        <Snackbar
-          open={snackbarOpen}
-          autoHideDuration={4000}
-          onClose={handleSnackbarClose}
-          anchorOrigin={{ vertical: "top", horizontal: "center" }}
-        >
-          <Alert
-            onClose={handleSnackbarClose}
-            severity={snackbarSeverity}
-            sx={{ width: "100%" }}
-            variant="filled"
-          >
-            {snackbarMessage}
-          </Alert>
-        </Snackbar>
-      </Dialog>
-    );
-  }
   return (
     <Box sx={{ width: "100%" }}>
       <Box
@@ -220,7 +163,6 @@ const AddProject = ({
         <Typography variant="h5" sx={{ fontWeight: 600 }}>
           {title}
         </Typography>
-
         <Box sx={{ display: "flex", gap: 2 }}>
           <Button
             variant="outlined"
@@ -238,14 +180,31 @@ const AddProject = ({
             variant="contained"
             sx={{ backgroundColor: "#906aff", textTransform: "uppercase" }}
             onClick={handleSave}
-            disabled={isSaveDisabled}
+            disabled={isSaveDisabled || loading}
           >
             {buttonLabel}
           </Button>
         </Box>
       </Box>
+
       <Divider sx={{ mb: 3 }} />
-      <ProjectFormFields projects={projects} handleChange={handleChange} />
+
+      <ProjectFormFields projects={formValues} handleChange={handleChange} />
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={2000}
+        onClose={handleSnackbarClose}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+      >
+        <Alert
+          onClose={handleSnackbarClose}
+          severity={snackbarSeverity}
+          sx={{ width: "100%" }}
+          variant="filled"
+        >
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };

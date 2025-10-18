@@ -91,49 +91,35 @@ export const addProjectAPI = createAsyncThunk<
 });
 
 export const updateProjectAPI = createAsyncThunk<
-  Project,
-  Project,
-  { rejectValue: string }
->("projects/updateProject", async (project, { rejectWithValue }) => {
-  try {
-    console.log("Updating project data:", project);
-    const response = await fetch(`${API_BASE}/projects/update/${project.id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(project),
-    });
+  Project, // ✅ Return type
+  { id: string; projectData: ProjectBase }, // ✅ Argument type
+  { rejectValue: string } // ✅ Reject type
+>(
+  "projects/updateProject",
+  async ({ id, projectData }, { rejectWithValue }) => {
+    try {
+      const response = await fetch(`${API_BASE}/projects/update/${id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(projectData),
+      });
 
-    if (!response.ok) {
-      let errorData;
-      try {
-        errorData = await response.json();
-        console.log("Update error response:", errorData);
-        // Handle different error response formats
-        if (errorData.detail) {
-          return rejectWithValue(errorData.detail);
-        } else if (errorData.message) {
-          return rejectWithValue(errorData.message);
-        } else if (typeof errorData === "string") {
-          return rejectWithValue(errorData);
-        } else {
-          return rejectWithValue(`HTTP error! status: ${response.status}`);
-        }
-      } catch {
-        errorData = response.statusText || "Failed to update project";
-        return rejectWithValue(errorData);
+      if (!response.ok) {
+        const errorData = await response.json();
+        return rejectWithValue(errorData.detail || "Failed to update project");
       }
-    }
 
-    const data = await response.json();
-    console.log("Update success response:", data);
-    return data.data;
-  } catch (err) {
-    console.error("Update fetch error:", err);
-    return rejectWithValue(
-      err instanceof Error ? err.message : "Unknown error"
-    );
+      const data = await response.json();
+      return data.data; // ✅ assuming backend returns { data: project }
+    } catch (err) {
+      return rejectWithValue(
+        err instanceof Error ? err.message : "Unknown error"
+      );
+    }
   }
-});
+);
 
 export const deleteProjectAPI = createAsyncThunk<
   string,

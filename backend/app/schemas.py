@@ -44,7 +44,7 @@ class ProjectBase(BaseModel):
     status: str
     startDate: str
     endDate: str
-    id: str
+    
 
 class ProjectCreate(ProjectBase):
     pass
