@@ -40,7 +40,7 @@ const AddProject = ({
   const projectFromState = state?.projectData || project;
 
   const isEditingMode = Boolean(projectFromState?.id);
-  const editingId = projectFromState?.id || null;
+  //const editingId = projectFromState?.id || null;
 
   const [formValues, setFormValues] = useState({
     projectName: "",
@@ -95,33 +95,42 @@ const AddProject = ({
 
   const handleSave = async () => {
     setLoading(true);
-
-    const projectData = {
-      projectName: formValues.projectName.trim(),
-      projectOwner: formValues.projectOwner.trim(),
-      jiraId: formValues.jiraId.trim(),
-      status: formValues.status,
-      startDate: formValues.startDate,
-      endDate: formValues.endDate,
-    };
     try {
+      const editingId = project?.id || projectFromState?.id;
+      const projectData = {
+        projectName: formValues.projectName.trim(),
+        projectOwner: formValues.projectOwner.trim(),
+        jiraId: formValues.jiraId.trim(),
+        status: formValues.status,
+        startDate: formValues.startDate,
+        endDate: formValues.endDate,
+      };
+
       if (isEditingMode && editingId) {
-        // Update flow
         await dispatch(
           updateProjectAPI({ id: editingId, projectData })
         ).unwrap();
         setSnackbarMessage("Project updated successfully");
         setSnackbarSeverity("success");
       } else {
-        // Create flow
         await dispatch(addProjectAPI(projectData)).unwrap();
         setSnackbarMessage("Project added successfully");
         setSnackbarSeverity("success");
       }
+
       setSnackbarOpen(true);
-    } catch (error: any) {
-      const message =
-        error?.detail || error?.message || "Unknown error occurred";
+
+      // Wait for 1.5s before navigating so user sees Snackbar
+      setTimeout(() => {
+        if (onSuccess) onSuccess();
+        else navigate("/admin/projects");
+      }, 1500);
+    } catch (err: any) {
+      let message = "Unknown error occurred";
+      if (typeof err === "string") message = err;
+      else if (err?.detail) message = err.detail;
+      else if (err?.message) message = err.message;
+
       setSnackbarMessage(message);
       setSnackbarSeverity("error");
       setSnackbarOpen(true);
@@ -140,10 +149,6 @@ const AddProject = ({
 
   const handleSnackbarClose = () => {
     setSnackbarOpen(false);
-    if (snackbarSeverity === "success") {
-      if (onSuccess) onSuccess();
-      else navigate("/admin/projects");
-    }
   };
 
   const title = isEditingMode ? "Edit Project" : Add_New.ADD_PROJECT;
@@ -192,7 +197,7 @@ const AddProject = ({
       <ProjectFormFields projects={formValues} handleChange={handleChange} />
       <Snackbar
         open={snackbarOpen}
-        autoHideDuration={2000}
+        autoHideDuration={4000}
         onClose={handleSnackbarClose}
         anchorOrigin={{ vertical: "top", horizontal: "center" }}
       >
