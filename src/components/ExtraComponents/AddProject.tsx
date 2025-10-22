@@ -57,6 +57,7 @@ const AddProject = ({
   const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error">(
     "success"
   );
+  const [dateError, setDateError] = useState("");
 
   useEffect(() => {
     if (projectFromState) {
@@ -81,20 +82,52 @@ const AddProject = ({
   }, [projectFromState]);
 
   const handleChange = (field: string, value: string) => {
-    setFormValues((prev) => ({ ...prev, [field]: value }));
+    setFormValues((prev) => {
+      const newValues = { ...prev, [field]: value };
+
+      // Validate dates when either startDate or endDate changes
+      if (field === "startDate" || field === "endDate") {
+        validateDates(
+          field === "startDate" ? value : prev.startDate,
+          field === "endDate" ? value : prev.endDate
+        );
+      }
+
+      return newValues;
+    });
   };
 
-  const isSaveDisabled = !(
-    formValues.projectName.trim() &&
-    formValues.projectOwner.trim() &&
-    formValues.jiraId.trim() &&
-    formValues.status &&
-    formValues.startDate &&
-    formValues.endDate
-  );
+  const validateDates = (start: string, end: string): boolean => {
+    if (start && end) {
+      const startDate = new Date(start);
+      const endDate = new Date(end);
+
+      if (endDate <= startDate) {
+        setDateError("End date must be after start date");
+        return false;
+      }
+    }
+    setDateError("");
+    return true;
+  };
+
+  const isSaveDisabled =
+    !(
+      formValues.projectName.trim() &&
+      formValues.projectOwner.trim() &&
+      formValues.jiraId.trim() &&
+      formValues.status &&
+      formValues.startDate &&
+      formValues.endDate
+    ) || Boolean(dateError);
 
   const handleSave = async () => {
+    if (!validateDates(formValues.startDate, formValues.endDate)) {
+      return;
+    }
+
     setLoading(true);
+
     try {
       const editingId = project?.id || projectFromState?.id;
       const projectData = {
@@ -194,7 +227,11 @@ const AddProject = ({
 
       <Divider sx={{ mb: 3 }} />
 
-      <ProjectFormFields projects={formValues} handleChange={handleChange} />
+      <ProjectFormFields
+        projects={formValues}
+        handleChange={handleChange}
+        dateError={dateError}
+      />
       <Snackbar
         open={snackbarOpen}
         autoHideDuration={4000}
@@ -224,11 +261,13 @@ interface ProjectFormFieldsProps {
     endDate: string;
   };
   handleChange: (field: string, value: string) => void;
+  dateError?: string; // Add this
 }
 
 const ProjectFormFields = ({
   projects,
   handleChange,
+  dateError,
 }: ProjectFormFieldsProps) => (
   <Grid container spacing={{ xs: 2, md: 3 }} columns={{ xs: 4, sm: 8, md: 12 }}>
     {/* Row 1 */}
@@ -330,6 +369,8 @@ const ProjectFormFields = ({
         value={projects.endDate}
         onChange={(e) => handleChange("endDate", e.target.value)}
         fullWidth
+        error={Boolean(dateError)} // Add error state
+        helperText={dateError}
         sx={{
           "& .MuiOutlinedInput-root": {
             borderRadius: "20px",

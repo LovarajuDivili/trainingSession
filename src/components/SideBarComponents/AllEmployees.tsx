@@ -36,6 +36,36 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import CloseIcon from "@mui/icons-material/Close";
 import { Snackbar, Alert } from "@mui/material";
 
+const CustomNoRowsOverlay = () => {
+  return (
+    <Box
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        height: "100%",
+        gap: 2,
+        p: 3,
+      }}
+    >
+      <Box
+        component="img"
+        src="/public/no_data_image.jpg" // Replace with your image path
+        alt="No employees"
+        sx={{
+          width: 150,
+          height: 150,
+          opacity: 0.7,
+        }}
+      />
+      <Typography variant="h6" color="text.secondary">
+        No employees found
+      </Typography>
+    </Box>
+  );
+};
+
 const AllEmployees = () => {
   const [loading] = useState(false);
   const [searchText, setSearchText] = useState("");
@@ -187,7 +217,6 @@ const AllEmployees = () => {
     } catch (error: any) {
       console.error("Error saving employee:", error);
 
-      // ✅ Show API error in Snackbar
       const message =
         error?.detail || `Failed to ${isEditing ? "update" : "add"} employee`;
       setSnackbarMessage(message);
@@ -433,6 +462,9 @@ const AllEmployees = () => {
                 initialState={{
                   pagination: { paginationModel: { pageSize: 5, page: 0 } },
                 }}
+                slots={{
+                  noRowsOverlay: CustomNoRowsOverlay,
+                }}
                 sx={{
                   "& .MuiDataGrid-columnHeaders": {
                     color: "#906aff !important",
@@ -525,6 +557,7 @@ const AllEmployees = () => {
                 onChange={(e) => handleChange("email", e.target.value)}
                 fullWidth
                 required
+                disabled={isEditing}
                 sx={{
                   "& .MuiOutlinedInput-root": {
                     borderRadius: "20px",

@@ -27,6 +27,37 @@ import {
 } from "../../store/ProjectsSlice";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
+import CloseIcon from "@mui/icons-material/Close";
+
+const CustomNoRowsOverlay = () => {
+  return (
+    <Box
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        height: "100%",
+        gap: 2,
+        p: 3,
+      }}
+    >
+      <Box
+        component="img"
+        src="/public/no_data_image.jpg" // Replace with your image path
+        alt="No employees"
+        sx={{
+          width: 150,
+          height: 150,
+          opacity: 0.7,
+        }}
+      />
+      <Typography variant="h6" color="text.secondary">
+        No employees found
+      </Typography>
+    </Box>
+  );
+};
 
 const Projects = () => {
   const [searchText, setSearchText] = useState("");
@@ -47,6 +78,16 @@ const Projects = () => {
       proj.projectName.toLowerCase().includes(searchText.toLowerCase()) ||
       proj.jiraId.toLowerCase().includes(searchText.toLowerCase())
   );
+
+  const isProjectCompleted = (endDate: string): boolean => {
+    if (!endDate) return false;
+    const today = new Date();
+    const projectEndDate = new Date(endDate);
+    // Set both dates to start of day for accurate comparison
+    today.setHours(0, 0, 0, 0);
+    projectEndDate.setHours(0, 0, 0, 0);
+    return projectEndDate < today;
+  };
 
   const handleEditProject = (project: Project) => {
     // Navigate to the add project route with state
@@ -171,6 +212,12 @@ const Projects = () => {
             initialState={{
               pagination: { paginationModel: { pageSize: 10, page: 0 } },
             }}
+            slots={{
+              noRowsOverlay: CustomNoRowsOverlay,
+            }}
+            getRowClassName={(params) =>
+              isProjectCompleted(params.row.endDate) ? "completed-project" : ""
+            }
             sx={{
               "& .MuiDataGrid-columnHeaders": {
                 color: "#906aff !important",
@@ -178,6 +225,17 @@ const Projects = () => {
               },
               "& .MuiDataGrid-columnHeaderTitle": {
                 fontWeight: 600,
+              },
+              // Distinct styling for completed projects
+              "& .completed-project": {
+                backgroundColor: "rgba(232, 245, 233, 0.7)", // Light green background
+                "&:hover": {
+                  backgroundColor: "rgba(200, 230, 201, 0.8) !important", // Darker green on hover
+                },
+              },
+              "& .completed-project .MuiDataGrid-cell": {
+                color: "#2e7d32", // Dark green text
+                borderBottom: "1px solid #c8e6c9", // Green border
               },
             }}
           />
@@ -191,8 +249,30 @@ const Projects = () => {
         maxWidth="sm"
         fullWidth
       >
-        <DialogTitle sx={{ fontSize: "20px", fontWeight: 600 }}>
+        <DialogTitle
+          sx={{
+            fontSize: "20px",
+            fontWeight: 600,
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
           Confirm Delete
+          <IconButton
+            onClick={handleCancelDelete}
+            size="small"
+            sx={{
+              backgroundColor: "#f5f5f5",
+              color: "#d81b1b",
+              "&:hover": { backgroundColor: "#f44336", color: "#fff" },
+              width: 28,
+              height: 28,
+              borderRadius: "50%",
+            }}
+          >
+            <CloseIcon sx={{ fontSize: "18px" }} />
+          </IconButton>
         </DialogTitle>
         <DialogContent>
           <Typography sx={{ mb: 2 }}>
