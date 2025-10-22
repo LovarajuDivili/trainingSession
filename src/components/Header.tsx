@@ -240,8 +240,25 @@ const Header = ({ role: propRole }: { role?: string }) => {
       <Dialog open={openDialog} onClose={cancelLogout}>
         <DialogTitle>{Logout_Confirm.LOGOUT_CONFIRM}</DialogTitle>
         <DialogActions>
-          <Button onClick={cancelLogout}>{Cancel.CANCEL}</Button>
-          <Button onClick={confirmLogout} color="primary" variant="contained">
+          <Button
+            onClick={cancelLogout}
+            sx={{
+              color: "#906aff", // Purple color
+            }}
+          >
+            {Cancel.CANCEL}
+          </Button>
+          <Button
+            onClick={confirmLogout}
+            color="primary"
+            variant="contained"
+            sx={{
+              backgroundColor: "#906aff",
+              "&:hover": {
+                backgroundColor: "#7a5aff", // darker shade for hover
+              },
+            }}
+          >
             {Confirm.CONFIRM}
           </Button>
         </DialogActions>

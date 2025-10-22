@@ -15,8 +15,12 @@ import MuiCard from "@mui/material/Card";
 import { styled } from "@mui/material/styles";
 import AppTheme from "./common/AppTheme";
 import { useNavigate } from "react-router-dom";
-import { Alert, Snackbar } from "@mui/material";
+import { Alert, CircularProgress, Snackbar } from "@mui/material";
 import { useAuth } from "./contexts/AuthContext";
+import InputAdornment from "@mui/material/InputAdornment";
+import IconButton from "@mui/material/IconButton";
+import Visibility from "@mui/icons-material/Visibility";
+import VisibilityOff from "@mui/icons-material/VisibilityOff";
 
 const Card = styled(MuiCard)(({ theme }) => ({
   display: "flex",
@@ -62,7 +66,7 @@ const SignUpContainer = styled(Stack)(({ theme }) => ({
 
 export default function SignUp(props: { disableCustomTheme?: boolean }) {
   const navigate = useNavigate();
-  const { signup, isLoading } = useAuth();
+  const { signup, isSigningUp } = useAuth();
   const [emailError, setEmailError] = React.useState(false);
   const [emailErrorMessage, setEmailErrorMessage] = React.useState("");
   const [passwordError, setPasswordError] = React.useState(false);
@@ -71,7 +75,15 @@ export default function SignUp(props: { disableCustomTheme?: boolean }) {
   const [nameErrorMessage, setNameErrorMessage] = React.useState("");
   const [error, setError] = React.useState("");
   const [success, setSuccess] = React.useState("");
+  const [showPassword, setShowPassword] = React.useState(false);
 
+  
+  React.useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      navigate("/welcome", { replace: true });
+    }
+  }, [navigate]);
   const validateInputs = () => {
     const email = document.getElementById("email") as HTMLInputElement;
     const password = document.getElementById("password") as HTMLInputElement;
@@ -88,13 +100,34 @@ export default function SignUp(props: { disableCustomTheme?: boolean }) {
       setEmailErrorMessage("");
     }
 
-    if (!password.value || password.value.length < 6) {
+    if (!password.value) {
       setPasswordError(true);
-      setPasswordErrorMessage("Password must be at least 6 characters long.");
+      setPasswordErrorMessage("Password is required.");
       isValid = false;
     } else {
-      setPasswordError(false);
-      setPasswordErrorMessage("");
+      const hasMinLength = password.value.length >= 6;
+      const hasUpperCase = /[A-Z]/.test(password.value);
+      const hasNumber = /[0-9]/.test(password.value);
+      const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password.value);
+
+      if (!hasMinLength || !hasUpperCase || !hasNumber || !hasSpecialChar) {
+        setPasswordError(true);
+
+        
+        let message = "Password must have:";
+        if (!hasMinLength) message += " at least 6 characters,";
+        if (!hasUpperCase) message += " one uppercase letter,";
+        if (!hasNumber) message += " one number,";
+        if (!hasSpecialChar) message += " one special character,";
+        
+        message = message.replace(/,$/, ".");
+        setPasswordErrorMessage(message);
+
+        isValid = false;
+      } else {
+        setPasswordError(false);
+        setPasswordErrorMessage("");
+      }
     }
 
     if (!name.value || name.value.length < 1) {
@@ -130,14 +163,52 @@ export default function SignUp(props: { disableCustomTheme?: boolean }) {
         navigate("/signin");
       }, 2000);
     } catch (error: any) {
-      setError(error.message);
+      
+      if (
+        error.message.includes("Email already registered") ||
+        error.message.includes("already exists") ||
+        error.message.includes("already registered")
+      ) {
+        setError("Email already registered. Please use a different email.");
+      } else {
+        setError(error.message);
+      }
     }
+  };
+
+  const handleClickShowPassword = () => setShowPassword((show) => !show);
+  const handleMouseDownPassword = (
+    event: React.MouseEvent<HTMLButtonElement>
+  ) => {
+    event.preventDefault();
   };
 
   return (
     <AppTheme {...props}>
       <SignUpContainer direction="column" justifyContent="space-between">
         <Card variant="outlined">
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+            <Box
+              component="img"
+              src="/chat.svg"
+              alt="Custom Icon"
+              sx={{
+                width: 30,
+                height: 30,
+              }}
+            />
+            <Typography
+              component="h6"
+              variant="h6"
+              sx={{
+                width: "100%",
+                fontSize: "1.5rem",
+                color: "#906aff",
+              }}
+            >
+              Aifa
+            </Typography>
+          </Box>
           <Typography
             component="h1"
             variant="h4"
@@ -186,11 +257,11 @@ export default function SignUp(props: { disableCustomTheme?: boolean }) {
                 required
                 fullWidth
                 id="name"
-                placeholder="Jon Snow"
+                placeholder="Enter your name"
                 error={nameError}
                 helperText={nameErrorMessage}
                 color={nameError ? "error" : "primary"}
-                disabled={isLoading}
+                disabled={isSigningUp}
               />
             </FormControl>
             <FormControl>
@@ -199,14 +270,14 @@ export default function SignUp(props: { disableCustomTheme?: boolean }) {
                 required
                 fullWidth
                 id="email"
-                placeholder="your@email.com"
+                placeholder="Enter your email"
                 name="email"
                 autoComplete="email"
                 variant="outlined"
                 error={emailError}
                 helperText={emailErrorMessage}
-                color={passwordError ? "error" : "primary"}
-                disabled={isLoading}
+                color={emailError ? "error" : "primary"}
+                disabled={isSigningUp}
               />
             </FormControl>
             <FormControl>
@@ -215,15 +286,31 @@ export default function SignUp(props: { disableCustomTheme?: boolean }) {
                 required
                 fullWidth
                 name="password"
-                placeholder="••••••"
-                type="password"
+                placeholder="Enter your password"
+                type={showPassword ? "text" : "password"}
                 id="password"
                 autoComplete="new-password"
                 variant="outlined"
                 error={passwordError}
                 helperText={passwordErrorMessage}
                 color={passwordError ? "error" : "primary"}
-                disabled={isLoading}
+                disabled={isSigningUp}
+                InputProps={{
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton
+                        aria-label={
+                          showPassword ? "hide password" : "show password"
+                        }
+                        onClick={handleClickShowPassword}
+                        onMouseDown={handleMouseDownPassword}
+                        edge="end"
+                      >
+                        {showPassword ? <VisibilityOff /> : <Visibility />}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }}
               />
             </FormControl>
             <FormControlLabel
@@ -234,9 +321,14 @@ export default function SignUp(props: { disableCustomTheme?: boolean }) {
               type="submit"
               fullWidth
               variant="contained"
-              disabled={isLoading}
+              disabled={isSigningUp}
+              startIcon={
+                isSigningUp ? (
+                  <CircularProgress size={16} color="inherit" />
+                ) : null
+              }
             >
-              {isLoading ? "Creating account..." : "Sign up"}
+              {isSigningUp ? "Creating account..." : "Sign up"}
             </Button>
           </Box>
           <Divider>

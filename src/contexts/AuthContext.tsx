@@ -23,6 +23,8 @@ interface AuthContextType {
   logout: () => void;
   isAuthenticated: boolean;
   isLoading: boolean;
+  isSigningUp: boolean; // Add this
+  isLoggingIn: boolean; // Add this for consistency
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -42,7 +44,8 @@ interface AuthProviderProps {
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-
+  const [isSigningUp, setIsSigningUp] = useState(false); // Add this
+  const [isLoggingIn] = useState(false); // Add this
   // Check if user is logged in on app start
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -89,7 +92,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const signup = async (name: string, email: string, password: string) => {
     try {
-      setIsLoading(true);
+      setIsSigningUp(true); // Use specific state for signup
 
       // Replace with your actual API endpoint
       const response = await axios.post(
@@ -124,7 +127,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     signup,
     logout,
     isAuthenticated: !!user,
-    isLoading,
+    isLoading, // This is for initial app loading
+    isSigningUp, // This is for signup operation
+    isLoggingIn, // This is for login operation
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

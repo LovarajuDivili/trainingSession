@@ -18,7 +18,9 @@ import ForgotPassword from "./components/ForgotPassword";
 import AppTheme from "./common/AppTheme";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "./contexts/AuthContext";
-import { Alert, Snackbar } from "@mui/material";
+import { Alert, IconButton, InputAdornment, Snackbar } from "@mui/material";
+import VisibilityOff from "@mui/icons-material/VisibilityOff";
+import Visibility from "@mui/icons-material/Visibility";
 
 const Card = styled(MuiCard)(({ theme }) => ({
   display: "flex",
@@ -65,14 +67,23 @@ const SignInContainer = styled(Stack)(({ theme }) => ({
 export default function SignIn(props: { disableCustomTheme?: boolean }) {
   const navigate = useNavigate();
   const location = useLocation();
-  const { login, isLoading } = useAuth();
   const [emailError, setEmailError] = React.useState(false);
   const [emailErrorMessage, setEmailErrorMessage] = React.useState("");
   const [passwordError, setPasswordError] = React.useState(false);
   const [passwordErrorMessage, setPasswordErrorMessage] = React.useState("");
   const [open, setOpen] = React.useState(false);
   const [error, setError] = React.useState("");
+  const [showPassword, setShowPassword] = React.useState(false);
+  const { login, isLoggingIn } = useAuth();
 
+  // Check if user is already logged in using localStorage
+  React.useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      const from = location.state?.from?.pathname || "/welcome";
+      navigate(from, { replace: true });
+    }
+  }, [navigate, location]);
   const from = location.state?.from?.pathname || "/welcome";
 
   const handleClickOpen = () => {
@@ -81,6 +92,13 @@ export default function SignIn(props: { disableCustomTheme?: boolean }) {
 
   const handleClose = () => {
     setOpen(false);
+  };
+
+  const handleClickShowPassword = () => setShowPassword((show) => !show);
+  const handleMouseDownPassword = (
+    event: React.MouseEvent<HTMLButtonElement>
+  ) => {
+    event.preventDefault();
   };
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -133,23 +151,34 @@ export default function SignIn(props: { disableCustomTheme?: boolean }) {
       <CssBaseline enableColorScheme />
       <SignInContainer direction="column" justifyContent="space-between">
         <Card variant="outlined">
-          <Typography
-            component="h6"
-            variant="h6"
-            sx={{
-              width: "100%",
-              fontSize: "1.5rem", 
-              color: "#906aff",
-            }}
-          >
-            Aifa
-          </Typography>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+            <Box
+              component="img"
+              src="/chat.svg"
+              alt="Custom Icon"
+              sx={{
+                width: 30,
+                height: 30,
+              }}
+            />
+            <Typography
+              component="h6"
+              variant="h6"
+              sx={{
+                width: "100%",
+                fontSize: "1.5rem",
+                color: "#906aff",
+              }}
+            >
+              Aifa
+            </Typography>
+          </Box>
           <Typography
             component="h1"
             variant="h2"
             sx={{
               width: "100%",
-              fontSize: "2.5rem", 
+              fontSize: "2.5rem",
             }}
           >
             Sign in
@@ -194,25 +223,40 @@ export default function SignIn(props: { disableCustomTheme?: boolean }) {
                 fullWidth
                 variant="outlined"
                 color={emailError ? "error" : "primary"}
-                disabled={isLoading}
+                disabled={isLoggingIn}
               />
             </FormControl>
             <FormControl>
               <FormLabel htmlFor="password">Password</FormLabel>
               <TextField
-                error={passwordError}
-                helperText={passwordErrorMessage}
-                name="password"
-                placeholder="••••••"
-                type="password"
-                id="password"
-                autoComplete="current-password"
-                autoFocus
                 required
                 fullWidth
+                name="password"
+                placeholder="Enter your password"
+                type={showPassword ? "text" : "password"}
+                id="password"
+                autoComplete="new-password"
                 variant="outlined"
+                error={passwordError}
+                helperText={passwordErrorMessage}
                 color={passwordError ? "error" : "primary"}
-                disabled={isLoading}
+                disabled={isLoggingIn}
+                InputProps={{
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton
+                        aria-label={
+                          showPassword ? "hide password" : "show password"
+                        }
+                        onClick={handleClickShowPassword}
+                        onMouseDown={handleMouseDownPassword}
+                        edge="end"
+                      >
+                        {showPassword ? <VisibilityOff /> : <Visibility />}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }}
               />
             </FormControl>
             <FormControlLabel
@@ -224,9 +268,9 @@ export default function SignIn(props: { disableCustomTheme?: boolean }) {
               type="submit"
               fullWidth
               variant="contained"
-              disabled={isLoading}
+              disabled={isLoggingIn}
             >
-              {isLoading ? "Signing in..." : "Sign in"}
+              {isLoggingIn ? "Signing in..." : "Sign in"}
             </Button>
 
             <Link
