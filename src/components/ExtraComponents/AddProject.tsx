@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   Box,
   Typography,
@@ -8,18 +9,40 @@ import {
   Select,
   Divider,
 } from "@mui/material";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAppDispatch } from "../../hooks/reduxHooks";
-import { addProject } from "../../store/ProjectsSlice";
+import { addProjectAPI, updateProjectAPI } from "../../store/ProjectsSlice";
 import type { Project } from "../../store/ProjectsSlice";
 import { Add_New, Cancel } from "../../common/labelConstants";
+import { useLocation } from "react-router-dom";
+import { Snackbar, Alert } from "@mui/material";
 
-const AddProject = () => {
+interface AddProjectProps {
+  open?: boolean;
+  onClose?: () => void;
+  project?: Project | null;
+  onSuccess?: () => void;
+}
+
+const AddProject = ({
+  onClose,
+  project = null,
+  onSuccess,
+}: AddProjectProps) => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
+  const location = useLocation();
 
-  const [project, setProject] = useState({
+  const state = location.state as
+    | { isEditing?: boolean; projectData?: Project }
+    | undefined;
+  const projectFromState = state?.projectData || project;
+
+  const isEditingMode = Boolean(projectFromState?.id);
+  //const editingId = projectFromState?.id || null;
+
+  const [formValues, setFormValues] = useState({
     projectName: "",
     projectOwner: "",
     jiraId: "",
@@ -28,34 +51,108 @@ const AddProject = () => {
     endDate: "",
   });
 
+  const [loading, setLoading] = useState(false);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error">(
+    "success"
+  );
+
+  useEffect(() => {
+    if (projectFromState) {
+      setFormValues({
+        projectName: projectFromState.projectName || "",
+        projectOwner: projectFromState.projectOwner || "",
+        jiraId: projectFromState.jiraId || "",
+        status: projectFromState.status || "",
+        startDate: projectFromState.startDate || "",
+        endDate: projectFromState.endDate || "",
+      });
+    } else {
+      setFormValues({
+        projectName: "",
+        projectOwner: "",
+        jiraId: "",
+        status: "",
+        startDate: "",
+        endDate: "",
+      });
+    }
+  }, [projectFromState]);
+
   const handleChange = (field: string, value: string) => {
-    setProject((prev) => ({ ...prev, [field]: value }));
+    setFormValues((prev) => ({ ...prev, [field]: value }));
   };
 
   const isSaveDisabled = !(
-    project.projectName &&
-    project.projectOwner &&
-    project.jiraId &&
-    project.status &&
-    project.startDate &&
-    project.endDate
+    formValues.projectName.trim() &&
+    formValues.projectOwner.trim() &&
+    formValues.jiraId.trim() &&
+    formValues.status &&
+    formValues.startDate &&
+    formValues.endDate
   );
 
-  const handleSave = () => {
-    const newProject: Project = {
-      ...project,
-      id: "PROJ" + Date.now(),
-    };
+  const handleSave = async () => {
+    setLoading(true);
+    try {
+      const editingId = project?.id || projectFromState?.id;
+      const projectData = {
+        projectName: formValues.projectName.trim(),
+        projectOwner: formValues.projectOwner.trim(),
+        jiraId: formValues.jiraId.trim(),
+        status: formValues.status,
+        startDate: formValues.startDate,
+        endDate: formValues.endDate,
+      };
 
-    dispatch(addProject(newProject));
+      if (isEditingMode && editingId) {
+        await dispatch(
+          updateProjectAPI({ id: editingId, projectData })
+        ).unwrap();
+        setSnackbarMessage("Project updated successfully");
+        setSnackbarSeverity("success");
+      } else {
+        await dispatch(addProjectAPI(projectData)).unwrap();
+        setSnackbarMessage("Project added successfully");
+        setSnackbarSeverity("success");
+      }
 
-    alert("Project added successfully!");
-    navigate("/admin/projects");
+      setSnackbarOpen(true);
+
+      // Wait for 1.5s before navigating so user sees Snackbar
+      setTimeout(() => {
+        if (onSuccess) onSuccess();
+        else navigate("/admin/projects");
+      }, 1500);
+    } catch (err: any) {
+      let message = "Unknown error occurred";
+      if (typeof err === "string") message = err;
+      else if (err?.detail) message = err.detail;
+      else if (err?.message) message = err.message;
+
+      setSnackbarMessage(message);
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleCancel = () => {
-    navigate("/admin/projects");
+    if (onClose) {
+      onClose();
+    } else {
+      navigate("/admin/projects");
+    }
   };
+
+  const handleSnackbarClose = () => {
+    setSnackbarOpen(false);
+  };
+
+  const title = isEditingMode ? "Edit Project" : Add_New.ADD_PROJECT;
+  const buttonLabel = isEditingMode ? "Save" : Add_New.ADD_BUTTON;
 
   return (
     <Box sx={{ width: "100%" }}>
@@ -69,9 +166,8 @@ const AddProject = () => {
         }}
       >
         <Typography variant="h5" sx={{ fontWeight: 600 }}>
-          {Add_New.ADD_PROJECT}
+          {title}
         </Typography>
-
         <Box sx={{ display: "flex", gap: 2 }}>
           <Button
             variant="outlined"
@@ -81,6 +177,7 @@ const AddProject = () => {
               textTransform: "uppercase",
             }}
             onClick={handleCancel}
+            disabled={loading}
           >
             {Cancel.CANCEL}
           </Button>
@@ -88,127 +185,160 @@ const AddProject = () => {
             variant="contained"
             sx={{ backgroundColor: "#906aff", textTransform: "uppercase" }}
             onClick={handleSave}
-            disabled={isSaveDisabled}
+            disabled={isSaveDisabled || loading}
           >
-            {Add_New.ADD_BUTTON}
+            {buttonLabel}
           </Button>
         </Box>
       </Box>
+
       <Divider sx={{ mb: 3 }} />
-      <Grid
-        container
-        spacing={{ xs: 2, md: 3 }}
-        columns={{ xs: 4, sm: 8, md: 12 }}
+
+      <ProjectFormFields projects={formValues} handleChange={handleChange} />
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={4000}
+        onClose={handleSnackbarClose}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
       >
-        {/* Row 1 */}
-        <Grid item size={{ xs: 2, sm: 4, md: 4 }}>
-          <Typography sx={{ fontSize: "15px", mb: 0.5 }}>
-            {Add_New.PROJECT_NAME}
-          </Typography>
-          <TextField
-            placeholder="Enter project name"
-            value={project.projectName}
-            onChange={(e) => handleChange("projectName", e.target.value)}
-            fullWidth
-            sx={{
-              "& .MuiOutlinedInput-root": {
-                borderRadius: "20px",
-              },
-            }}
-          />
-        </Grid>
-
-        <Grid item size={{ xs: 2, sm: 4, md: 4 }}>
-          <Typography sx={{ fontSize: "15px", mb: 0.5 }}>
-            {Add_New.PROJECT_OWNER}
-          </Typography>
-          <TextField
-            placeholder="Enter project owner"
-            value={project.projectOwner}
-            onChange={(e) => handleChange("projectOwner", e.target.value)}
-            fullWidth
-            sx={{
-              "& .MuiOutlinedInput-root": {
-                borderRadius: "20px",
-              },
-            }}
-          />
-        </Grid>
-
-        <Grid item size={{ xs: 2, sm: 4, md: 4 }}>
-          <Typography sx={{ fontSize: "15px", mb: 0.5 }}>Jira Id</Typography>
-          <TextField
-            placeholder="JIRA-123"
-            value={project.jiraId}
-            onChange={(e) => handleChange("jiraId", e.target.value)}
-            fullWidth
-            sx={{
-              "& .MuiOutlinedInput-root": {
-                borderRadius: "20px",
-              },
-            }}
-          />
-        </Grid>
-
-        {/* Row 2 */}
-        <Grid item size={{ xs: 2, sm: 4, md: 4 }}>
-          <Typography sx={{ fontSize: "15px", mb: 0.5 }}>Status</Typography>
-          <Select
-            value={project.status}
-            onChange={(e) => handleChange("status", e.target.value)}
-            fullWidth
-            sx={{
-              borderRadius: "20px",
-              "& .MuiOutlinedInput-root": {
-                borderRadius: "20px",
-              },
-              "& .MuiSelect-select": {
-                color: project.status ? "inherit" : "grey",
-              },
-            }}
-            displayEmpty
-          >
-            <MenuItem value="" disabled>
-              <em>Select Status</em>
-            </MenuItem>
-            <MenuItem value="Active">Active</MenuItem>
-            <MenuItem value="InActive">Inactive</MenuItem>
-            <MenuItem value="InProgress">In Progress</MenuItem>
-          </Select>
-        </Grid>
-
-        <Grid item size={{ xs: 2, sm: 4, md: 4 }}>
-          <Typography sx={{ fontSize: "15px", mb: 0.5 }}>Start Date</Typography>
-          <TextField
-            type="date"
-            value={project.startDate}
-            onChange={(e) => handleChange("startDate", e.target.value)}
-            fullWidth
-            sx={{
-              "& .MuiOutlinedInput-root": {
-                borderRadius: "20px",
-              },
-            }}
-          />
-        </Grid>
-
-        <Grid item size={{ xs: 2, sm: 4, md: 4 }}>
-          <Typography sx={{ fontSize: "15px", mb: 0.5 }}>End Date</Typography>
-          <TextField
-            type="date"
-            value={project.endDate}
-            onChange={(e) => handleChange("endDate", e.target.value)}
-            fullWidth
-            sx={{
-              "& .MuiOutlinedInput-root": {
-                borderRadius: "20px",
-              },
-            }}
-          />
-        </Grid>
-      </Grid>
+        <Alert
+          onClose={handleSnackbarClose}
+          severity={snackbarSeverity}
+          sx={{ width: "100%" }}
+          variant="filled"
+        >
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };
 
+interface ProjectFormFieldsProps {
+  projects: {
+    projectName: string;
+    projectOwner: string;
+    jiraId: string;
+    status: string;
+    startDate: string;
+    endDate: string;
+  };
+  handleChange: (field: string, value: string) => void;
+}
+
+const ProjectFormFields = ({
+  projects,
+  handleChange,
+}: ProjectFormFieldsProps) => (
+  <Grid container spacing={{ xs: 2, md: 3 }} columns={{ xs: 4, sm: 8, md: 12 }}>
+    {/* Row 1 */}
+    <Grid item size={{ xs: 2, sm: 4, md: 4 }}>
+      <Typography sx={{ fontSize: "15px", mb: 0.5 }}>
+        {Add_New.PROJECT_NAME}
+      </Typography>
+      <TextField
+        placeholder="Enter project name"
+        value={projects.projectName}
+        onChange={(e) => handleChange("projectName", e.target.value)}
+        fullWidth
+        sx={{
+          "& .MuiOutlinedInput-root": {
+            borderRadius: "20px",
+          },
+        }}
+      />
+    </Grid>
+
+    <Grid item size={{ xs: 2, sm: 4, md: 4 }}>
+      <Typography sx={{ fontSize: "15px", mb: 0.5 }}>
+        {Add_New.PROJECT_OWNER}
+      </Typography>
+      <TextField
+        placeholder="Enter project owner"
+        value={projects.projectOwner}
+        onChange={(e) => handleChange("projectOwner", e.target.value)}
+        fullWidth
+        sx={{
+          "& .MuiOutlinedInput-root": {
+            borderRadius: "20px",
+          },
+        }}
+      />
+    </Grid>
+
+    <Grid item size={{ xs: 2, sm: 4, md: 4 }}>
+      <Typography sx={{ fontSize: "15px", mb: 0.5 }}>Jira Id</Typography>
+      <TextField
+        placeholder="JIRA-123"
+        value={projects.jiraId}
+        onChange={(e) => handleChange("jiraId", e.target.value)}
+        fullWidth
+        sx={{
+          "& .MuiOutlinedInput-root": {
+            borderRadius: "20px",
+          },
+        }}
+      />
+    </Grid>
+
+    {/* Row 2 */}
+    <Grid item size={{ xs: 2, sm: 4, md: 4 }}>
+      <Typography sx={{ fontSize: "15px", mb: 0.5 }}>Status</Typography>
+      <Select
+        value={projects.status}
+        onChange={(e) => handleChange("status", e.target.value)}
+        fullWidth
+        sx={{
+          borderRadius: "20px",
+          "& .MuiOutlinedInput-root": {
+            borderRadius: "20px",
+          },
+          "& .MuiSelect-select": {
+            color: projects.status ? "inherit" : "grey",
+          },
+        }}
+        displayEmpty
+      >
+        <MenuItem value="" disabled>
+          <em>Select Status</em>
+        </MenuItem>
+        <MenuItem value="Active">Active</MenuItem>
+        <MenuItem value="InActive">InActive</MenuItem>
+        <MenuItem value="InProgress">In Progress</MenuItem>
+      </Select>
+    </Grid>
+
+    <Grid item size={{ xs: 2, sm: 4, md: 4 }}>
+      <Typography sx={{ fontSize: "15px", mb: 0.5 }}>Start Date</Typography>
+      <TextField
+        type="date"
+        value={projects.startDate}
+        onChange={(e) => handleChange("startDate", e.target.value)}
+        fullWidth
+        sx={{
+          "& .MuiOutlinedInput-root": {
+            borderRadius: "20px",
+          },
+        }}
+      />
+    </Grid>
+
+    <Grid item size={{ xs: 2, sm: 4, md: 4 }}>
+      <Typography sx={{ fontSize: "15px", mb: 0.5 }}>End Date</Typography>
+      <TextField
+        type="date"
+        value={projects.endDate}
+        onChange={(e) => handleChange("endDate", e.target.value)}
+        fullWidth
+        sx={{
+          "& .MuiOutlinedInput-root": {
+            borderRadius: "20px",
+          },
+        }}
+      />
+    </Grid>
+  </Grid>
+);
+
+export { ProjectFormFields };
 export default AddProject;

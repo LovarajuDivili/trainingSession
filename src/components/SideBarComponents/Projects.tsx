@@ -1,123 +1,88 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useEffect } from "react";
-import { Box, Button, Typography } from "@mui/material";
-import { DataGrid, type GridColDef } from "@mui/x-data-grid";
+import {
+  Box,
+  Button,
+  Checkbox,
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  IconButton,
+  Typography,
+} from "@mui/material";
+import {
+  DataGrid,
+  type GridColDef,
+  type GridRenderCellParams,
+} from "@mui/x-data-grid";
 import { useNavigate } from "react-router-dom";
 import { Loading } from "../../common/labelConstants";
 import DashboardHeader from "../DashboardHeader";
 import { sidebarItems } from "../../common/sidebarItems";
 import { useAppDispatch, useAppSelector } from "../../hooks/reduxHooks";
-import { setProjects } from "../../store/ProjectsSlice";
-
-interface Project {
-  projectName: string;
-  projectOwner: string;
-  jiraId: string;
-  status: string;
-  startDate: string;
-  endDate: string;
-  id: string;
-}
-
-const SESSION_STORAGE_KEY = "project_data";
-
-const fetchProjects = (): Promise<Project[]> => {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve([
-        {
-          projectName: "Website Redesign",
-          projectOwner: "Alice Johnson",
-          jiraId: "JIRA-101",
-          status: "Inactive",
-          startDate: "2023-05-01",
-          endDate: "2023-12-31",
-          id: "PROJ001",
-        },
-        {
-          projectName: "Mobile App",
-          projectOwner: "Bob Williams",
-          jiraId: "JIRA-202",
-          status: "Active",
-          startDate: "2022-01-15",
-          endDate: "2022-10-30",
-          id: "PROJ002",
-        },
-        {
-          projectName: "Database Migration",
-          projectOwner: "Charlie Brown",
-          jiraId: "JIRA-303",
-          status: "Active",
-          startDate: "2023-01-10",
-          endDate: "2023-04-15",
-          id: "PROJ003",
-        },
-        {
-          projectName: "Marketing Campaign Launch",
-          projectOwner: "Diana Prince",
-          jiraId: "JIRA-404",
-          status: "Inactive",
-          startDate: "2023-09-15",
-          endDate: "2024-03-30",
-          id: "PROJ004",
-        },
-        {
-          projectName: "Cloud Infrastructure Setup",
-          projectOwner: "Ethan Hunt",
-          jiraId: "JIRA-505",
-          status: "Inactive",
-          startDate: "2024-01-20",
-          endDate: "2024-06-30",
-          id: "PROJ005",
-        },
-        {
-          projectName: "Security Audit",
-          projectOwner: "Fiona Glenanne",
-          jiraId: "JIRA-606",
-          status: "Active",
-          startDate: "2022-08-01",
-          endDate: "2022-11-15",
-          id: "PROJ006",
-        },
-      ]);
-    }, 1000);
-  });
-};
+import {
+  deleteProjectAPI,
+  fetchProjects,
+  type Project,
+} from "../../store/ProjectsSlice";
+import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/Delete";
 
 const Projects = () => {
-  const [loading, setLoading] = useState(false);
   const [searchText, setSearchText] = useState("");
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
-  const projects = useAppSelector((state) => state.projects.projects);
+  const { projects, loading } = useAppSelector((state) => state.projects);
+
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [projectToDelete, setProjectToDelete] = useState<string | null>(null);
+  const [confirmChecked, setConfirmChecked] = useState(false);
 
   useEffect(() => {
-    const savedData = sessionStorage.getItem(SESSION_STORAGE_KEY);
-
-    if (savedData) {
-      dispatch(setProjects(JSON.parse(savedData)));
-    } else {
-      setLoading(true);
-      fetchProjects().then((data) => {
-        dispatch(setProjects(data));
-        sessionStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(data));
-        setLoading(false);
-      });
-    }
+    dispatch(fetchProjects());
   }, [dispatch]);
 
-  useEffect(() => {
-    if (projects.length > 0) {
-      sessionStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(projects));
-    }
-  }, [projects]);
-
   const filteredProjects = projects.filter(
-    (proj) =>
+    (proj: { projectName: string; jiraId: string }) =>
       proj.projectName.toLowerCase().includes(searchText.toLowerCase()) ||
       proj.jiraId.toLowerCase().includes(searchText.toLowerCase())
   );
 
-  const columns: GridColDef<Project>[] = [
+  const handleEditProject = (project: Project) => {
+    // Navigate to the add project route with state
+    navigate("/admin/projects/add", {
+      state: { isEditing: true, projectData: project },
+    });
+  };
+
+  const handleDeleteProject = async (projectId: string) => {
+    setProjectToDelete(projectId);
+    setDeleteConfirmOpen(true);
+    setConfirmChecked(false);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!projectToDelete) return;
+
+    try {
+      await dispatch(deleteProjectAPI(projectToDelete)).unwrap();
+      dispatch(fetchProjects());
+      setDeleteConfirmOpen(false);
+      setProjectToDelete(null);
+      setConfirmChecked(false);
+    } catch (error: any) {
+      console.error("Error deleting project:", error);
+      alert(error?.detail || "⚠️ Failed to delete project");
+    }
+  };
+
+  const handleCancelDelete = () => {
+    setDeleteConfirmOpen(false);
+    setProjectToDelete(null);
+    setConfirmChecked(false);
+  };
+
+  const columns: GridColDef[] = [
     { field: "projectName", headerName: "Project Name", flex: 1.5 },
     { field: "projectOwner", headerName: "Project Owner", flex: 1.2 },
     { field: "jiraId", headerName: "Jira ID", flex: 1 },
@@ -133,14 +98,16 @@ const Projects = () => {
             backgroundColor:
               params.value === "Active"
                 ? "#47be4bff"
-                : params.value === "In Progress"
-                ? "orange"
-                : "#e12a2aff",
+                : params.value === "InProgress"
+                ? "#e1aa2aff"
+                : params.value === "InActive"
+                ? "#e12a2aff"
+                : null,
             color: "white",
             textTransform: "none",
             fontWeight: 600,
             borderRadius: "20px",
-            maxWidth: "20px",
+            width: "80px",
           }}
         >
           {params.value}
@@ -149,6 +116,29 @@ const Projects = () => {
     },
     { field: "startDate", headerName: "Start Date", flex: 1 },
     { field: "endDate", headerName: "End Date", flex: 1 },
+    {
+      field: "actions",
+      headerName: "Actions",
+      flex: 1,
+      sortable: false,
+      filterable: false,
+      renderCell: (params: GridRenderCellParams<Project>) => (
+        <Box>
+          <IconButton
+            color="primary"
+            onClick={() => handleEditProject(params.row)}
+          >
+            <EditIcon />
+          </IconButton>
+          <IconButton
+            color="error"
+            onClick={() => handleDeleteProject(params.row.id)}
+          >
+            <DeleteIcon />
+          </IconButton>
+        </Box>
+      ),
+    },
   ];
 
   const currentItem = sidebarItems.find(
@@ -179,7 +169,7 @@ const Projects = () => {
             getRowId={(row) => row.id}
             pageSizeOptions={[5, 10, 20]}
             initialState={{
-              pagination: { paginationModel: { pageSize: 5, page: 0 } },
+              pagination: { paginationModel: { pageSize: 10, page: 0 } },
             }}
             sx={{
               "& .MuiDataGrid-columnHeaders": {
@@ -193,6 +183,76 @@ const Projects = () => {
           />
         </Box>
       )}
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog
+        open={deleteConfirmOpen}
+        onClose={handleCancelDelete}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle sx={{ fontSize: "20px", fontWeight: 600 }}>
+          Confirm Delete
+        </DialogTitle>
+        <DialogContent>
+          <Typography sx={{ mb: 2 }}>
+            Are you sure you want to delete{" "}
+            <strong>
+              {projects.find((proj) => proj.id === projectToDelete)
+                ?.projectName || ""}
+            </strong>
+            ? This action cannot be undone.
+          </Typography>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+            <Checkbox
+              id="confirm-delete-project"
+              checked={confirmChecked}
+              onChange={(e) => setConfirmChecked(e.target.checked)}
+              size="small"
+            />
+            <Typography
+              component="label"
+              htmlFor="confirm-delete-project"
+              sx={{ cursor: "pointer" }}
+            >
+              Yes, I want to delete{" "}
+              <strong>
+                {projects.find((proj) => proj.id === projectToDelete)
+                  ?.projectName || ""}
+              </strong>
+            </Typography>
+          </Box>
+        </DialogContent>
+        <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 2, p: 2 }}>
+          <Button
+            variant="outlined"
+            onClick={handleCancelDelete}
+            sx={{
+              color: "#666",
+              borderColor: "#666",
+              textTransform: "uppercase",
+            }}
+          >
+            Cancel
+          </Button>
+          <Button
+            variant="contained"
+            color="error"
+            onClick={handleConfirmDelete}
+            disabled={!confirmChecked}
+            sx={{
+              backgroundColor: "#d81b1bff",
+              textTransform: "uppercase",
+              "&:disabled": {
+                backgroundColor: "#f5f5f5",
+                color: "#999",
+              },
+            }}
+          >
+            Delete
+          </Button>
+        </Box>
+      </Dialog>
     </Box>
   );
 };

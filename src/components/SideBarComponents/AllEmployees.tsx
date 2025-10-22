@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useEffect } from "react";
 import {
   Box,
@@ -11,6 +12,7 @@ import {
   Grid,
   Chip,
   Divider,
+  Checkbox,
 } from "@mui/material";
 import {
   DataGrid,
@@ -23,103 +25,31 @@ import type { Employee } from "../../common/types";
 import DashboardHeader from "../DashboardHeader";
 import { sidebarItems } from "../../common/sidebarItems";
 import { useAppDispatch, useAppSelector } from "../../hooks/reduxHooks";
-import { setEmployees, addEmployee } from "../../store/EmployeesSlice";
-
-const SESSION_STORAGE_KEY = "employee_data";
-
-const defaultEmployees: Employee[] = [
-  {
-    name: "John Doe",
-    email: "john@example.com",
-    role: "Developer",
-    joinDate: "2022-03-01",
-    id: "EMP001",
-    skills: ["React", "TypeScript", "Node.js"],
-  },
-  {
-    name: "Jane Smith",
-    email: "jane@example.com",
-    role: "Tester",
-    joinDate: "2021-06-15",
-    id: "EMP002",
-    skills: ["Selenium", "Cypress", "Manual Testing"],
-  },
-  {
-    name: "Peter Jones",
-    email: "peter@example.com",
-    role: "Tester",
-    joinDate: "2020-09-10",
-    id: "EMP003",
-    skills: ["Agile", "Scrum", "Roadmapping", "Market Research"],
-  },
-  {
-    name: "Mary Lee",
-    email: "mary@example.com",
-    role: "AWS Team",
-    joinDate: "2022-01-20",
-    id: "EMP004",
-    skills: ["Figma", "User Research", "Prototyping", "Wireframing"],
-  },
-  {
-    name: "David Chen",
-    email: "david@example.com",
-    role: "Developer",
-    joinDate: "2021-11-05",
-    id: "EMP005",
-    skills: ["AWS", "Docker", "Kubernetes", "CI/CD"],
-  },
-  {
-    name: "Sarah Davis",
-    email: "sarah@example.com",
-    role: "AWS Team",
-    joinDate: "2023-05-12",
-    id: "EMP006",
-    skills: ["Python", "Machine Learning", "SQL", "Tableau"],
-  },
-  {
-    name: "James Wilson",
-    email: "james@example.com",
-    role: "Tester",
-    joinDate: "2019-08-28",
-    id: "EMP007",
-    skills: [
-      "Leadership",
-      "Project Management",
-      "Mentoring",
-      "Strategic Planning",
-    ],
-  },
-  {
-    name: "Emily White",
-    email: "emily@example.com",
-    role: "Developer",
-    joinDate: "2023-02-14",
-    id: "EMP008",
-    skills: ["Documentation", "Markdown", "API Documentation", "Confluence"],
-  },
-  {
-    name: "Michael Brown",
-    email: "michael@example.com",
-    role: "AWS Team",
-    joinDate: "2022-07-25",
-    id: "EMP009",
-    skills: ["Troubleshooting", "Customer Service", "Linux", "SQL"],
-  },
-  {
-    name: "Laura Taylor",
-    email: "laura@example.com",
-    role: "Developer",
-    joinDate: "2021-03-30",
-    id: "EMP010",
-    skills: ["SEO", "Content Creation", "Social Media", "Email Marketing"],
-  },
-];
+import {
+  fetchEmployees,
+  addEmployeeAPI,
+  deleteEmployeeAPI,
+  updateEmployeeAPI,
+} from "../../store/EmployeesSlice";
+import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/Delete";
+import CloseIcon from "@mui/icons-material/Close";
+import { Snackbar, Alert } from "@mui/material";
 
 const AllEmployees = () => {
   const [loading] = useState(false);
   const [searchText, setSearchText] = useState("");
   const [cardView, setCardView] = useState(false);
   const [openDialog, setOpenDialog] = useState(false);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [snackbarSeverity, setSnackbarSeverity] = useState<"error" | "success">(
+    "success"
+  );
+  const [isEditing, setIsEditing] = useState(false);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [employeeToDelete, setEmployeeToDelete] = useState<string | null>(null);
+  const [confirmChecked, setConfirmChecked] = useState(false);
   const [newEmployee, setNewEmployee] = useState<Employee>({
     name: "",
     email: "",
@@ -141,7 +71,7 @@ const AllEmployees = () => {
           skills: [...prev.skills, skillInput.trim()],
         }));
       }
-      setSkillInput(""); // clear input
+      setSkillInput("");
     }
   };
 
@@ -153,18 +83,7 @@ const AllEmployees = () => {
   };
 
   useEffect(() => {
-    try {
-      const savedRaw = sessionStorage.getItem("employee_data");
-      const sessionEmployees: Employee[] = savedRaw ? JSON.parse(savedRaw) : [];
-
-      const sessionFiltered = sessionEmployees.filter(
-        (se) => !defaultEmployees.some((de) => de.id === se.id)
-      );
-
-      dispatch(setEmployees([...defaultEmployees, ...sessionFiltered]));
-    } catch {
-      dispatch(setEmployees([...defaultEmployees]));
-    }
+    dispatch(fetchEmployees());
   }, [dispatch]);
 
   const filteredEmployees = employees.filter(
@@ -173,9 +92,39 @@ const AllEmployees = () => {
       emp.role.toLowerCase().includes(searchText.toLowerCase())
   );
 
-  const handleOpenDialog = () => setOpenDialog(true);
+  const handleSnackbarClose = (_?: any, reason?: string) => {
+    if (reason === "clickaway") return;
+    setSnackbarOpen(false);
+  };
+
+  const handleOpenDialog = (employee?: Employee) => {
+    if (employee) {
+      setIsEditing(true);
+      setNewEmployee(employee);
+    } else {
+      setIsEditing(false);
+      const numericIds = employees
+        .map((emp) => parseInt(emp.id.replace("EMP", ""), 10))
+        .filter((num) => !isNaN(num));
+
+      const nextNumber =
+        numericIds.length > 0 ? Math.max(...numericIds) + 1 : 1;
+
+      const nextId = `EMP${nextNumber}`;
+      setNewEmployee({
+        name: "",
+        email: "",
+        role: "",
+        joinDate: "",
+        id: String(nextId),
+        skills: [],
+      });
+    }
+    setOpenDialog(true);
+  };
   const handleCloseDialog = () => {
     setOpenDialog(false);
+    setIsEditing(false);
     setNewEmployee({
       name: "",
       email: "",
@@ -184,6 +133,15 @@ const AllEmployees = () => {
       id: "",
       skills: [],
     });
+    setSkillInput("");
+  };
+
+  const handleAddClick = () => {
+    handleOpenDialog();
+  };
+
+  const handleEditEmployee = (employee: Employee) => {
+    handleOpenDialog(employee);
   };
 
   const isSaveDisabled = !(
@@ -195,17 +153,10 @@ const AllEmployees = () => {
     newEmployee.skills.length > 0
   );
   const handleChange = (field: keyof Employee, value: string) => {
-    if (field === "skills") {
-      setNewEmployee((prev) => ({
-        ...prev,
-        skills: value ? value.split(",").map((s) => s.trim()) : [],
-      }));
-    } else {
-      setNewEmployee((prev) => ({ ...prev, [field]: value }));
-    }
+    setNewEmployee((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleAddEmployee = () => {
+  const handleSaveEmployee = async () => {
     if (
       !newEmployee.name ||
       !newEmployee.email ||
@@ -213,25 +164,67 @@ const AllEmployees = () => {
       !newEmployee.joinDate ||
       !newEmployee.id
     ) {
-      alert("⚠️ Please fill all required fields!");
+      setSnackbarMessage("⚠️ Please fill all required fields!");
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
       return;
     }
 
-    const savedRaw = sessionStorage.getItem(SESSION_STORAGE_KEY);
-    const sessionEmployees: Employee[] = savedRaw ? JSON.parse(savedRaw) : [];
+    try {
+      if (isEditing) {
+        await dispatch(updateEmployeeAPI(newEmployee)).unwrap();
+        setSnackbarMessage("Employee updated successfully!");
+        setSnackbarSeverity("success");
+      } else {
+        await dispatch(addEmployeeAPI(newEmployee)).unwrap();
+        setSnackbarMessage("Employee added successfully!");
+        setSnackbarSeverity("success");
+      }
 
-    const alreadyExists = [...defaultEmployees, ...sessionEmployees].some(
-      (e) => e.id === newEmployee.id
-    );
-    if (alreadyExists) {
-      alert("An employee with this ID already exists.");
-      return;
+      dispatch(fetchEmployees());
+      handleCloseDialog();
+      setSnackbarOpen(true);
+    } catch (error: any) {
+      console.error("Error saving employee:", error);
+
+      // ✅ Show API error in Snackbar
+      const message =
+        error?.detail || `Failed to ${isEditing ? "update" : "add"} employee`;
+      setSnackbarMessage(message);
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
     }
-
-    dispatch(addEmployee(newEmployee));
-
-    handleCloseDialog();
   };
+
+  const handleDeleteEmployee = async (employeeId: string) => {
+    setEmployeeToDelete(employeeId);
+    setDeleteConfirmOpen(true);
+    setConfirmChecked(false); // Reset checkbox when dialog opens
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!employeeToDelete) return;
+
+    try {
+      await dispatch(deleteEmployeeAPI(employeeToDelete)).unwrap();
+      dispatch(fetchEmployees());
+      setDeleteConfirmOpen(false);
+      setEmployeeToDelete(null);
+      setConfirmChecked(false);
+    } catch (error: any) {
+      console.error("Error deleting employee:", error);
+      alert(error?.detail || "⚠️ Failed to delete employee");
+    }
+  };
+
+  const handleCancelDelete = () => {
+    setDeleteConfirmOpen(false);
+    setEmployeeToDelete(null);
+    setConfirmChecked(false);
+  };
+
+  const dialogTitle = isEditing ? "Edit Employee" : "Add New Employee";
+  const saveButtonLabel = isEditing ? "Save" : "Add";
 
   const columns: GridColDef<Employee>[] = [
     { field: "name", headerName: "Name", flex: 1 },
@@ -263,6 +256,7 @@ const AllEmployees = () => {
         </>
       ),
     },
+
     {
       field: "currentDate",
       headerName: "Current Date",
@@ -271,6 +265,29 @@ const AllEmployees = () => {
         params.row.joinDate
           ? new Date(params.row.joinDate).toLocaleDateString()
           : "",
+    },
+    {
+      field: "actions",
+      headerName: "Actions",
+      flex: 1,
+      sortable: false,
+      filterable: false,
+      renderCell: (params: GridRenderCellParams<Employee>) => (
+        <Box>
+          <IconButton
+            color="primary"
+            onClick={() => handleEditEmployee(params.row)}
+          >
+            <EditIcon />
+          </IconButton>
+          <IconButton
+            color="error"
+            onClick={() => handleDeleteEmployee(params.row.id)}
+          >
+            <DeleteIcon />
+          </IconButton>
+        </Box>
+      ),
     },
   ];
 
@@ -288,7 +305,7 @@ const AllEmployees = () => {
         searchText={searchText}
         onSearchChange={setSearchText}
         showAddButton
-        onAddClick={handleOpenDialog}
+        onAddClick={handleAddClick}
         addButtonLabel="Add New"
         gridIcon={
           <IconButton
@@ -334,17 +351,35 @@ const AllEmployees = () => {
                         justifyContent="space-between"
                         alignItems="center"
                       >
-                        <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                        <Typography
+                          variant="h6"
+                          sx={{ fontWeight: 600, color: "#906aff" }}
+                        >
                           {emp.name}
                         </Typography>
 
-                        <Typography
-                          variant="h6"
-                          sx={{ fontWeight: 600, color: "gray" }}
+                        <Box
+                          sx={{
+                            width: 30,
+                            height: 30,
+                            borderRadius: "50%",
+                            backgroundColor: "lightgray",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                          }}
                         >
-                          {emp.name.charAt(0)}
-                        </Typography>
+                          <Typography
+                            variant="h6"
+                            sx={{ fontWeight: 600, color: "white" }}
+                          >
+                            {emp.name.charAt(0).toUpperCase()}{" "}
+                          </Typography>
+                        </Box>
                       </Box>
+                      <Typography variant="body2" sx={{ mt: 1 }}>
+                        <strong>Emp Id:</strong> {emp.id}
+                      </Typography>
                       <Typography variant="body2" sx={{ mt: 1 }}>
                         <strong>Email:</strong> {emp.email}
                       </Typography>
@@ -428,7 +463,7 @@ const AllEmployees = () => {
           }}
         >
           <DialogTitle sx={{ p: 0, fontSize: "25px" }}>
-            Add New Employee
+            {dialogTitle}
           </DialogTitle>
           <Box
             sx={{
@@ -453,11 +488,11 @@ const AllEmployees = () => {
             <Button
               variant="contained"
               color="primary"
-              onClick={handleAddEmployee}
+              onClick={handleSaveEmployee}
               disabled={isSaveDisabled}
               sx={{ backgroundColor: "#906aff", textTransform: "uppercase" }}
             >
-              Add
+              {saveButtonLabel}
             </Button>
           </Box>
         </Box>
@@ -541,6 +576,7 @@ const AllEmployees = () => {
                 onChange={(e) => handleChange("id", e.target.value)}
                 fullWidth
                 required
+                InputProps={{ readOnly: true }}
                 sx={{
                   "& .MuiOutlinedInput-root": {
                     borderRadius: "20px",
@@ -585,6 +621,111 @@ const AllEmployees = () => {
           </Grid>
         </DialogContent>
       </Dialog>
+      {/* Delete Confirmation Dialog */}
+      <Dialog
+        open={deleteConfirmOpen}
+        onClose={handleCancelDelete}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle
+          sx={{
+            fontSize: "20px",
+            fontWeight: 600,
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
+          Confirm Delete
+          <IconButton
+            onClick={handleCancelDelete}
+            size="small"
+            sx={{
+              backgroundColor: "#f5f5f5",
+              color: "#d81b1b",
+              "&:hover": { backgroundColor: "#f44336", color: "#fff" },
+              width: 28,
+              height: 28,
+              borderRadius: "50%",
+            }}
+          >
+            <CloseIcon sx={{ fontSize: "18px" }} />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent>
+          <Typography sx={{ mb: 2 }}>
+            Are you sure you want to delete{" "}
+            <strong>
+              {employees.find((emp) => emp.id === employeeToDelete)?.name || ""}
+            </strong>
+            ? This action cannot be undone.
+          </Typography>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+            <Checkbox
+              id="confirm-delete"
+              checked={confirmChecked}
+              onChange={(e) => setConfirmChecked(e.target.checked)}
+              size="small"
+            />
+            <Typography
+              component="label"
+              htmlFor="confirm-delete"
+              sx={{ cursor: "pointer" }}
+            >
+              Yes, I want to delete{" "}
+              <strong>
+                {employees.find((emp) => emp.id === employeeToDelete)?.name ||
+                  ""}
+              </strong>
+            </Typography>
+          </Box>
+        </DialogContent>
+        <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 2, p: 2 }}>
+          <Button
+            variant="outlined"
+            onClick={handleCancelDelete}
+            sx={{
+              color: "#666",
+              borderColor: "#666",
+              textTransform: "uppercase",
+            }}
+          >
+            Cancel
+          </Button>
+          <Button
+            variant="contained"
+            color="error"
+            onClick={handleConfirmDelete}
+            disabled={!confirmChecked}
+            sx={{
+              backgroundColor: "#d81b1bff",
+              textTransform: "uppercase",
+              "&:disabled": {
+                backgroundColor: "#f5f5f5",
+                color: "#999",
+              },
+            }}
+          >
+            Delete
+          </Button>
+        </Box>
+      </Dialog>
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={2000}
+        onClose={handleSnackbarClose}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+      >
+        <Alert
+          onClose={handleSnackbarClose}
+          severity={snackbarSeverity}
+          sx={{ width: "100%" }}
+          variant="filled"
+        >
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };
