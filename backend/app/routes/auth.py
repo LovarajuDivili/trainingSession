@@ -4,7 +4,9 @@ from app.database import db
 from app.models.auth import UserCreate, UserLogin, Token, UserResponse
 from app.utils.auth import (
     verify_password, 
-    get_password_hash, 
+    get_password_hash,
+    verify_frontend_hashed_password,
+    is_bcrypt_hash, 
     create_access_token, 
     verify_token,
     ACCESS_TOKEN_EXPIRE_MINUTES,
@@ -43,23 +45,31 @@ def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(securit
 @router.post("/signup", response_model=Token)
 async def signup(user_data: UserCreate):
     try:
-        # Check if user already exists
+        
         existing_user = db.users.find_one({"email": user_data.email})
         if existing_user:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Email already registered"
             )
-        
-        # Create new user
+
         user_dict = user_data.dict()
-        user_dict["password"] = get_password_hash(user_data.password)
+
+        
+        if is_bcrypt_hash(user_data.password):
+            
+            user_dict["password"] = user_data.password
+            user_dict["password_hashed_on"] = "frontend"
+        else:
+            
+            user_dict["password"] = get_password_hash(user_data.password)
+            user_dict["password_hashed_on"] = "frontend"
+
         user_dict["created_at"] = datetime.utcnow()
+
         
-        # Insert user into database
         result = db.users.insert_one(user_dict)
-        
-        # Create user response without password
+
         user_response = {
             "id": str(result.inserted_id),
             "name": user_data.name,
@@ -67,24 +77,21 @@ async def signup(user_data: UserCreate):
             "role": user_data.role,
             "created_at": user_dict["created_at"]
         }
-        
-       
+
         access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
         access_token = create_access_token(
             data={"sub": user_data.email}, expires_delta=access_token_expires
         )
-        
+
         return {
             "access_token": access_token,
             "token_type": "bearer",
             "user": user_response
         }
-    
+
     except HTTPException:
-        
         raise
     except Exception as e:
-        
         print(f"Signup error: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -95,14 +102,26 @@ async def signup(user_data: UserCreate):
 @router.post("/login", response_model=Token)
 async def login(user_data: UserLogin):
     try:
-        
         user = db.users.find_one({"email": user_data.email})
-        if not user or not verify_password(user_data.password, user["password"]):
+        if not user:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Incorrect email or password"
             )
-       
+
+        if user.get("password_hashed_on") == "frontend":
+            
+            password_valid = verify_password(user_data.password, user["password"])
+        else:
+            
+            password_valid = verify_password(user_data.password, user["password"])
+
+        if not password_valid:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Incorrect email or password"
+            )
+
         user_response = {
             "id": str(user["_id"]),
             "name": user["name"],
@@ -110,19 +129,18 @@ async def login(user_data: UserLogin):
             "role": user["role"],
             "created_at": user["created_at"]
         }
-        
-       
+
         access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
         access_token = create_access_token(
             data={"sub": user_data.email}, expires_delta=access_token_expires
         )
-        
+
         return {
             "access_token": access_token,
             "token_type": "bearer",
             "user": user_response
         }
-    
+
     except HTTPException:
         raise
     except Exception as e:

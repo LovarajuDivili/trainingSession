@@ -44,16 +44,16 @@ interface AuthProviderProps {
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [isSigningUp, setIsSigningUp] = useState(false); // Add this
-  const [isLoggingIn] = useState(false); // Add this
-  // Check if user is logged in on app start
+  const [isSigningUp, setIsSigningUp] = useState(false);
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
+
   useEffect(() => {
     const token = localStorage.getItem("token");
     const userData = localStorage.getItem("user");
 
     if (token && userData) {
       setUser(JSON.parse(userData));
-      // Set default authorization header
+
       axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
     }
 
@@ -62,7 +62,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const login = async (email: string, password: string) => {
     try {
-      setIsLoading(true);
+      setIsLoggingIn(true);
 
       // Replace with your actual API endpoint
       const response = await axios.post(
@@ -75,26 +75,28 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
       const { access_token: token, user: userData } = response.data;
 
-      // Store token and user data
       localStorage.setItem("token", token);
       localStorage.setItem("user", JSON.stringify(userData));
 
-      // Set default authorization header
       axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
 
       setUser(userData);
     } catch (error: any) {
-      throw new Error(error.response?.data?.message || "Login failed");
+      console.error("Login error:", error.response?.data || error.message);
+      throw new Error(
+        error.response?.data?.detail ||
+          error.response?.data?.message ||
+          "Login failed. Please try again."
+      );
     } finally {
-      setIsLoading(false);
+      setIsLoggingIn(false);
     }
   };
 
   const signup = async (name: string, email: string, password: string) => {
     try {
-      setIsSigningUp(true); // Use specific state for signup
+      setIsSigningUp(true);
 
-      // Replace with your actual API endpoint
       const response = await axios.post(
         "http://localhost:8000/v-1/application/auth/signup",
         {
@@ -110,7 +112,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     } catch (error: any) {
       throw new Error(error.response?.data?.detail || "Signup failed");
     } finally {
-      setIsLoading(false);
+      setIsSigningUp(false);
     }
   };
 
@@ -127,9 +129,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     signup,
     logout,
     isAuthenticated: !!user,
-    isLoading, // This is for initial app loading
-    isSigningUp, // This is for signup operation
-    isLoggingIn, // This is for login operation
+    isLoading,
+    isSigningUp,
+    isLoggingIn,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
