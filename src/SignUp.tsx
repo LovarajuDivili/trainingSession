@@ -21,6 +21,7 @@ import InputAdornment from "@mui/material/InputAdornment";
 import IconButton from "@mui/material/IconButton";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
+import sha256 from "crypto-js/sha256";
 
 const Card = styled(MuiCard)(({ theme }) => ({
   display: "flex",
@@ -66,7 +67,8 @@ const SignUpContainer = styled(Stack)(({ theme }) => ({
 
 export default function SignUp(props: { disableCustomTheme?: boolean }) {
   const navigate = useNavigate();
-  const { signup, isSigningUp } = useAuth();
+  const { signup, isSigningUp: contextIsSigningUp } = useAuth();
+  const [isLoading, setIsLoading] = React.useState(false);
   const [emailError, setEmailError] = React.useState(false);
   const [emailErrorMessage, setEmailErrorMessage] = React.useState("");
   const [passwordError, setPasswordError] = React.useState(false);
@@ -77,7 +79,8 @@ export default function SignUp(props: { disableCustomTheme?: boolean }) {
   const [success, setSuccess] = React.useState("");
   const [showPassword, setShowPassword] = React.useState(false);
 
-  
+  const isSigningUp = contextIsSigningUp || isLoading;
+
   React.useEffect(() => {
     const token = localStorage.getItem("token");
     if (token) {
@@ -113,13 +116,12 @@ export default function SignUp(props: { disableCustomTheme?: boolean }) {
       if (!hasMinLength || !hasUpperCase || !hasNumber || !hasSpecialChar) {
         setPasswordError(true);
 
-        
         let message = "Password must have:";
         if (!hasMinLength) message += " at least 6 characters,";
         if (!hasUpperCase) message += " one uppercase letter,";
         if (!hasNumber) message += " one number,";
         if (!hasSpecialChar) message += " one special character,";
-        
+
         message = message.replace(/,$/, ".");
         setPasswordErrorMessage(message);
 
@@ -145,34 +147,27 @@ export default function SignUp(props: { disableCustomTheme?: boolean }) {
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    if (!validateInputs()) {
-      return;
-    }
+    if (!validateInputs()) return;
 
     const data = new FormData(event.currentTarget);
     const name = data.get("name") as string;
     const email = data.get("email") as string;
     const password = data.get("password") as string;
 
+    setIsLoading(true);
+    setError("");
+
     try {
-      await signup(name, email, password);
+      const shaHashedPassword = sha256(password).toString();
 
-      setSuccess("Account created successfully! Redirecting to sign in...");
+      await signup(name, email, shaHashedPassword);
 
-      setTimeout(() => {
-        navigate("/signin");
-      }, 2000);
+      setSuccess("Account created! Redirecting to login...");
+      setTimeout(() => navigate("/signin"), 2000);
     } catch (error: any) {
-      
-      if (
-        error.message.includes("Email already registered") ||
-        error.message.includes("already exists") ||
-        error.message.includes("already registered")
-      ) {
-        setError("Email already registered. Please use a different email.");
-      } else {
-        setError(error.message);
-      }
+      setError(error.message);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -185,8 +180,20 @@ export default function SignUp(props: { disableCustomTheme?: boolean }) {
 
   return (
     <AppTheme {...props}>
-      <SignUpContainer direction="column" justifyContent="space-between">
-        <Card variant="outlined">
+      <SignUpContainer
+        direction="column"
+        justifyContent="space-between"
+        sx={{
+          height: "89vh",
+        }}
+      >
+        <Card
+          variant="outlined"
+          sx={{
+            width: "100%",
+            maxWidth: 400,
+          }}
+        >
           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
             <Box
               component="img"
@@ -342,7 +349,11 @@ export default function SignUp(props: { disableCustomTheme?: boolean }) {
                 type="button"
                 onClick={() => navigate("/signin")}
                 variant="body2"
-                sx={{ alignSelf: "center", cursor: "pointer" }}
+                sx={{
+                  alignSelf: "center",
+                  cursor: "pointer",
+                  color: "#906aff",
+                }}
               >
                 Sign in
               </Link>

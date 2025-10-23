@@ -21,6 +21,7 @@ import { useAuth } from "./contexts/AuthContext";
 import { Alert, IconButton, InputAdornment, Snackbar } from "@mui/material";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import Visibility from "@mui/icons-material/Visibility";
+import sha256 from "crypto-js/sha256";
 
 const Card = styled(MuiCard)(({ theme }) => ({
   display: "flex",
@@ -67,16 +68,12 @@ const SignInContainer = styled(Stack)(({ theme }) => ({
 export default function SignIn(props: { disableCustomTheme?: boolean }) {
   const navigate = useNavigate();
   const location = useLocation();
-  const [emailError, setEmailError] = React.useState(false);
-  const [emailErrorMessage, setEmailErrorMessage] = React.useState("");
-  const [passwordError, setPasswordError] = React.useState(false);
-  const [passwordErrorMessage, setPasswordErrorMessage] = React.useState("");
+
   const [open, setOpen] = React.useState(false);
   const [error, setError] = React.useState("");
   const [showPassword, setShowPassword] = React.useState(false);
   const { login, isLoggingIn } = useAuth();
 
-  // Check if user is already logged in using localStorage
   React.useEffect(() => {
     const token = localStorage.getItem("token");
     if (token) {
@@ -103,47 +100,24 @@ export default function SignIn(props: { disableCustomTheme?: boolean }) {
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-
-    if (!validateInputs()) {
-      return;
-    }
     const data = new FormData(event.currentTarget);
     const email = data.get("email") as string;
     const password = data.get("password") as string;
 
+    if (!email || !password) {
+      setError("Email and password are required");
+      return;
+    }
+
     try {
-      await login(email, password);
+      const shaHashedPassword = sha256(password).toString();
+
+      await login(email, shaHashedPassword);
+
       navigate(from, { replace: true });
-    } catch (error: any) {
-      setError(error.message);
+    } catch (err: any) {
+      setError(err.message || "Login failed");
     }
-  };
-
-  const validateInputs = () => {
-    const email = document.getElementById("email") as HTMLInputElement;
-    const password = document.getElementById("password") as HTMLInputElement;
-
-    let isValid = true;
-
-    if (!email.value || !/\S+@\S+\.\S+/.test(email.value)) {
-      setEmailError(true);
-      setEmailErrorMessage("Please enter a valid email address.");
-      isValid = false;
-    } else {
-      setEmailError(false);
-      setEmailErrorMessage("");
-    }
-
-    if (!password.value || password.value.length < 6) {
-      setPasswordError(true);
-      setPasswordErrorMessage("Password must be at least 6 characters long.");
-      isValid = false;
-    } else {
-      setPasswordError(false);
-      setPasswordErrorMessage("");
-    }
-
-    return isValid;
   };
 
   return (
@@ -211,18 +185,15 @@ export default function SignIn(props: { disableCustomTheme?: boolean }) {
             <FormControl>
               <FormLabel htmlFor="email">Email</FormLabel>
               <TextField
-                error={emailError}
-                helperText={emailErrorMessage}
                 id="email"
                 type="email"
                 name="email"
-                placeholder="your@email.com"
+                placeholder="Enter your email"
                 autoComplete="email"
                 autoFocus
                 required
                 fullWidth
                 variant="outlined"
-                color={emailError ? "error" : "primary"}
                 disabled={isLoggingIn}
               />
             </FormControl>
@@ -237,9 +208,6 @@ export default function SignIn(props: { disableCustomTheme?: boolean }) {
                 id="password"
                 autoComplete="new-password"
                 variant="outlined"
-                error={passwordError}
-                helperText={passwordErrorMessage}
-                color={passwordError ? "error" : "primary"}
                 disabled={isLoggingIn}
                 InputProps={{
                   endAdornment: (
@@ -269,6 +237,7 @@ export default function SignIn(props: { disableCustomTheme?: boolean }) {
               fullWidth
               variant="contained"
               disabled={isLoggingIn}
+              sx={{ backgroundColor: "#906aff" }}
             >
               {isLoggingIn ? "Signing in..." : "Sign in"}
             </Button>
@@ -278,7 +247,7 @@ export default function SignIn(props: { disableCustomTheme?: boolean }) {
               type="button"
               onClick={handleClickOpen}
               variant="body2"
-              sx={{ alignSelf: "center" }}
+              sx={{ alignSelf: "center", color: "#906aff" }}
             >
               Forgot your password?
             </Link>
@@ -292,7 +261,11 @@ export default function SignIn(props: { disableCustomTheme?: boolean }) {
                 type="button"
                 onClick={() => navigate("/signup")}
                 variant="body2"
-                sx={{ alignSelf: "center", cursor: "pointer" }}
+                sx={{
+                  alignSelf: "center",
+                  cursor: "pointer",
+                  color: "#906aff",
+                }}
               >
                 Sign up
               </Link>
