@@ -57,7 +57,9 @@ const AddProject = ({
   const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error">(
     "success"
   );
-  const [dateError, setDateError] = useState("");
+  //const [dateError, setDateError] = useState("");
+  const [startDateError, setStartDateError] = useState("");
+  const [endDateError, setEndDateError] = useState("");
 
   useEffect(() => {
     if (projectFromState) {
@@ -85,7 +87,6 @@ const AddProject = ({
     setFormValues((prev) => {
       const newValues = { ...prev, [field]: value };
 
-      // Validate dates when either startDate or endDate changes
       if (field === "startDate" || field === "endDate") {
         validateDates(
           field === "startDate" ? value : prev.startDate,
@@ -98,17 +99,41 @@ const AddProject = ({
   };
 
   const validateDates = (start: string, end: string): boolean => {
+    let isValid = true;
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    if (start) {
+      const startDate = new Date(start);
+      startDate.setHours(0, 0, 0, 0);
+
+      if (startDate < today) {
+        setStartDateError("Start date cannot be in the past");
+        isValid = false;
+      } else {
+        setStartDateError("");
+      }
+    }
+
     if (start && end) {
       const startDate = new Date(start);
       const endDate = new Date(end);
+      startDate.setHours(0, 0, 0, 0);
+      endDate.setHours(0, 0, 0, 0);
 
       if (endDate <= startDate) {
-        setDateError("End date must be after start date");
-        return false;
+        setEndDateError("End date must be after start date");
+        isValid = false;
+      } else if (endDate < today) {
+        setEndDateError("End date cannot be in the past");
+        isValid = false;
+      } else {
+        setEndDateError("");
       }
     }
-    setDateError("");
-    return true;
+
+    return isValid;
   };
 
   const isSaveDisabled =
@@ -119,7 +144,7 @@ const AddProject = ({
       formValues.status &&
       formValues.startDate &&
       formValues.endDate
-    ) || Boolean(dateError);
+    ) || Boolean(startDateError || endDateError);
 
   const handleSave = async () => {
     if (!validateDates(formValues.startDate, formValues.endDate)) {
@@ -230,7 +255,8 @@ const AddProject = ({
       <ProjectFormFields
         projects={formValues}
         handleChange={handleChange}
-        dateError={dateError}
+        startDateError={startDateError}
+        endDateError={endDateError}
       />
       <Snackbar
         open={snackbarOpen}
@@ -261,13 +287,15 @@ interface ProjectFormFieldsProps {
     endDate: string;
   };
   handleChange: (field: string, value: string) => void;
-  dateError?: string; // Add this
+  startDateError?: string;
+  endDateError?: string;
 }
 
 const ProjectFormFields = ({
   projects,
   handleChange,
-  dateError,
+  startDateError,
+  endDateError,
 }: ProjectFormFieldsProps) => (
   <Grid container spacing={{ xs: 2, md: 3 }} columns={{ xs: 4, sm: 8, md: 12 }}>
     {/* Row 1 */}
@@ -354,6 +382,8 @@ const ProjectFormFields = ({
         value={projects.startDate}
         onChange={(e) => handleChange("startDate", e.target.value)}
         fullWidth
+        error={Boolean(startDateError)}
+        helperText={startDateError}
         sx={{
           "& .MuiOutlinedInput-root": {
             borderRadius: "20px",
@@ -369,8 +399,8 @@ const ProjectFormFields = ({
         value={projects.endDate}
         onChange={(e) => handleChange("endDate", e.target.value)}
         fullWidth
-        error={Boolean(dateError)} // Add error state
-        helperText={dateError}
+        error={Boolean(endDateError)}
+        helperText={endDateError}
         sx={{
           "& .MuiOutlinedInput-root": {
             borderRadius: "20px",
