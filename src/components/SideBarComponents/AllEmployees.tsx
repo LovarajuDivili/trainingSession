@@ -35,6 +35,7 @@ import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import CloseIcon from "@mui/icons-material/Close";
 import { Snackbar, Alert } from "@mui/material";
+import NoData from "../../common/noData";
 
 const CustomNoRowsOverlay = () => {
   return (
@@ -49,19 +50,11 @@ const CustomNoRowsOverlay = () => {
         p: 3,
       }}
     >
-      <Box
-        component="img"
-        src="/public/no_data_image.jpg" // Replace with your image path
-        alt="No employees"
-        sx={{
-          width: 150,
-          height: 150,
-          opacity: 0.7,
-        }}
+      <NoData
+        imageSrc="/public/no_data_image.jpg"
+        altText="No employees"
+        message="No employees found"
       />
-      <Typography variant="h6" color="text.secondary">
-        No employees found
-      </Typography>
     </Box>
   );
 };
@@ -688,7 +681,7 @@ const AllEmployees = () => {
         </DialogTitle>
         <DialogContent>
           <Typography sx={{ mb: 2 }}>
-            Are you sure you want to delete{" "}
+            Are you sure you want to delete the employee -{" "}
             <strong>
               {employees.find((emp) => emp.id === employeeToDelete)?.name || ""}
             </strong>
@@ -706,7 +699,7 @@ const AllEmployees = () => {
               htmlFor="confirm-delete"
               sx={{ cursor: "pointer" }}
             >
-              Yes, I want to delete{" "}
+              Yes, I want to delete the employee -{" "}
               <strong>
                 {employees.find((emp) => emp.id === employeeToDelete)?.name ||
                   ""}

@@ -28,6 +28,7 @@ import {
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import CloseIcon from "@mui/icons-material/Close";
+import NoData from "../../common/noData";
 
 const CustomNoRowsOverlay = () => {
   return (
@@ -42,19 +43,11 @@ const CustomNoRowsOverlay = () => {
         p: 3,
       }}
     >
-      <Box
-        component="img"
-        src="/public/no_data_image.jpg" // Replace with your image path
-        alt="No employees"
-        sx={{
-          width: 150,
-          height: 150,
-          opacity: 0.7,
-        }}
+      <NoData
+        imageSrc="/public/no_data_image.jpg"
+        altText="No projects"
+        message="No projects found"
       />
-      <Typography variant="h6" color="text.secondary">
-        No employees found
-      </Typography>
     </Box>
   );
 };
@@ -83,14 +76,13 @@ const Projects = () => {
     if (!endDate) return false;
     const today = new Date();
     const projectEndDate = new Date(endDate);
-    // Set both dates to start of day for accurate comparison
+
     today.setHours(0, 0, 0, 0);
     projectEndDate.setHours(0, 0, 0, 0);
     return projectEndDate < today;
   };
 
   const handleEditProject = (project: Project) => {
-    // Navigate to the add project route with state
     navigate("/admin/projects/add", {
       state: { isEditing: true, projectData: project },
     });
@@ -155,8 +147,63 @@ const Projects = () => {
         </Button>
       ),
     },
-    { field: "startDate", headerName: "Start Date", flex: 1 },
-    { field: "endDate", headerName: "End Date", flex: 1 },
+
+    {
+      field: "startDate",
+      headerName: "Start Date",
+      flex: 1,
+      renderCell: (params) => {
+        const isCompleted = isProjectCompleted(params.row.endDate);
+        return (
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              height: "100%",
+            }}
+          >
+            <Typography
+              sx={{
+                color: isCompleted ? "red" : "inherit",
+                fontWeight: isCompleted ? 400 : 200,
+                lineHeight: 1.5,
+                fontSize: "0.875rem",
+              }}
+            >
+              {params.value}
+            </Typography>
+          </Box>
+        );
+      },
+    },
+    {
+      field: "endDate",
+      headerName: "End Date",
+      flex: 1,
+      renderCell: (params) => {
+        const isCompleted = isProjectCompleted(params.row.endDate);
+        return (
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              height: "100%",
+            }}
+          >
+            <Typography
+              sx={{
+                color: isCompleted ? "red" : "inherit",
+                fontWeight: isCompleted ? 400 : 200,
+                lineHeight: 1.5,
+                fontSize: "0.875rem",
+              }}
+            >
+              {params.value}
+            </Typography>
+          </Box>
+        );
+      },
+    },
     {
       field: "actions",
       headerName: "Actions",
@@ -226,16 +273,16 @@ const Projects = () => {
               "& .MuiDataGrid-columnHeaderTitle": {
                 fontWeight: 600,
               },
-              // Distinct styling for completed projects
+
               "& .completed-project": {
-                backgroundColor: "rgba(232, 245, 233, 0.7)", // Light green background
+                backgroundColor: "rgba(232, 245, 233, 0.7)",
                 "&:hover": {
-                  backgroundColor: "rgba(200, 230, 201, 0.8) !important", // Darker green on hover
+                  backgroundColor: "rgba(200, 230, 201, 0.8) !important",
                 },
               },
               "& .completed-project .MuiDataGrid-cell": {
-                color: "#2e7d32", // Dark green text
-                borderBottom: "1px solid #c8e6c9", // Green border
+                color: "#2e7d32",
+                borderBottom: "1px solid #c8e6c9",
               },
             }}
           />
@@ -276,7 +323,7 @@ const Projects = () => {
         </DialogTitle>
         <DialogContent>
           <Typography sx={{ mb: 2 }}>
-            Are you sure you want to delete{" "}
+            Are you sure you want to delete project -{" "}
             <strong>
               {projects.find((proj) => proj.id === projectToDelete)
                 ?.projectName || ""}
@@ -295,7 +342,7 @@ const Projects = () => {
               htmlFor="confirm-delete-project"
               sx={{ cursor: "pointer" }}
             >
-              Yes, I want to delete{" "}
+              Yes, I want to delete project -{" "}
               <strong>
                 {projects.find((proj) => proj.id === projectToDelete)
                   ?.projectName || ""}
