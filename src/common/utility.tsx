@@ -1,22 +1,24 @@
 import type { JSX } from "react";
 import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
-import BuildIcon from "@mui/icons-material/Build";
 import CodeIcon from "@mui/icons-material/Code";
 import SettingsApplicationsIcon from "@mui/icons-material/SettingsApplications";
 import SyncAltIcon from "@mui/icons-material/SyncAlt";
 import BugReportIcon from "@mui/icons-material/BugReport";
+import AccountBalanceWalletIcon from "@mui/icons-material/AccountBalanceWallet";
 import type { DropdownItem } from "./types";
 
 export const roleIcons: Record<string, JSX.Element> = {
-    admin: <AdminPanelSettingsIcon sx={{ fontSize: 18, color: "white" }} />,
-    technical: <BuildIcon sx={{ fontSize: 18, color: "white" }} />,
-    developer: <CodeIcon sx={{ fontSize: 18, color: "white" }} />,
-    functional: (
-      <SettingsApplicationsIcon sx={{ fontSize: 18, color: "white" }} />
-    ),
-    migrator: <SyncAltIcon sx={{ fontSize: 18, color: "white" }} />,
-    tester: <BugReportIcon sx={{ fontSize: 18, color: "white" }} />,
-  };
+  admin: <AdminPanelSettingsIcon sx={{ fontSize: 18, color: "white" }} />,
+  accountant: (
+    <AccountBalanceWalletIcon sx={{ fontSize: 18, color: "white" }} />
+  ),
+  developer: <CodeIcon sx={{ fontSize: 18, color: "white" }} />,
+  functional: (
+    <SettingsApplicationsIcon sx={{ fontSize: 18, color: "white" }} />
+  ),
+  migrator: <SyncAltIcon sx={{ fontSize: 18, color: "white" }} />,
+  tester: <BugReportIcon sx={{ fontSize: 18, color: "white" }} />,
+};
 
 export const roleDropdowns: DropdownItem[] = [
   {
@@ -25,9 +27,9 @@ export const roleDropdowns: DropdownItem[] = [
     icon: <AdminPanelSettingsIcon sx={{ color: "#1976d2" }} />,
   },
   {
-    value: "technical",
-    label: "Technical",
-    icon: <BuildIcon sx={{ color: "#b9d219ff" }} />,
+    value: "accountant",
+    label: "Accountant",
+    icon: <AccountBalanceWalletIcon sx={{ color: "#b9d219ff" }} />,
   },
   {
     value: "developer",

@@ -33,8 +33,8 @@ const WelcomeSasa = () => {
       case "admin":
         navigate("/admin");
         break;
-      case "technical":
-        navigate("/technical");
+      case "accountant":
+        navigate("/accountant");
         break;
       case "developer":
         navigate("/developer");
