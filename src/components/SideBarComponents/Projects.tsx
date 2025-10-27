@@ -27,6 +27,30 @@ import {
 } from "../../store/ProjectsSlice";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
+import CloseIcon from "@mui/icons-material/Close";
+import NoData from "../../common/noData";
+
+const CustomNoRowsOverlay = () => {
+  return (
+    <Box
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        height: "100%",
+        gap: 2,
+        p: 3,
+      }}
+    >
+      <NoData
+        imageSrc="/public/no_data_image.jpg"
+        altText="No projects"
+        message="No projects found"
+      />
+    </Box>
+  );
+};
 
 const Projects = () => {
   const [searchText, setSearchText] = useState("");
@@ -48,8 +72,17 @@ const Projects = () => {
       proj.jiraId.toLowerCase().includes(searchText.toLowerCase())
   );
 
+  const isProjectCompleted = (endDate: string): boolean => {
+    if (!endDate) return false;
+    const today = new Date();
+    const projectEndDate = new Date(endDate);
+
+    today.setHours(0, 0, 0, 0);
+    projectEndDate.setHours(0, 0, 0, 0);
+    return projectEndDate < today;
+  };
+
   const handleEditProject = (project: Project) => {
-    // Navigate to the add project route with state
     navigate("/admin/projects/add", {
       state: { isEditing: true, projectData: project },
     });
@@ -114,8 +147,63 @@ const Projects = () => {
         </Button>
       ),
     },
-    { field: "startDate", headerName: "Start Date", flex: 1 },
-    { field: "endDate", headerName: "End Date", flex: 1 },
+
+    {
+      field: "startDate",
+      headerName: "Start Date",
+      flex: 1,
+      renderCell: (params) => {
+        const isCompleted = isProjectCompleted(params.row.endDate);
+        return (
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              height: "100%",
+            }}
+          >
+            <Typography
+              sx={{
+                color: isCompleted ? "red" : "inherit",
+                fontWeight: isCompleted ? 400 : 200,
+                lineHeight: 1.5,
+                fontSize: "0.875rem",
+              }}
+            >
+              {params.value}
+            </Typography>
+          </Box>
+        );
+      },
+    },
+    {
+      field: "endDate",
+      headerName: "End Date",
+      flex: 1,
+      renderCell: (params) => {
+        const isCompleted = isProjectCompleted(params.row.endDate);
+        return (
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              height: "100%",
+            }}
+          >
+            <Typography
+              sx={{
+                color: isCompleted ? "red" : "inherit",
+                fontWeight: isCompleted ? 400 : 200,
+                lineHeight: 1.5,
+                fontSize: "0.875rem",
+              }}
+            >
+              {params.value}
+            </Typography>
+          </Box>
+        );
+      },
+    },
     {
       field: "actions",
       headerName: "Actions",
@@ -171,6 +259,12 @@ const Projects = () => {
             initialState={{
               pagination: { paginationModel: { pageSize: 10, page: 0 } },
             }}
+            slots={{
+              noRowsOverlay: CustomNoRowsOverlay,
+            }}
+            getRowClassName={(params) =>
+              isProjectCompleted(params.row.endDate) ? "completed-project" : ""
+            }
             sx={{
               "& .MuiDataGrid-columnHeaders": {
                 color: "#906aff !important",
@@ -178,6 +272,17 @@ const Projects = () => {
               },
               "& .MuiDataGrid-columnHeaderTitle": {
                 fontWeight: 600,
+              },
+
+              "& .completed-project": {
+                backgroundColor: "rgba(232, 245, 233, 0.7)",
+                "&:hover": {
+                  backgroundColor: "rgba(200, 230, 201, 0.8) !important",
+                },
+              },
+              "& .completed-project .MuiDataGrid-cell": {
+                color: "#2e7d32",
+                borderBottom: "1px solid #c8e6c9",
               },
             }}
           />
@@ -191,12 +296,34 @@ const Projects = () => {
         maxWidth="sm"
         fullWidth
       >
-        <DialogTitle sx={{ fontSize: "20px", fontWeight: 600 }}>
+        <DialogTitle
+          sx={{
+            fontSize: "20px",
+            fontWeight: 600,
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
           Confirm Delete
+          <IconButton
+            onClick={handleCancelDelete}
+            size="small"
+            sx={{
+              backgroundColor: "#f5f5f5",
+              color: "#d81b1b",
+              "&:hover": { backgroundColor: "#f44336", color: "#fff" },
+              width: 28,
+              height: 28,
+              borderRadius: "50%",
+            }}
+          >
+            <CloseIcon sx={{ fontSize: "18px" }} />
+          </IconButton>
         </DialogTitle>
         <DialogContent>
           <Typography sx={{ mb: 2 }}>
-            Are you sure you want to delete{" "}
+            Are you sure you want to delete project -{" "}
             <strong>
               {projects.find((proj) => proj.id === projectToDelete)
                 ?.projectName || ""}
@@ -215,7 +342,7 @@ const Projects = () => {
               htmlFor="confirm-delete-project"
               sx={{ cursor: "pointer" }}
             >
-              Yes, I want to delete{" "}
+              Yes, I want to delete project -{" "}
               <strong>
                 {projects.find((proj) => proj.id === projectToDelete)
                   ?.projectName || ""}

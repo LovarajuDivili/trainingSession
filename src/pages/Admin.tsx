@@ -42,8 +42,8 @@ const Admin = () => {
         sx={{
           marginTop: "60px",
           marginLeft: "240px",
-          padding: 3,
-          height: "calc(100vh - 60px)",
+          padding: 2,
+          height: "calc(100vh - 82px)",
           overflow: "auto",
         }}
       >

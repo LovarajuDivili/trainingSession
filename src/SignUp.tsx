@@ -15,8 +15,13 @@ import MuiCard from "@mui/material/Card";
 import { styled } from "@mui/material/styles";
 import AppTheme from "./common/AppTheme";
 import { useNavigate } from "react-router-dom";
-import { Alert, Snackbar } from "@mui/material";
+import { Alert, CircularProgress, Snackbar } from "@mui/material";
 import { useAuth } from "./contexts/AuthContext";
+import InputAdornment from "@mui/material/InputAdornment";
+import IconButton from "@mui/material/IconButton";
+import Visibility from "@mui/icons-material/Visibility";
+import VisibilityOff from "@mui/icons-material/VisibilityOff";
+import sha256 from "crypto-js/sha256";
 
 const Card = styled(MuiCard)(({ theme }) => ({
   display: "flex",
@@ -44,25 +49,30 @@ const SignUpContainer = styled(Stack)(({ theme }) => ({
   [theme.breakpoints.up("sm")]: {
     padding: theme.spacing(4),
   },
+
+  backgroundImage: 'url("/public/aifaBG.jpg")',
+  backgroundSize: "100% 100%",
+  backgroundPosition: "center",
+  backgroundRepeat: "no-repeat",
+  position: "relative",
+  border: "none",
   "&::before": {
     content: '""',
     display: "block",
     position: "absolute",
     zIndex: -1,
     inset: 0,
-    backgroundImage:
-      "radial-gradient(ellipse at 50% 50%, hsl(210, 100%, 97%), hsl(0, 0%, 100%))",
-    backgroundRepeat: "no-repeat",
+    background: "rgba(0,0,0,0.3)",
     ...theme.applyStyles("dark", {
-      backgroundImage:
-        "radial-gradient(at 50% 50%, hsla(210, 100%, 16%, 0.5), hsl(220, 30%, 5%))",
+      background: "rgba(0,0,0,0.5)",
     }),
   },
 }));
 
 export default function SignUp(props: { disableCustomTheme?: boolean }) {
   const navigate = useNavigate();
-  const { signup, isLoading } = useAuth();
+  const { signup, isSigningUp: contextIsSigningUp } = useAuth();
+  const [isLoading, setIsLoading] = React.useState(false);
   const [emailError, setEmailError] = React.useState(false);
   const [emailErrorMessage, setEmailErrorMessage] = React.useState("");
   const [passwordError, setPasswordError] = React.useState(false);
@@ -71,7 +81,16 @@ export default function SignUp(props: { disableCustomTheme?: boolean }) {
   const [nameErrorMessage, setNameErrorMessage] = React.useState("");
   const [error, setError] = React.useState("");
   const [success, setSuccess] = React.useState("");
+  const [showPassword, setShowPassword] = React.useState(false);
 
+  const isSigningUp = contextIsSigningUp || isLoading;
+
+  React.useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      navigate("/welcome", { replace: true });
+    }
+  }, [navigate]);
   const validateInputs = () => {
     const email = document.getElementById("email") as HTMLInputElement;
     const password = document.getElementById("password") as HTMLInputElement;
@@ -88,13 +107,33 @@ export default function SignUp(props: { disableCustomTheme?: boolean }) {
       setEmailErrorMessage("");
     }
 
-    if (!password.value || password.value.length < 6) {
+    if (!password.value) {
       setPasswordError(true);
-      setPasswordErrorMessage("Password must be at least 6 characters long.");
+      setPasswordErrorMessage("Password is required.");
       isValid = false;
     } else {
-      setPasswordError(false);
-      setPasswordErrorMessage("");
+      const hasMinLength = password.value.length >= 6;
+      const hasUpperCase = /[A-Z]/.test(password.value);
+      const hasNumber = /[0-9]/.test(password.value);
+      const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password.value);
+
+      if (!hasMinLength || !hasUpperCase || !hasNumber || !hasSpecialChar) {
+        setPasswordError(true);
+
+        let message = "Password must have:";
+        if (!hasMinLength) message += " at least 6 characters,";
+        if (!hasUpperCase) message += " one uppercase letter,";
+        if (!hasNumber) message += " one number,";
+        if (!hasSpecialChar) message += " one special character,";
+
+        message = message.replace(/,$/, ".");
+        setPasswordErrorMessage(message);
+
+        isValid = false;
+      } else {
+        setPasswordError(false);
+        setPasswordErrorMessage("");
+      }
     }
 
     if (!name.value || name.value.length < 1) {
@@ -112,32 +151,75 @@ export default function SignUp(props: { disableCustomTheme?: boolean }) {
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    if (!validateInputs()) {
-      return;
-    }
+    if (!validateInputs()) return;
 
     const data = new FormData(event.currentTarget);
     const name = data.get("name") as string;
     const email = data.get("email") as string;
     const password = data.get("password") as string;
 
+    setIsLoading(true);
+    setError("");
+
     try {
-      await signup(name, email, password);
+      const shaHashedPassword = sha256(password).toString();
 
-      setSuccess("Account created successfully! Redirecting to sign in...");
+      await signup(name, email, shaHashedPassword);
 
-      setTimeout(() => {
-        navigate("/signin");
-      }, 2000);
+      setSuccess("Account created! Redirecting to login...");
+      setTimeout(() => navigate("/signin"), 2000);
     } catch (error: any) {
       setError(error.message);
+    } finally {
+      setIsLoading(false);
     }
+  };
+
+  const handleClickShowPassword = () => setShowPassword((show) => !show);
+  const handleMouseDownPassword = (
+    event: React.MouseEvent<HTMLButtonElement>
+  ) => {
+    event.preventDefault();
   };
 
   return (
     <AppTheme {...props}>
-      <SignUpContainer direction="column" justifyContent="space-between">
-        <Card variant="outlined">
+      <SignUpContainer
+        direction="column"
+        justifyContent="space-between"
+        sx={{
+          height: "89vh",
+        }}
+      >
+        <Card
+          // variant="outlined"
+          sx={{
+            width: "100%",
+            maxWidth: 400,
+          }}
+        >
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+            <Box
+              component="img"
+              src="/chat.svg"
+              alt="Custom Icon"
+              sx={{
+                width: 30,
+                height: 30,
+              }}
+            />
+            <Typography
+              component="h6"
+              variant="h6"
+              sx={{
+                width: "100%",
+                fontSize: "1.5rem",
+                color: "#906aff",
+              }}
+            >
+              Aifa
+            </Typography>
+          </Box>
           <Typography
             component="h1"
             variant="h4"
@@ -186,11 +268,11 @@ export default function SignUp(props: { disableCustomTheme?: boolean }) {
                 required
                 fullWidth
                 id="name"
-                placeholder="Jon Snow"
+                placeholder="Enter your name"
                 error={nameError}
                 helperText={nameErrorMessage}
                 color={nameError ? "error" : "primary"}
-                disabled={isLoading}
+                disabled={isSigningUp}
               />
             </FormControl>
             <FormControl>
@@ -199,14 +281,14 @@ export default function SignUp(props: { disableCustomTheme?: boolean }) {
                 required
                 fullWidth
                 id="email"
-                placeholder="your@email.com"
+                placeholder="Enter your email"
                 name="email"
                 autoComplete="email"
                 variant="outlined"
                 error={emailError}
                 helperText={emailErrorMessage}
-                color={passwordError ? "error" : "primary"}
-                disabled={isLoading}
+                color={emailError ? "error" : "primary"}
+                disabled={isSigningUp}
               />
             </FormControl>
             <FormControl>
@@ -215,15 +297,31 @@ export default function SignUp(props: { disableCustomTheme?: boolean }) {
                 required
                 fullWidth
                 name="password"
-                placeholder="••••••"
-                type="password"
+                placeholder="Enter your password"
+                type={showPassword ? "text" : "password"}
                 id="password"
                 autoComplete="new-password"
                 variant="outlined"
                 error={passwordError}
                 helperText={passwordErrorMessage}
                 color={passwordError ? "error" : "primary"}
-                disabled={isLoading}
+                disabled={isSigningUp}
+                InputProps={{
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton
+                        aria-label={
+                          showPassword ? "hide password" : "show password"
+                        }
+                        onClick={handleClickShowPassword}
+                        onMouseDown={handleMouseDownPassword}
+                        edge="end"
+                      >
+                        {showPassword ? <VisibilityOff /> : <Visibility />}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }}
               />
             </FormControl>
             <FormControlLabel
@@ -234,9 +332,15 @@ export default function SignUp(props: { disableCustomTheme?: boolean }) {
               type="submit"
               fullWidth
               variant="contained"
-              disabled={isLoading}
+              disabled={isSigningUp}
+              sx={{ backgroundColor: "#906aff" }}
+              startIcon={
+                isSigningUp ? (
+                  <CircularProgress size={16} color="inherit" />
+                ) : null
+              }
             >
-              {isLoading ? "Creating account..." : "Sign up"}
+              {isSigningUp ? "Creating account..." : "Sign up"}
             </Button>
           </Box>
           <Divider>
@@ -250,7 +354,11 @@ export default function SignUp(props: { disableCustomTheme?: boolean }) {
                 type="button"
                 onClick={() => navigate("/signin")}
                 variant="body2"
-                sx={{ alignSelf: "center", cursor: "pointer" }}
+                sx={{
+                  alignSelf: "center",
+                  cursor: "pointer",
+                  color: "#906aff",
+                }}
               >
                 Sign in
               </Link>
