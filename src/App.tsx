@@ -13,13 +13,13 @@ import Projects from "./components/SideBarComponents/Projects";
 import Statistics from "./components/SideBarComponents/Statistics";
 import Testers from "./components/SideBarComponents/Testers";
 import AddProject from "./components/ExtraComponents/AddProject";
-import Technical from "./pages/Technical";
 import SignIn from "./SignIn";
 import SignUp from "./SignUp";
 import Developer from "./pages/Developer";
 import Functional from "./pages/Funtional";
 import Migrator from "./pages/Migrator";
 import Tester from "./pages/Tester";
+import Accountant from "./pages/Accountant";
 
 
 const AppRoutes = () => {
@@ -73,10 +73,10 @@ const AppRoutes = () => {
 
       {/* Other protected routes */}
       <Route
-        path="/technical"
+        path="/accountant"
         element={
           <ProtectedRoute>
-            <Technical />
+            <Accountant />
           </ProtectedRoute>
         }
       />
