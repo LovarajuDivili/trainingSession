@@ -57,6 +57,9 @@ const AddProject = ({
   const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error">(
     "success"
   );
+  //const [dateError, setDateError] = useState("");
+  const [startDateError, setStartDateError] = useState("");
+  const [endDateError, setEndDateError] = useState("");
 
   useEffect(() => {
     if (projectFromState) {
@@ -81,20 +84,75 @@ const AddProject = ({
   }, [projectFromState]);
 
   const handleChange = (field: string, value: string) => {
-    setFormValues((prev) => ({ ...prev, [field]: value }));
+    setFormValues((prev) => {
+      const newValues = { ...prev, [field]: value };
+
+      if (field === "startDate" || field === "endDate") {
+        validateDates(
+          field === "startDate" ? value : prev.startDate,
+          field === "endDate" ? value : prev.endDate
+        );
+      }
+
+      return newValues;
+    });
   };
 
-  const isSaveDisabled = !(
-    formValues.projectName.trim() &&
-    formValues.projectOwner.trim() &&
-    formValues.jiraId.trim() &&
-    formValues.status &&
-    formValues.startDate &&
-    formValues.endDate
-  );
+  const validateDates = (start: string, end: string): boolean => {
+    let isValid = true;
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    if (start) {
+      const startDate = new Date(start);
+      startDate.setHours(0, 0, 0, 0);
+
+      if (startDate < today) {
+        setStartDateError("Start date cannot be in the past");
+        isValid = false;
+      } else {
+        setStartDateError("");
+      }
+    }
+
+    if (start && end) {
+      const startDate = new Date(start);
+      const endDate = new Date(end);
+      startDate.setHours(0, 0, 0, 0);
+      endDate.setHours(0, 0, 0, 0);
+
+      if (endDate <= startDate) {
+        setEndDateError("End date must be after start date");
+        isValid = false;
+      } else if (endDate < today) {
+        setEndDateError("End date cannot be in the past");
+        isValid = false;
+      } else {
+        setEndDateError("");
+      }
+    }
+
+    return isValid;
+  };
+
+  const isSaveDisabled =
+    !(
+      formValues.projectName.trim() &&
+      formValues.projectOwner.trim() &&
+      formValues.jiraId.trim() &&
+      formValues.status &&
+      formValues.startDate &&
+      formValues.endDate
+    ) || Boolean(startDateError || endDateError);
 
   const handleSave = async () => {
+    if (!validateDates(formValues.startDate, formValues.endDate)) {
+      return;
+    }
+
     setLoading(true);
+
     try {
       const editingId = project?.id || projectFromState?.id;
       const projectData = {
@@ -194,7 +252,12 @@ const AddProject = ({
 
       <Divider sx={{ mb: 3 }} />
 
-      <ProjectFormFields projects={formValues} handleChange={handleChange} />
+      <ProjectFormFields
+        projects={formValues}
+        handleChange={handleChange}
+        startDateError={startDateError}
+        endDateError={endDateError}
+      />
       <Snackbar
         open={snackbarOpen}
         autoHideDuration={4000}
@@ -224,11 +287,15 @@ interface ProjectFormFieldsProps {
     endDate: string;
   };
   handleChange: (field: string, value: string) => void;
+  startDateError?: string;
+  endDateError?: string;
 }
 
 const ProjectFormFields = ({
   projects,
   handleChange,
+  startDateError,
+  endDateError,
 }: ProjectFormFieldsProps) => (
   <Grid container spacing={{ xs: 2, md: 3 }} columns={{ xs: 4, sm: 8, md: 12 }}>
     {/* Row 1 */}
@@ -315,6 +382,8 @@ const ProjectFormFields = ({
         value={projects.startDate}
         onChange={(e) => handleChange("startDate", e.target.value)}
         fullWidth
+        error={Boolean(startDateError)}
+        helperText={startDateError}
         sx={{
           "& .MuiOutlinedInput-root": {
             borderRadius: "20px",
@@ -330,6 +399,8 @@ const ProjectFormFields = ({
         value={projects.endDate}
         onChange={(e) => handleChange("endDate", e.target.value)}
         fullWidth
+        error={Boolean(endDateError)}
+        helperText={endDateError}
         sx={{
           "& .MuiOutlinedInput-root": {
             borderRadius: "20px",

@@ -35,6 +35,29 @@ import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import CloseIcon from "@mui/icons-material/Close";
 import { Snackbar, Alert } from "@mui/material";
+import NoData from "../../common/noData";
+
+const CustomNoRowsOverlay = () => {
+  return (
+    <Box
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        height: "100%",
+        gap: 2,
+        p: 3,
+      }}
+    >
+      <NoData
+        imageSrc="/public/no_data_image.jpg"
+        altText="No employees"
+        message="No employees found"
+      />
+    </Box>
+  );
+};
 
 const AllEmployees = () => {
   const [loading] = useState(false);
@@ -187,7 +210,6 @@ const AllEmployees = () => {
     } catch (error: any) {
       console.error("Error saving employee:", error);
 
-      // ✅ Show API error in Snackbar
       const message =
         error?.detail || `Failed to ${isEditing ? "update" : "add"} employee`;
       setSnackbarMessage(message);
@@ -433,6 +455,9 @@ const AllEmployees = () => {
                 initialState={{
                   pagination: { paginationModel: { pageSize: 5, page: 0 } },
                 }}
+                slots={{
+                  noRowsOverlay: CustomNoRowsOverlay,
+                }}
                 sx={{
                   "& .MuiDataGrid-columnHeaders": {
                     color: "#906aff !important",
@@ -525,6 +550,7 @@ const AllEmployees = () => {
                 onChange={(e) => handleChange("email", e.target.value)}
                 fullWidth
                 required
+                disabled={isEditing}
                 sx={{
                   "& .MuiOutlinedInput-root": {
                     borderRadius: "20px",
@@ -655,7 +681,7 @@ const AllEmployees = () => {
         </DialogTitle>
         <DialogContent>
           <Typography sx={{ mb: 2 }}>
-            Are you sure you want to delete{" "}
+            Are you sure you want to delete the employee -{" "}
             <strong>
               {employees.find((emp) => emp.id === employeeToDelete)?.name || ""}
             </strong>
@@ -673,7 +699,7 @@ const AllEmployees = () => {
               htmlFor="confirm-delete"
               sx={{ cursor: "pointer" }}
             >
-              Yes, I want to delete{" "}
+              Yes, I want to delete the employee -{" "}
               <strong>
                 {employees.find((emp) => emp.id === employeeToDelete)?.name ||
                   ""}
