@@ -664,6 +664,8 @@ const AllEmployees = () => {
           }}
         >
           Confirm Delete
+          
+
           <IconButton
             onClick={handleCancelDelete}
             size="small"
@@ -679,8 +681,9 @@ const AllEmployees = () => {
             <CloseIcon sx={{ fontSize: "18px" }} />
           </IconButton>
         </DialogTitle>
+        <Divider sx={{ mb: 1 }} />
         <DialogContent>
-          <Typography sx={{ mb: 2 }}>
+          <Typography sx={{ mb: 1 }}>
             Are you sure you want to delete the employee -{" "}
             <strong>
               {employees.find((emp) => emp.id === employeeToDelete)?.name || ""}
