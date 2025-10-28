@@ -7,6 +7,8 @@ import Calendar from "../components/ExtraComponents/Calendar";
 import PeopleAltTwoToneIcon from "@mui/icons-material/PeopleAltTwoTone";
 import { AssignmentInd, CorporateFare, MoreHoriz } from "@mui/icons-material";
 import OrderProgress from "../components/ExtraComponents/OrderProgress";
+import { Outlet } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 const Accountant = () => {
   const getCardStyles = () => ({
@@ -19,6 +21,8 @@ const Accountant = () => {
     alignItems: "center",
     justifyContent: "center",
   });
+
+  const navigate = useNavigate();
 
   return (
     <Box sx={{ minHeight: "88vh", backgroundColor: "white" }}>
@@ -151,7 +155,16 @@ const Accountant = () => {
             </Box>
 
             <Card
-              sx={{ height: 70, display: "flex", alignItems: "center", pt: 1 }}
+              onClick={() => navigate("/accountant/employeedata")}
+              sx={{
+                height: 70,
+                display: "flex",
+                alignItems: "center",
+                pt: 1,
+                cursor: "pointer",
+                transition: "0.3s",
+                "&:hover": { boxShadow: 6, transform: "scale(1.02)" },
+              }}
             >
               <CardContent
                 sx={{
@@ -352,6 +365,7 @@ const Accountant = () => {
           <OrderProgress />
         </Box>
       </Box>
+      <Outlet />
     </Box>
   );
 };

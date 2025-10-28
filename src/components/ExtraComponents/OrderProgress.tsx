@@ -15,8 +15,12 @@ import HeadphonesIcon from "@mui/icons-material/Headphones";
 import MonitorIcon from "@mui/icons-material/Monitor";
 import CameraAltIcon from "@mui/icons-material/CameraAlt";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
+import { useNavigate } from "react-router-dom";
 
-const OrderProgress = () => (
+
+const OrderProgress = () => {
+    const navigate = useNavigate();
+    return (
   <Box>
     <Box
       sx={{
@@ -38,6 +42,7 @@ const OrderProgress = () => (
           fontWeight: 600,
           "&:hover": { backgroundColor: "#7a5de0" },
         }}
+        onClick={() => navigate("/accountant/requestorder")}
       >
         Request Order +
       </Button>
@@ -141,5 +146,6 @@ const OrderProgress = () => (
     </Box>
   </Box>
 );
+};
 
 export default OrderProgress;

@@ -20,7 +20,8 @@ import Functional from "./pages/Funtional";
 import Migrator from "./pages/Migrator";
 import Tester from "./pages/Tester";
 import Accountant from "./pages/Accountant";
-
+import RequestOrder from "./components/ExtraComponents/RequestOrder";
+import EmployeeData from "./components/ExtraComponents/EmployeesData";
 
 const AppRoutes = () => {
   const { isAuthenticated, isLoading } = useAuth();
@@ -77,6 +78,22 @@ const AppRoutes = () => {
         element={
           <ProtectedRoute>
             <Accountant />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/accountant/requestorder"
+        element={
+          <ProtectedRoute>
+            <RequestOrder />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/accountant/employeedata"
+        element={
+          <ProtectedRoute>
+            <EmployeeData />
           </ProtectedRoute>
         }
       />
