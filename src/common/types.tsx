@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import type { JSX } from "react";
 
 export interface DropdownItem {
