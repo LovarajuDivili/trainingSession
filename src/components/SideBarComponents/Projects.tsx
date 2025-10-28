@@ -7,6 +7,7 @@ import {
   Dialog,
   DialogContent,
   DialogTitle,
+  Divider,
   IconButton,
   Typography,
 } from "@mui/material";
@@ -321,8 +322,9 @@ const Projects = () => {
             <CloseIcon sx={{ fontSize: "18px" }} />
           </IconButton>
         </DialogTitle>
+        <Divider sx={{ mb: 1 }} />
         <DialogContent>
-          <Typography sx={{ mb: 2 }}>
+          <Typography sx={{ mb: 1 }}>
             Are you sure you want to delete project -{" "}
             <strong>
               {projects.find((proj) => proj.id === projectToDelete)

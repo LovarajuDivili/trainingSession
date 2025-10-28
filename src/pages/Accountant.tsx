@@ -6,10 +6,11 @@ import MonitorIcon from "@mui/icons-material/Monitor";
 import Calendar from "../components/ExtraComponents/Calendar";
 import PeopleAltTwoToneIcon from "@mui/icons-material/PeopleAltTwoTone";
 import { AssignmentInd, CorporateFare, MoreHoriz } from "@mui/icons-material";
+import OrderProgress from "../components/ExtraComponents/OrderProgress";
 
 const Accountant = () => {
   const getCardStyles = () => ({
-    width: 200,
+    width: 260,
     height: 100,
     borderRadius: 3,
     boxShadow: 3,
@@ -22,8 +23,8 @@ const Accountant = () => {
   return (
     <Box sx={{ minHeight: "88vh", backgroundColor: "white" }}>
       <Header role={""} />
-      <Box sx={{ mt: 10, px: 3 }}>
-        <Box sx={{ mt: 10, px: 3, width: "50%" }}>
+      <Box sx={{ mt: 10, px: 3, display: "flex", gap: 3 }}>
+        <Box sx={{ width: "70%" }}>
           <Grid
             container
             spacing={7}
@@ -125,7 +126,7 @@ const Accountant = () => {
               </CardContent>
             </Card>
           </Grid>
-          <Box sx={{ mt: 5 }}>
+          <Box sx={{ mt: 5, alignItems: "center", width: "70%", ml: 9 }}>
             <Calendar />
           </Box>
           <Box
@@ -202,9 +203,9 @@ const Accountant = () => {
             >
               <CardContent
                 sx={{
-                  display: "flex", 
-                  alignItems: "center", 
-                  gap: 2, 
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 2,
                 }}
               >
                 <Box
@@ -226,7 +227,7 @@ const Accountant = () => {
                   sx={{
                     flexDirection: "column",
                     alignItems: "flex-start",
-                    pr: 3,
+                    pr: 0,
                     gap: 1.5,
                   }}
                 >
@@ -251,9 +252,9 @@ const Accountant = () => {
             >
               <CardContent
                 sx={{
-                  display: "flex", 
-                  alignItems: "center", 
-                  gap: 2, 
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 2,
                 }}
               >
                 <Box
@@ -263,7 +264,7 @@ const Accountant = () => {
                     display: "flex",
                     justifyContent: "center",
                     alignItems: "center",
-                    width: 50,
+                    width: 70,
                     height: 50,
                   }}
                 >
@@ -290,12 +291,23 @@ const Accountant = () => {
                   A shareholder is a partial owner of a company who holds shares
                   of its stock.{" "}
                 </Typography>
-                <Typography sx={{ fontSize: "25px", color: "#906aff" }}>
+                <Typography sx={{ fontSize: "25px", color: "#906aff", pl: 30 }}>
                   <strong>9</strong>
                 </Typography>
               </CardContent>
             </Card>
           </Box>
+        </Box>
+        <Box
+          sx={{
+            width: "30%",
+            backgroundColor: "white",
+            borderRadius: 3,
+            boxShadow: 2,
+            p: 2,
+          }}
+        >
+          <OrderProgress />
         </Box>
       </Box>
     </Box>
