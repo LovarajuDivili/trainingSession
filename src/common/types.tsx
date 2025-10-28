@@ -1,9 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import type { JSX } from "react";
-
-/*export interface DropdownItem {
-    label: string;
-    value: string;
-}*/
 
 export interface DropdownItem {
   value: string;
@@ -12,6 +8,8 @@ export interface DropdownItem {
 }
 
 export interface Employee {
+  image?: string; 
+  photo?: string;
   name: string;
   email: string;
   role: string;
@@ -23,14 +21,3 @@ export interface Employee {
 export interface DashboardProps {
   selectedItem: string;
 }
-
-// export interface Employee {
-//   name: string;
-//   email: string;
-//   role: string;
-//   joinDate: string;
-//   id: string;
-//   skills: string[];
-// }
-
-
