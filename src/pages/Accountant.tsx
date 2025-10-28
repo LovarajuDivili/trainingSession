@@ -1,4 +1,11 @@
-import { Box, Card, CardContent, Typography, Grid } from "@mui/material";
+import {
+  Box,
+  Card,
+  CardContent,
+  Typography,
+  Grid,
+  Divider,
+} from "@mui/material";
 import Header from "../components/Header";
 import LaptopMacIcon from "@mui/icons-material/LaptopMac";
 import HeadphonesIcon from "@mui/icons-material/Headphones";
@@ -9,6 +16,7 @@ import { AssignmentInd, CorporateFare, MoreHoriz } from "@mui/icons-material";
 import OrderProgress from "../components/ExtraComponents/OrderProgress";
 import { Outlet } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
 
 const Accountant = () => {
   const getCardStyles = () => ({
@@ -22,7 +30,25 @@ const Accountant = () => {
     justifyContent: "center",
   });
 
+  const [currentTime, setCurrentTime] = useState<string>("");
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const updateTime = () => {
+      const now = new Date();
+      const formattedTime = now.toLocaleTimeString("en-IN", {
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+      });
+      setCurrentTime(formattedTime);
+    };
+
+    updateTime();
+    const timer = setInterval(updateTime, 1000);
+
+    return () => clearInterval(timer);
+  }, []);
 
   return (
     <Box sx={{ minHeight: "88vh", backgroundColor: "white" }}>
@@ -57,13 +83,6 @@ const Accountant = () => {
                     Laptops
                   </Typography>
                 </Box>
-                <Typography
-                  variant="body2"
-                  color="#906aff"
-                  sx={{ ml: "auto", fontWeight: 600 }}
-                >
-                  10%
-                </Typography>
               </CardContent>
             </Card>
 
@@ -88,13 +107,6 @@ const Accountant = () => {
                     HeadPhones
                   </Typography>
                 </Box>
-                <Typography
-                  variant="body2"
-                  color="#906aff"
-                  sx={{ ml: "auto", fontWeight: 600 }}
-                >
-                  20%
-                </Typography>
               </CardContent>
             </Card>
 
@@ -120,19 +132,13 @@ const Accountant = () => {
                     Monitors
                   </Typography>
                 </Box>
-                <Typography
-                  variant="body2"
-                  color="#906aff"
-                  sx={{ ml: "auto", fontWeight: 600 }}
-                >
-                  5%
-                </Typography>
               </CardContent>
             </Card>
           </Grid>
-          <Box sx={{ mt: 5, alignItems: "center", width: "70%", ml: 9 }}>
+          <Box sx={{ mt: 5, alignItems: "center", width: "70%", ml: 15 }}>
             <Calendar />
           </Box>
+          <Divider sx={{ fontsize: 2 }} />
           <Box
             sx={{
               display: "flex",
@@ -196,7 +202,9 @@ const Accountant = () => {
                     gap: 1.5,
                   }}
                 >
-                  <Typography sx={{ fontSize: "10px" }}>08:30-10:30</Typography>
+                  <Typography sx={{ fontSize: "10px" }}>
+                    {currentTime}
+                  </Typography>
                   <Typography sx={{ fontsize: "30px", color: "#906aff" }}>
                     Employees
                   </Typography>
@@ -226,7 +234,16 @@ const Accountant = () => {
             </Card>
 
             <Card
-              sx={{ height: 70, display: "flex", alignItems: "center", pt: 1 }}
+              onClick={() => navigate("/accountant/hrData")}
+              sx={{
+                height: 70,
+                display: "flex",
+                alignItems: "center",
+                pt: 1,
+                cursor: "pointer",
+                transition: "0.3s",
+                "&:hover": { boxShadow: 6, transform: "scale(1.02)" },
+              }}
             >
               <CardContent
                 sx={{
@@ -259,7 +276,7 @@ const Accountant = () => {
                   }}
                 >
                   <Typography sx={{ fontSize: "10px" }}>
-                    10:30 - 11:30
+                    {currentTime}
                   </Typography>
                   <Typography sx={{ fontsize: "30px", color: "#906aff" }}>
                     HR Department
@@ -289,7 +306,16 @@ const Accountant = () => {
               </CardContent>
             </Card>
             <Card
-              sx={{ height: 70, display: "flex", alignItems: "center", pt: 1 }}
+              onClick={() => navigate("/accountant/employeedata")}
+              sx={{
+                height: 70,
+                display: "flex",
+                alignItems: "center",
+                pt: 1,
+                cursor: "pointer",
+                transition: "0.3s",
+                "&:hover": { boxShadow: 6, transform: "scale(1.02)" },
+              }}
             >
               <CardContent
                 sx={{
@@ -322,7 +348,7 @@ const Accountant = () => {
                   }}
                 >
                   <Typography sx={{ fontSize: "10px" }}>
-                    11:30 - 12:30
+                    {currentTime}
                   </Typography>
                   <Typography sx={{ fontsize: "30px", color: "#906aff" }}>
                     Share Holders

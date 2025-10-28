@@ -2,9 +2,9 @@
 import * as React from "react";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
-import Checkbox from "@mui/material/Checkbox";
+//import Checkbox from "@mui/material/Checkbox";
 import Divider from "@mui/material/Divider";
-import FormControlLabel from "@mui/material/FormControlLabel";
+//import FormControlLabel from "@mui/material/FormControlLabel";
 import FormLabel from "@mui/material/FormLabel";
 import FormControl from "@mui/material/FormControl";
 import Link from "@mui/material/Link";
@@ -22,6 +22,7 @@ import IconButton from "@mui/material/IconButton";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import sha256 from "crypto-js/sha256";
+import MenuItem from "@mui/material/MenuItem";
 
 const Card = styled(MuiCard)(({ theme }) => ({
   display: "flex",
@@ -82,11 +83,14 @@ export default function SignUp(props: { disableCustomTheme?: boolean }) {
   const [error, setError] = React.useState("");
   const [success, setSuccess] = React.useState("");
   const [showPassword, setShowPassword] = React.useState(false);
+  const [role, setRole] = React.useState("");
+  const [roleError, setRoleError] = React.useState(false);
+  const [roleErrorMessage, setRoleErrorMessage] = React.useState("");
 
   const isSigningUp = contextIsSigningUp || isLoading;
 
   React.useEffect(() => {
-    const token = localStorage.getItem("token");
+    const token = sessionStorage.getItem("token");
     if (token) {
       navigate("/welcome", { replace: true });
     }
@@ -145,6 +149,15 @@ export default function SignUp(props: { disableCustomTheme?: boolean }) {
       setNameErrorMessage("");
     }
 
+    if (!role) {
+      setRoleError(true);
+      setRoleErrorMessage("Please select a role.");
+      isValid = false;
+    } else {
+      setRoleError(false);
+      setRoleErrorMessage("");
+    }
+
     return isValid;
   };
 
@@ -157,6 +170,7 @@ export default function SignUp(props: { disableCustomTheme?: boolean }) {
     const name = data.get("name") as string;
     const email = data.get("email") as string;
     const password = data.get("password") as string;
+    const selectedRole = role;
 
     setIsLoading(true);
     setError("");
@@ -164,7 +178,7 @@ export default function SignUp(props: { disableCustomTheme?: boolean }) {
     try {
       const shaHashedPassword = sha256(password).toString();
 
-      await signup(name, email, shaHashedPassword);
+      await signup(name, email, shaHashedPassword, selectedRole);
 
       setSuccess("Account created! Redirecting to login...");
       setTimeout(() => navigate("/signin"), 2000);
@@ -292,6 +306,28 @@ export default function SignUp(props: { disableCustomTheme?: boolean }) {
               />
             </FormControl>
             <FormControl>
+              <FormLabel htmlFor="role">Role</FormLabel>
+              <TextField
+                id="role"
+                name="role"
+                select
+                required
+                fullWidth
+                value={role}
+                onChange={(e) => setRole(e.target.value)}
+                error={roleError}
+                helperText={roleErrorMessage}
+                disabled={isSigningUp}
+              >
+                <MenuItem value="">Select a role</MenuItem>
+                <MenuItem value="Admin">Admin</MenuItem>
+                <MenuItem value="Accountant">Accountant</MenuItem>
+                <MenuItem value="Developer">Developer</MenuItem>
+                <MenuItem value="Tester">Tester</MenuItem>
+                <MenuItem value="Migrator">Migrator</MenuItem>
+              </TextField>
+            </FormControl>
+            <FormControl>
               <FormLabel htmlFor="password">Password</FormLabel>
               <TextField
                 required
@@ -324,10 +360,7 @@ export default function SignUp(props: { disableCustomTheme?: boolean }) {
                 }}
               />
             </FormControl>
-            <FormControlLabel
-              control={<Checkbox value="allowExtraEmails" color="primary" />}
-              label="I want to receive updates via email."
-            />
+
             <Button
               type="submit"
               fullWidth

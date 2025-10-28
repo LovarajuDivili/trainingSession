@@ -6,6 +6,7 @@ import CloudIcon from "@mui/icons-material/Cloud";
 import AssignmentIcon from "@mui/icons-material/Assignment";
 import BarChartIcon from "@mui/icons-material/BarChart";
 import HistoryIcon from "@mui/icons-material/History";
+import GroupIcon from "@mui/icons-material/Group";
 
 export const sidebarItems = [
   {
@@ -21,6 +22,7 @@ export const sidebarItems = [
   },
   { label: "Testers", route: "/admin/testers", icon: <BugReportIcon /> },
   { label: "AWS Team", route: "/admin/aws-team", icon: <CloudIcon /> },
+  { label: "HR Team", route: "/admin/hrteam", icon: <GroupIcon /> },
 
   { label: "Statistics", route: "/admin/statistics", icon: <BarChartIcon /> },
   { label: "Logs", route: "/admin/logs", icon: <HistoryIcon /> },

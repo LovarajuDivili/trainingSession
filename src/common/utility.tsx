@@ -5,6 +5,7 @@ import SettingsApplicationsIcon from "@mui/icons-material/SettingsApplications";
 import SyncAltIcon from "@mui/icons-material/SyncAlt";
 import BugReportIcon from "@mui/icons-material/BugReport";
 import AccountBalanceWalletIcon from "@mui/icons-material/AccountBalanceWallet";
+import GroupIcon from "@mui/icons-material/Group";
 import type { DropdownItem } from "./types";
 
 export const roleIcons: Record<string, JSX.Element> = {
@@ -18,6 +19,7 @@ export const roleIcons: Record<string, JSX.Element> = {
   ),
   migrator: <SyncAltIcon sx={{ fontSize: 18, color: "white" }} />,
   tester: <BugReportIcon sx={{ fontSize: 18, color: "white" }} />,
+  hrteam: <GroupIcon sx={{ fontSize: 18, color: "white" }} />,
 };
 
 export const roleDropdowns: DropdownItem[] = [
@@ -50,5 +52,10 @@ export const roleDropdowns: DropdownItem[] = [
     value: "tester",
     label: "Tester",
     icon: <BugReportIcon sx={{ color: "#d21919ff" }} />,
+  },
+  {
+    value: "hrteam",
+    label: "HR Team",
+    icon: <GroupIcon sx={{ color: "#d21919ff" }} />,
   },
 ];
