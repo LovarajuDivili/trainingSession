@@ -78,7 +78,7 @@ export default function SignIn(props: { disableCustomTheme?: boolean }) {
   const { login, isLoggingIn } = useAuth();
 
   React.useEffect(() => {
-    const token = localStorage.getItem("token");
+    const token = sessionStorage.getItem("token");
     if (token) {
       const from = location.state?.from?.pathname || "/welcome";
       navigate(from, { replace: true });

@@ -22,6 +22,8 @@ import Tester from "./pages/Tester";
 import Accountant from "./pages/Accountant";
 import RequestOrder from "./components/ExtraComponents/RequestOrder";
 import EmployeeData from "./components/ExtraComponents/EmployeesData";
+import HRTeam from "./components/SideBarComponents/HRTeam";
+import HrData from "./components/ExtraComponents/HrData";
 
 const AppRoutes = () => {
   const { isAuthenticated, isLoading } = useAuth();
@@ -57,7 +59,7 @@ const AppRoutes = () => {
       <Route
         path="/admin"
         element={
-          <ProtectedRoute requiredRole="user">
+          <ProtectedRoute requiredRole="Admin">
             <Admin />
           </ProtectedRoute>
         }
@@ -70,6 +72,7 @@ const AppRoutes = () => {
         <Route path="projects/add" element={<AddProject />} />
         <Route path="statistics" element={<Statistics />} />
         <Route path="testers" element={<Testers />} />
+        <Route path="hrteam" element={<HRTeam />} />
       </Route>
 
       {/* Other protected routes */}
@@ -91,6 +94,22 @@ const AppRoutes = () => {
       />
       <Route
         path="/accountant/employeedata"
+        element={
+          <ProtectedRoute>
+            <EmployeeData />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/accountant/hrdata"
+        element={
+          <ProtectedRoute>
+            <HrData />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/accountant/shareholderdata"
         element={
           <ProtectedRoute>
             <EmployeeData />
@@ -126,6 +145,14 @@ const AppRoutes = () => {
         element={
           <ProtectedRoute>
             <Tester />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/hrteam"
+        element={
+          <ProtectedRoute>
+            <HRTeam />
           </ProtectedRoute>
         }
       />

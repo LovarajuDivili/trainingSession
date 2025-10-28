@@ -3,7 +3,7 @@ import {
   Box,
   Typography,
   TextField,
-  //Button,
+  // Button,
   InputAdornment,
   Grid,
   Card,
@@ -13,11 +13,12 @@ import SearchIcon from "@mui/icons-material/Search";
 import { useEffect, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../../hooks/reduxHooks";
 import { fetchEmployees } from "../../store/EmployeesSlice";
+import Header from "../../components/Header";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import Fab from "@mui/material/Fab";
 import { useNavigate } from "react-router-dom";
-import Header from "../../components/Header";
-const EmployeeData = () => {
+
+const HrData = () => {
   const dispatch = useAppDispatch();
   const employees = useAppSelector((state) => state.employees.employees);
   const [searchText, setSearchText] = useState("");
@@ -26,17 +27,19 @@ const EmployeeData = () => {
     dispatch(fetchEmployees());
   }, [dispatch]);
 
+  // Filter employees based on role === "HR Team"
   const filteredEmployees = employees.filter(
     (emp) =>
-      emp.name.toLowerCase().includes(searchText.toLowerCase()) ||
-      emp.id.toLowerCase().includes(searchText.toLowerCase()) ||
-      emp.role.toLowerCase().includes(searchText.toLowerCase())
+      emp.role.toLowerCase() === "hr team" &&
+      (emp.name.toLowerCase().includes(searchText.toLowerCase()) ||
+        emp.id.toLowerCase().includes(searchText.toLowerCase()) ||
+        emp.role.toLowerCase().includes(searchText.toLowerCase()))
   );
 
   const navigate = useNavigate();
   return (
     <Box sx={{ minHeight: "70vh", backgroundColor: "white" }}>
-      <Header role={""} />
+      <Header role={"HR Team"} />
 
       <Box sx={{ mt: 6 }}>
         {/* Header Section */}
@@ -58,7 +61,7 @@ const EmployeeData = () => {
           }}
         >
           {/* Profile Circles */}
-          {employees.length > 0 && (
+          {filteredEmployees.length > 0 && (
             <Box
               sx={{
                 position: "absolute",
@@ -69,14 +72,16 @@ const EmployeeData = () => {
                 justifyContent: "center",
               }}
             >
-              {employees.slice(0, 6).map((emp, index) => (
+              {filteredEmployees.slice(0, 6).map((emp, index) => (
                 <Box
                   key={index}
                   component="img"
                   src={
                     emp.image ||
                     emp.photo ||
-                    `https://randomuser.me/api/portraits/men/${index + 10}.jpg`
+                    `https://randomuser.me/api/portraits/women/${
+                      index + 10
+                    }.jpg`
                   }
                   alt={emp.name}
                   sx={{
@@ -91,12 +96,13 @@ const EmployeeData = () => {
               ))}
             </Box>
           )}
+
           <Typography
             variant="h4"
             fontWeight={700}
             sx={{ mt: 10, mb: 1, zIndex: 1 }}
           >
-            Search for the Employee
+            Meet Our HR Team
           </Typography>
 
           {/* Search Bar */}
@@ -114,7 +120,7 @@ const EmployeeData = () => {
           >
             <TextField
               fullWidth
-              placeholder="Employee Name or Employee Id"
+              placeholder="Search HR member by name or ID"
               variant="standard"
               value={searchText}
               onChange={(e) => setSearchText(e.target.value)}
@@ -131,9 +137,18 @@ const EmployeeData = () => {
           </Box>
         </Box>
 
-        {/* Employees Card Section */}
+        {/* HR Cards Section */}
         <Box sx={{ p: 4 }}>
-          <Grid container spacing={3} justifyContent="center">
+          <Grid
+            container
+            spacing={3}
+            justifyContent="center"
+            alignItems="stretch"
+            sx={{
+              maxWidth: "1200px",
+              margin: "0 auto",
+            }}
+          >
             {filteredEmployees.length > 0 ? (
               filteredEmployees.map((emp) => (
                 <Grid item xs={12} sm={6} md={4} lg={3} key={emp.id}>
@@ -145,10 +160,10 @@ const EmployeeData = () => {
                       transition: "transform 0.2s",
                       "&:hover": { transform: "scale(1.03)" },
                       backgroundColor: "#fff",
+                      height: "100%",
                     }}
                   >
                     <CardContent>
-                      {/* Employee Profile Image */}
                       <Box
                         sx={{
                           width: 80,
@@ -163,9 +178,9 @@ const EmployeeData = () => {
                         <Box
                           component="img"
                           src={
-                            (emp as any).image ||
-                            (emp as any).photo ||
-                            `https://randomuser.me/api/portraits/men/${Math.floor(
+                            emp.image ||
+                            emp.photo ||
+                            `https://randomuser.me/api/portraits/women/${Math.floor(
                               Math.random() * 80
                             )}.jpg`
                           }
@@ -225,8 +240,11 @@ const EmployeeData = () => {
                 </Grid>
               ))
             ) : (
-              <Typography variant="h6" sx={{ mt: 4 }}>
-                No employees found.
+              <Typography
+                variant="h6"
+                sx={{ mt: 4, display: "flex", alignItems: "center" }}
+              >
+                No HR team members found.
               </Typography>
             )}
           </Grid>
@@ -253,4 +271,4 @@ const EmployeeData = () => {
   );
 };
 
-export default EmployeeData;
+export default HrData;

@@ -48,6 +48,9 @@ const WelcomeSasa = () => {
       case "tester":
         navigate("/tester");
         break;
+      case "hrteam":
+        navigate("/hrteam");
+        break;
       default:
         alert("Please select a valid role");
     }
