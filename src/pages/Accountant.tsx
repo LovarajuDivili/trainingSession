@@ -192,9 +192,23 @@ const Accountant = () => {
                   Dedicated professionals who perform specific tasks for
                   compensation under the direction of an employer.{" "}
                 </Typography>
-                <Typography sx={{ fontSize: "25px", color: "#906aff" }}>
-                  <strong>20</strong>
-                </Typography>
+                <Box
+                  sx={{
+                    width: 40,
+                    height: 40,
+                    borderRadius: "50%",
+                    backgroundColor: "#906aff",
+                    color: "white",
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    fontWeight: "bold",
+                    fontSize: "18px",
+                    ml: "auto",
+                  }}
+                >
+                  20
+                </Box>
               </CardContent>
             </Card>
 
@@ -242,9 +256,23 @@ const Accountant = () => {
                   The HR department is in charge of a company's staff, handling
                   things like hiring, paying, and training.{" "}
                 </Typography>
-                <Typography sx={{ fontSize: "25px", color: "#906aff" }}>
-                  <strong>15</strong>
-                </Typography>
+                <Box
+                  sx={{
+                    width: 40,
+                    height: 40,
+                    borderRadius: "50%",
+                    backgroundColor: "#906aff",
+                    color: "white",
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    fontWeight: "bold",
+                    fontSize: "18px",
+                    ml: "auto",
+                  }}
+                >
+                  15
+                </Box>
               </CardContent>
             </Card>
             <Card
@@ -287,13 +315,27 @@ const Accountant = () => {
                     Share Holders
                   </Typography>
                 </Box>
-                <Typography>
+                <Typography sx={{ pr: 30 }}>
                   A shareholder is a partial owner of a company who holds shares
                   of its stock.{" "}
                 </Typography>
-                <Typography sx={{ fontSize: "25px", color: "#906aff", pl: 30 }}>
-                  <strong>9</strong>
-                </Typography>
+                <Box
+                  sx={{
+                    width: 40,
+                    height: 40,
+                    borderRadius: "50%",
+                    backgroundColor: "#906aff",
+                    color: "white",
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    fontWeight: "bold",
+                    fontSize: "18px",
+                    ml: "auto",
+                  }}
+                >
+                  9
+                </Box>
               </CardContent>
             </Card>
           </Box>
