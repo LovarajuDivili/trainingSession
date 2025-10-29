@@ -1,4 +1,6 @@
+import json
 from fastapi import APIRouter, HTTPException
+from fastapi import Form, File, UploadFile
 from ..database import db
 from bson import ObjectId
 from datetime import datetime
@@ -21,42 +23,60 @@ async def get_employees():
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/create/", response_model=dict)
-async def create_employee(employee: EmployeeCreate):
+async def create_employee(
+    name: str = Form(...),
+    email: str = Form(...),
+    role: str = Form(...),
+    joinDate: str = Form(...),
+    id: str = Form(...),
+    skills: str = Form(...),  # send as JSON string
+    laptop: str = Form("false"),
+    headphones: str = Form("false"),
+    monitor: str = Form("false"),
+    image: UploadFile = File(None),
+):
     try:
-        existing_employee_email = db["employees"].find_one({"email": employee.email})
+        existing_employee_email = db["employees"].find_one({"email": email})
         if existing_employee_email:
-            return JSONResponse(
-                status_code=400,
-                content={"detail": "Employee with this email already exists"}
-            )
-        existing_employee = db["employees"].find_one({"id": employee.id})
-        if existing_employee:
-            return JSONResponse(
-                status_code=400,
-                content={"detail": "Employee with this ID already exists"}
-            )
+            return JSONResponse(status_code=400, content={"detail": "Employee with this email already exists"})
+        
+        laptop_bool = laptop.lower() == "true"
+        headphones_bool = headphones.lower() == "true"
+        monitor_bool = monitor.lower() == "true"
+
+        image_url = None
+        if image:
+            upload_dir = "uploads"
+            file_location = f"{upload_dir}/{image.filename}"
+            with open(file_location, "wb") as file_object:
+                file_object.write(await image.read())
+
+            image_url = image.filename
+
+        try:
+            parsed_skills = json.loads(skills)
+        except Exception:
+            parsed_skills = [s.strip() for s in skills.split(",")] if skills else []
+
         employee_data = {
-            "name": employee.name,
-            "email": employee.email,
-            "role": employee.role,
-            "joinDate": employee.joinDate,
-            "id": employee.id,
-            "skills": employee.skills,
-            "created_at": datetime.utcnow()
+            "name": name,
+            "email": email,
+            "role": role,
+            "joinDate": joinDate,
+            "id": id,
+            "skills": parsed_skills,
+            "laptop": laptop_bool,
+            "headphones": headphones_bool,
+            "monitor": monitor_bool,
+            "image": image_url,
+            "created_at": datetime.utcnow(),
         }
+
         result = db["employees"].insert_one(employee_data)
         new_employee = db["employees"].find_one({"_id": result.inserted_id})
-        if not new_employee:
-            return JSONResponse(
-                status_code=500,
-                content={"detail": "Failed to fetch inserted employee"}
-            )
         return {"status": "success", "data": convert_objectid(new_employee)}
     except Exception as e:
-        return JSONResponse(
-            status_code=500,
-            content={"detail": str(e)}
-        )
+        return JSONResponse(status_code=500, content={"detail": str(e)})
 
 @router.get("/get_by_id/{employee_id}", response_model=dict)
 async def get_employee_by_id(employee_id: str):
@@ -69,22 +89,64 @@ async def get_employee_by_id(employee_id: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.put("/update/{employee_id}", response_model=dict)
-async def update_employee(employee_id: str, update_data: EmployeeUpdate):
-    try: 
-        update_fields = {k: v for k, v in update_data.dict().items() if v is not None and k != "id"}
-        
+async def update_employee(
+    employee_id: str,
+    name: str = Form(None),
+    email: str = Form(None),
+    role: str = Form(None),
+    joinDate: str = Form(None),
+    skills: str = Form(None),  # send as JSON string
+    laptop: str = Form("false"),
+    headphones: str = Form("false"),
+    monitor: str = Form("false"),
+    image: UploadFile = File(None)
+):
+    try:
+        update_fields = {}
+
+        # Handle image upload (if provided)
+        if image:
+            upload_dir = "uploads"
+            file_location = f"{upload_dir}/{image.filename}"
+            with open(file_location, "wb") as file_object:
+                file_object.write(await image.read())
+            update_fields["image"] = image.filename
+
+        # Parse other fields if provided
+        if name:
+            update_fields["name"] = name
+        if email:
+            update_fields["email"] = email
+        if role:
+            update_fields["role"] = role
+        if joinDate:
+            update_fields["joinDate"] = joinDate
+        if laptop is not None:
+            update_fields["laptop"] = str(laptop).lower() == "true"
+        if headphones is not None:
+            update_fields["headphones"] = str(headphones).lower() == "true"
+        if monitor is not None:
+            update_fields["monitor"] = str(monitor).lower() == "true"
+        if skills:
+            try:
+                update_fields["skills"] = json.loads(skills)
+            except Exception:
+                update_fields["skills"] = [s.strip() for s in skills.split(",") if s.strip()]
+
         if not update_fields:
             raise HTTPException(status_code=400, detail="No fields to update")
-            
+
         update_result = db["employees"].update_one(
             {"id": employee_id},
             {"$set": update_fields}
         )
+
         if update_result.matched_count == 0:
             raise HTTPException(status_code=404, detail="Employee not found")
 
         updated_employee = db["employees"].find_one({"id": employee_id})
         return {"status": "success", "data": convert_objectid(updated_employee)}
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

@@ -1,4 +1,6 @@
 from fastapi import FastAPI, Request
+from fastapi.staticfiles import StaticFiles
+import os
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 from fastapi.responses import JSONResponse
@@ -28,8 +30,11 @@ def start_application():
             status_code=500,
             content={"detail": "Internal Server Error"}
         )
+    
+    if not os.path.exists("uploads"):
+        os.makedirs("uploads")
 
-    app.include_router(api_router, prefix="/v-1/application")
+    app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
     app.include_router(api_router, prefix="/v-1/application")
     

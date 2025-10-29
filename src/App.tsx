@@ -24,6 +24,7 @@ import RequestOrder from "./components/ExtraComponents/RequestOrder";
 import EmployeeData from "./components/ExtraComponents/EmployeesData";
 import HRTeam from "./components/SideBarComponents/HRTeam";
 import HrData from "./components/ExtraComponents/HrData";
+import EmployeeDetails from "./components/ExtraComponents/EmployeeDetails";
 
 const AppRoutes = () => {
   const { isAuthenticated, isLoading } = useAuth();
@@ -107,6 +108,10 @@ const AppRoutes = () => {
             <HrData />
           </ProtectedRoute>
         }
+      />
+      <Route
+        path="/accountant/employeedata/:employeeId"
+        element={<EmployeeDetails />}
       />
       <Route
         path="/accountant/shareholderdata"
