@@ -66,7 +66,7 @@ const Accountant = () => {
               <CardContent
                 sx={{ display: "flex", alignItems: "center", gap: 2, p: 2 }}
               >
-                <LaptopMacIcon sx={{ fontSize: 35, color: "#906aff" }} />
+                <LaptopMacIcon sx={{ fontSize: 35, color: "#ff3b30" }} />
                 <Box
                   sx={{
                     display: "flex",
@@ -91,7 +91,7 @@ const Accountant = () => {
               <CardContent
                 sx={{ display: "flex", alignItems: "center", gap: 2, p: 2 }}
               >
-                <HeadphonesIcon sx={{ fontSize: 35, color: "#906aff" }} />
+                <HeadphonesIcon sx={{ fontSize: 35, color: "#0084ff" }} />
                 <Box
                   sx={{
                     display: "flex",
@@ -115,7 +115,7 @@ const Accountant = () => {
               <CardContent
                 sx={{ display: "flex", alignItems: "center", gap: 2, p: 2 }}
               >
-                <MonitorIcon sx={{ fontSize: 35, color: "#906aff" }} />
+                <MonitorIcon sx={{ fontSize: 35, color: "#22c55e" }} />
                 <Box
                   sx={{
                     display: "flex",

@@ -53,17 +53,25 @@ const OrderProgress = () => {
       <List>
         {[
           {
-            icon: <LaptopIcon sx={{ color: "red" }} />,
+            icon: <LaptopIcon sx={{ color: "#ff6b8eff" }} />,
             name: "Laptop",
             hours: "08:39",
           },
           {
-            icon: <HeadphonesIcon sx={{ color: "yellow" }} />,
+            icon: <HeadphonesIcon sx={{ color: "#feca57" }} />,
             name: "Head Phones",
             hours: "13:20",
           },
-          { icon: <MonitorIcon sx={{ color: "green" }}/>, name: "Monitors", hours: "18:30" },
-          { icon: <CameraAltIcon sx={{ color: "blue" }} />, name: "CC Cameras", hours: "12:30" },
+          {
+            icon: <MonitorIcon sx={{ color: "#1dd1a1" }} />,
+            name: "Monitors",
+            hours: "18:30",
+          },
+          {
+            icon: <CameraAltIcon sx={{ color: "#54a0ff" }} />,
+            name: "CC Cameras",
+            hours: "12:30",
+          },
         ].map((course, index) => (
           <ListItem
             key={index}
@@ -78,8 +86,7 @@ const OrderProgress = () => {
             <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
               <ListItemIcon
                 sx={{
-                  bgcolor: "black",
-                  color: "white",
+                  bgcolor: "white",
                   borderRadius: "50%",
                   width: 45,
                   height: 45,
@@ -87,6 +94,8 @@ const OrderProgress = () => {
                   display: "flex",
                   justifyContent: "center",
                   alignItems: "center",
+                  border: "1px solid #e0e0e0",
+                  boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
                 }}
               >
                 {course.icon}

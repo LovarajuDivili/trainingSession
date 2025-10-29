@@ -76,13 +76,20 @@ const HrData = () => {
                   key={index}
                   component="img"
                   src={
-                    emp.image ||
-                    emp.photo ||
-                    `https://randomuser.me/api/portraits/women/${
-                      index + 10
-                    }.jpg`
+                    typeof emp.image === "string"
+                      ? emp.image.startsWith("http")
+                        ? emp.image
+                        : `${import.meta.env.VITE_API_BASE_URL}/uploads/${
+                            emp.image
+                          }`
+                      : emp.image
+                      ? URL.createObjectURL(emp.image as File)
+                      : "/placeholder.jpg"
                   }
                   alt={emp.name}
+                  onError={(e) => {
+                    e.currentTarget.src = "/placeholder.jpg";
+                  }}
                   sx={{
                     width: 60,
                     height: 60,
@@ -177,13 +184,20 @@ const HrData = () => {
                         <Box
                           component="img"
                           src={
-                            emp.image ||
-                            emp.photo ||
-                            `https://randomuser.me/api/portraits/women/${Math.floor(
-                              Math.random() * 80
-                            )}.jpg`
+                            typeof emp.image === "string"
+                              ? emp.image.startsWith("http")
+                                ? emp.image
+                                : `${
+                                    import.meta.env.VITE_API_BASE_URL
+                                  }/uploads/${emp.image}`
+                              : emp.image
+                              ? URL.createObjectURL(emp.image as File)
+                              : "/placeholder.jpg"
                           }
                           alt={emp.name}
+                          onError={(e) => {
+                            e.currentTarget.src = "/placeholder.jpg";
+                          }}
                           sx={{
                             width: "100%",
                             height: "100%",

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   createSlice,
   createAsyncThunk,
@@ -23,10 +24,24 @@ export const addEmployeeAPI = createAsyncThunk<
 >("employees/addEmployee", async (employee, { rejectWithValue }) => {
   try {
     console.log("Sending employee data:", employee);
-    const response = await fetch(`${API_BASE}/employees/create`, {
+    const formData = new FormData();
+
+    for (const key in employee) {
+      const value = (employee as any)[key];
+      if (value !== undefined && value !== null) {
+        if (key === "skills") {
+          formData.append("skills", JSON.stringify(value));
+        } else if (key === "image" && value instanceof File) {
+          formData.append("image", value);
+        } else {
+          formData.append(key, value);
+        }
+      }
+    }
+
+    const response = await fetch(`${API_BASE}/employees/create/`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(employee),
+      body: formData,
     });
 
     console.log("Response status:", response.status);
@@ -60,12 +75,27 @@ export const updateEmployeeAPI = createAsyncThunk<
 >("employees/updateEmployee", async (employee, { rejectWithValue }) => {
   try {
     console.log("Updating employee data:", employee);
+
+    const formData = new FormData();
+
+    for (const key in employee) {
+      const value = (employee as any)[key];
+      if (value !== undefined && value !== null) {
+        if (key === "skills") {
+          formData.append("skills", JSON.stringify(value));
+        } else if (key === "image" && value instanceof File) {
+          formData.append("image", value);
+        } else {
+          formData.append(key, value);
+        }
+      }
+    }
+
     const response = await fetch(
       `${API_BASE}/employees/update/${employee.id}`,
       {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(employee),
+        body: formData,
       }
     );
 

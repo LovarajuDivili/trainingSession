@@ -7,7 +7,7 @@ export interface DropdownItem {
 }
 
 export interface Employee {
-  image?: string; 
+  image?: File | string | null;
   photo?: string;
   name: string;
   email: string;
@@ -15,6 +15,9 @@ export interface Employee {
   joinDate: string;
   id: string;
   skills: string[];
+  laptop: boolean;
+  headphones: boolean;
+  monitor: boolean;
 }
 
 export interface DashboardProps {

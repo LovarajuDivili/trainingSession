@@ -3,7 +3,6 @@ import {
   Box,
   Typography,
   TextField,
-  //Button,
   InputAdornment,
   Grid,
   Card,
@@ -17,6 +16,7 @@ import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import Fab from "@mui/material/Fab";
 import { useNavigate } from "react-router-dom";
 import Header from "../../components/Header";
+
 const EmployeeData = () => {
   const dispatch = useAppDispatch();
   const employees = useAppSelector((state) => state.employees.employees);
@@ -34,6 +34,11 @@ const EmployeeData = () => {
   );
 
   const navigate = useNavigate();
+
+  const handleCardClick = (employeeId: string) => {
+    navigate(`/accountant/employeedata/${employeeId}`);
+  };
+
   return (
     <Box sx={{ minHeight: "70vh", backgroundColor: "white" }}>
       <Header role={""} />
@@ -64,33 +69,66 @@ const EmployeeData = () => {
                 position: "absolute",
                 top: 40,
                 display: "flex",
-                gap: 3,
-                flexWrap: "wrap",
                 justifyContent: "center",
+                width: "100%",
               }}
             >
-              {employees.slice(0, 6).map((emp, index) => (
-                <Box
-                  key={index}
-                  component="img"
-                  src={
-                    emp.image ||
-                    emp.photo ||
-                    `https://randomuser.me/api/portraits/men/${index + 10}.jpg`
-                  }
-                  alt={emp.name}
-                  sx={{
-                    width: 60,
-                    height: 60,
-                    borderRadius: "50%",
-                    border: "3px solid white",
-                    objectFit: "cover",
-                    mx: 1,
-                  }}
-                />
-              ))}
+              <Box sx={{ display: "flex", alignItems: "center" }}>
+                {employees.slice(0, 4).map((emp, index) => (
+                  <Box
+                    key={index}
+                    component="img"
+                    src={
+                      typeof emp.image === "string"
+                        ? emp.image.startsWith("http")
+                          ? emp.image
+                          : `${import.meta.env.VITE_API_BASE_URL}/uploads/${
+                              emp.image
+                            }`
+                        : emp.image
+                        ? URL.createObjectURL(emp.image as File)
+                        : `https://randomuser.me/api/portraits/men/${
+                            index + 10
+                          }.jpg`
+                    }
+                    alt={emp.name}
+                    sx={{
+                      width: 40,
+                      height: 40,
+                      borderRadius: "50%",
+                      border: "2px solid white",
+                      objectFit: "cover",
+                      ml: index === 0 ? 0 : -1.5, // Overlapping effect
+                      boxShadow: "0 0 4px rgba(0,0,0,0.2)",
+                    }}
+                  />
+                ))}
+
+                {/* +count circle */}
+                {employees.length > 4 && (
+                  <Box
+                    sx={{
+                      width: 40,
+                      height: 40,
+                      borderRadius: "50%",
+                      backgroundColor: "#ddd",
+                      border: "2px solid white",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontWeight: 600,
+                      color: "#555",
+                      ml: -1.5,
+                      fontSize: "0.9rem",
+                    }}
+                  >
+                    +{employees.length - 4}
+                  </Box>
+                )}
+              </Box>
             </Box>
           )}
+
           <Typography
             variant="h4"
             fontWeight={700}
@@ -138,12 +176,16 @@ const EmployeeData = () => {
               filteredEmployees.map((emp) => (
                 <Grid item xs={12} sm={6} md={4} lg={3} key={emp.id}>
                   <Card
+                    onClick={() => handleCardClick(emp.id)}
                     sx={{
                       borderRadius: "16px",
                       boxShadow: 3,
                       textAlign: "center",
                       transition: "transform 0.2s",
-                      "&:hover": { transform: "scale(1.03)" },
+                      "&:hover": {
+                        transform: "scale(1.03)",
+                        cursor: "pointer",
+                      },
                       backgroundColor: "#fff",
                     }}
                   >
@@ -163,12 +205,19 @@ const EmployeeData = () => {
                         <Box
                           component="img"
                           src={
-                            (emp as any).image ||
-                            (emp as any).photo ||
-                            `https://randomuser.me/api/portraits/men/${Math.floor(
-                              Math.random() * 80
-                            )}.jpg`
+                            typeof emp.image === "string"
+                              ? emp.image.startsWith("http")
+                                ? emp.image
+                                : `${
+                                    import.meta.env.VITE_API_BASE_URL
+                                  }/uploads/${emp.image}`
+                              : emp.image
+                              ? URL.createObjectURL(emp.image as File)
+                              : "/placeholder.jpg"
                           }
+                          onError={(e) => {
+                            e.currentTarget.src = "/placeholder.jpg"; // fallback
+                          }}
                           alt={emp.name}
                           sx={{
                             width: "100%",
