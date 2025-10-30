@@ -306,7 +306,7 @@ const Accountant = () => {
               </CardContent>
             </Card>
             <Card
-              onClick={() => navigate("/accountant/employeedata")}
+              //onClick={() => navigate("/accountant/employeedata")}
               sx={{
                 height: 70,
                 display: "flex",

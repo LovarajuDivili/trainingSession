@@ -1,12 +1,23 @@
-import { Box, Typography, IconButton, TextField, Grid, FormControl, Select, MenuItem } from "@mui/material";
-import CloseIcon from "@mui/icons-material/Close";
-import { useNavigate, useParams } from "react-router-dom";
+import {
+  Box,
+  Typography,
+  IconButton,
+  TextField,
+  Grid,
+  FormControl,
+  Select,
+  MenuItem,
+  Button,
+} from "@mui/material";
+//import CloseIcon from "@mui/icons-material/Close";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { useAppSelector } from "../../hooks/reduxHooks";
 import { useEffect } from "react";
 
 const EmployeeDetails = () => {
   const { employeeId } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const employees = useAppSelector((state) => state.employees.employees);
 
   const employee = employees.find((emp) => emp.id === employeeId);
@@ -20,6 +31,11 @@ const EmployeeDetails = () => {
   if (!employee) {
     return <Typography>Employee not found</Typography>;
   }
+
+  const handleClose = () => {
+    const fromRoute = location.state?.from || "/accountant/employeedata";
+    navigate(fromRoute);
+  };
 
   return (
     <Box sx={{ p: 3, backgroundColor: "white", minHeight: "100vh" }}>
@@ -35,28 +51,83 @@ const EmployeeDetails = () => {
         }}
       >
         <Typography variant="h4" fontWeight={600}>
-          View Employee
+          Employee Information
         </Typography>
         <IconButton
-          onClick={() => navigate("/accountant/employeedata")}
-          sx={{ 
+          onClick={handleClose}
+          sx={{
             color: "#000",
             "&:hover": {
               backgroundColor: "rgba(0, 0, 0, 0.04)",
-            }
+            },
           }}
         >
-          <CloseIcon />
+          <Button
+            variant="contained"
+            sx={{
+              backgroundColor: "#906aff",
+              color: "white",
+              textTransform: "none",
+              fontWeight: 600,
+              borderRadius: "10px",
+              px: 3,
+              py: 1,
+              boxShadow: "0 3px 6px rgba(0,0,0,0.15)",
+              "&:hover": {
+                backgroundColor: "red",
+                boxShadow: "0 4px 10px rgba(0,0,0,0.25)",
+              },
+            }}
+          >
+            Close
+          </Button>
         </IconButton>
       </Box>
-
-      
-      <Box sx={{ maxWidth: 800, mx: "auto" }}>
-        <Typography variant="h5" fontWeight={600} gutterBottom sx={{ mb: 3 }}>
-          Employee Information
+      {/* Profile Image Section */}
+      <Grid item xs={12}>
+        <Typography variant="subtitle1" fontWeight={600} gutterBottom>
+          Profile Image
         </Typography>
-        
-        <Grid container spacing={3}>
+        <Box
+          sx={{
+            width: 150,
+            height: 150,
+            borderRadius: "50%",
+            overflow: "hidden",
+            border: "2px solid #e0e0e0",
+            backgroundColor: "#fafafa",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <Box
+            component="img"
+            src={
+              typeof employee.image === "string"
+                ? employee.image.startsWith("http")
+                  ? employee.image
+                  : `${import.meta.env.VITE_API_BASE_URL}/uploads/${
+                      employee.image
+                    }`
+                : employee.image
+                ? URL.createObjectURL(employee.image as File)
+                : "/placeholder.jpg"
+            }
+            onError={(e) => {
+              e.currentTarget.src = "/placeholder.jpg";
+            }}
+            alt={employee.name}
+            sx={{
+              width: "100%",
+              height: "100%",
+              objectFit: "cover",
+            }}
+          />
+        </Box>
+      </Grid>
+      <Box sx={{ mx: "auto" }}>
+        <Grid container spacing={5}>
           {/* Employee Name */}
           <Grid item xs={12}>
             <Typography variant="subtitle1" fontWeight={600} gutterBottom>
@@ -71,6 +142,7 @@ const EmployeeDetails = () => {
                 readOnly: true,
               }}
               sx={{
+                width: "320px",
                 "& .MuiOutlinedInput-root": {
                   backgroundColor: "#fafafa",
                   "& fieldset": {
@@ -114,6 +186,7 @@ const EmployeeDetails = () => {
                   "& .MuiSelect-select": {
                     color: "text.primary",
                   },
+                  width: "320px",
                 }}
               >
                 <MenuItem value={employee.role}>{employee.role}</MenuItem>
@@ -150,6 +223,7 @@ const EmployeeDetails = () => {
                 "& .MuiInputBase-input": {
                   color: "text.primary",
                 },
+                width: "320px",
               }}
             />
           </Grid>
@@ -183,6 +257,7 @@ const EmployeeDetails = () => {
                 "& .MuiInputBase-input": {
                   color: "text.primary",
                 },
+                width: "320px",
               }}
             />
           </Grid>
@@ -196,7 +271,7 @@ const EmployeeDetails = () => {
               fullWidth
               value={
                 employee.joinDate
-                  ? new Date(employee.joinDate).toLocaleDateString('en-GB') 
+                  ? new Date(employee.joinDate).toLocaleDateString("en-GB")
                   : "dd-mm-yyyy"
               }
               placeholder="dd-mm-yyyy"
@@ -220,6 +295,7 @@ const EmployeeDetails = () => {
                 "& .MuiInputBase-input": {
                   color: "text.primary",
                 },
+                width: "320px",
               }}
             />
           </Grid>
@@ -229,32 +305,35 @@ const EmployeeDetails = () => {
             <Typography variant="subtitle1" fontWeight={600} gutterBottom>
               Skills
             </Typography>
-            <TextField
-              fullWidth
-              value={employee.skills.join(", ")}
-              placeholder="Enter skills"
-              variant="outlined"
-              InputProps={{
-                readOnly: true,
-              }}
-              sx={{
-                "& .MuiOutlinedInput-root": {
-                  backgroundColor: "#fafafa",
-                  "& fieldset": {
-                    borderColor: "#e0e0e0",
-                  },
-                  "&:hover fieldset": {
-                    borderColor: "#e0e0e0",
-                  },
-                  "&.Mui-focused fieldset": {
-                    borderColor: "#e0e0e0",
-                  },
-                },
-                "& .MuiInputBase-input": {
-                  color: "text.primary",
-                },
-              }}
-            />
+            <Box
+              sx={{ display: "flex", flexWrap: "wrap", gap: 1, width: "320px" }}
+            >
+              {employee.skills && employee.skills.length > 0 ? (
+                employee.skills.map((each: string, index: number) => (
+                  <button
+                    key={index}
+                    style={{
+                      margin: "5px",
+                      backgroundColor: "#906aff",
+                      color: "white",
+                      padding: "6px 10px",
+                      border: "none",
+                      borderRadius: "6px",
+                      cursor: "default",
+                      fontSize: "14px",
+                      fontWeight: 500,
+                      height: "40px",
+                    }}
+                  >
+                    {each}
+                  </button>
+                ))
+              ) : (
+                <Typography variant="body2" color="text.secondary">
+                  No skills listed
+                </Typography>
+              )}
+            </Box>
           </Grid>
 
           {/* Equipment Section */}
@@ -262,7 +341,7 @@ const EmployeeDetails = () => {
             <Typography variant="subtitle1" fontWeight={600} gutterBottom>
               Equipment Provided
             </Typography>
-            <Box sx={{ display: "flex", gap: 2, flexWrap: 'wrap' }}>
+            <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap" }}>
               <Box
                 sx={{
                   px: 3,
@@ -305,50 +384,6 @@ const EmployeeDetails = () => {
               >
                 Monitor
               </Box>
-            </Box>
-          </Grid>
-
-          {/* Profile Image Section */}
-          <Grid item xs={12}>
-            <Typography variant="subtitle1" fontWeight={600} gutterBottom>
-              Profile Image
-            </Typography>
-            <Box
-              sx={{
-                width: 150,
-                height: 150,
-                borderRadius: "50%",
-                overflow: "hidden",
-                border: "2px solid #e0e0e0",
-                backgroundColor: "#fafafa",
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center'
-              }}
-            >
-              <Box
-                component="img"
-                src={
-                  typeof employee.image === "string"
-                    ? employee.image.startsWith("http")
-                      ? employee.image
-                      : `${import.meta.env.VITE_API_BASE_URL}/uploads/${
-                          employee.image
-                        }`
-                    : employee.image
-                    ? URL.createObjectURL(employee.image as File)
-                    : "/placeholder.jpg"
-                }
-                onError={(e) => {
-                  e.currentTarget.src = "/placeholder.jpg";
-                }}
-                alt={employee.name}
-                sx={{
-                  width: "100%",
-                  height: "100%",
-                  objectFit: "cover",
-                }}
-              />
             </Box>
           </Grid>
         </Grid>
