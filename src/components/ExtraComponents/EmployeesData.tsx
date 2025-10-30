@@ -35,7 +35,9 @@ const EmployeeData = () => {
   const navigate = useNavigate();
 
   const handleCardClick = (employeeId: string) => {
-    navigate(`/accountant/employeedata/${employeeId}`);
+    navigate(`/accountant/employeedata/${employeeId}`, {
+      state: { from: "/accountant/employeedata" }, // Store where we came from
+    });
   };
 
   return (
@@ -143,10 +145,14 @@ const EmployeeData = () => {
               alignItems: "center",
               backgroundColor: "#fff",
               borderRadius: "30px",
-              boxShadow: 3,
-              width: { xs: "90%", sm: "70%", md: "50%" },
-              p: 1,
+              boxShadow: "0 8px 32px rgba(0, 0, 0, 0.2)", 
+              border: "1px solid #e0e0e0ff", 
+              width: "80%",
+              p: 1.5,
               zIndex: 1,
+              mx: "auto",
+              position: "absolute", 
+              bottom: "-25px", 
             }}
           >
             <TextField
@@ -159,18 +165,29 @@ const EmployeeData = () => {
                 disableUnderline: true,
                 startAdornment: (
                   <InputAdornment position="start">
-                    <SearchIcon sx={{ color: "#888" }} />
+                    <SearchIcon sx={{ color: "#888", mr: 1 }} />
                   </InputAdornment>
                 ),
               }}
-              sx={{ mx: 1 }}
+              sx={{
+                mx: 1,
+                "& .MuiInputBase-input": {
+                  fontSize: "16px",
+                  padding: "8px 0",
+                },
+              }}
             />
           </Box>
         </Box>
 
         {/* Employees Card Section */}
         <Box sx={{ p: 4 }}>
-          <Grid container spacing={3} justifyContent="center">
+          <Grid
+            container
+            spacing={3}
+            justifyContent="flex-start"
+            sx={{ gap: 6 }}
+          >
             {filteredEmployees.length > 0 ? (
               filteredEmployees.map((emp) => (
                 <Grid item xs={12} sm={6} md={4} lg={3} key={emp.id}>
@@ -179,6 +196,7 @@ const EmployeeData = () => {
                     sx={{
                       borderRadius: "16px",
                       boxShadow: 3,
+                      width: "245px",
                       textAlign: "center",
                       transition: "transform 0.2s",
                       "&:hover": {

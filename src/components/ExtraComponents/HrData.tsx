@@ -66,40 +66,63 @@ const HrData = () => {
                 position: "absolute",
                 top: 40,
                 display: "flex",
-                gap: 3,
-                flexWrap: "wrap",
                 justifyContent: "center",
+                width: "100%",
               }}
             >
-              {filteredEmployees.slice(0, 6).map((emp, index) => (
-                <Box
-                  key={index}
-                  component="img"
-                  src={
-                    typeof emp.image === "string"
-                      ? emp.image.startsWith("http")
-                        ? emp.image
-                        : `${import.meta.env.VITE_API_BASE_URL}/uploads/${
-                            emp.image
-                          }`
-                      : emp.image
-                      ? URL.createObjectURL(emp.image as File)
-                      : "/placeholder.jpg"
-                  }
-                  alt={emp.name}
-                  onError={(e) => {
-                    e.currentTarget.src = "/placeholder.jpg";
-                  }}
-                  sx={{
-                    width: 60,
-                    height: 60,
-                    borderRadius: "50%",
-                    border: "3px solid white",
-                    objectFit: "cover",
-                    mx: 1,
-                  }}
-                />
-              ))}
+              <Box sx={{ display: "flex", alignItems: "center" }}>
+                {filteredEmployees.slice(0, 6).map((emp, index) => (
+                  <Box
+                    key={index}
+                    component="img"
+                    src={
+                      typeof emp.image === "string"
+                        ? emp.image.startsWith("http")
+                          ? emp.image
+                          : `${import.meta.env.VITE_API_BASE_URL}/uploads/${
+                              emp.image
+                            }`
+                        : emp.image
+                        ? URL.createObjectURL(emp.image as File)
+                        : `https://randomuser.me/api/portraits/men/${
+                            index + 10
+                          }.jpg`
+                    }
+                    alt={emp.name}
+                    sx={{
+                      width: 40,
+                      height: 40,
+                      borderRadius: "50%",
+                      border: "2px solid white",
+                      objectFit: "cover",
+                      ml: index === 0 ? 0 : -1.5, // Overlapping effect
+                      boxShadow: "0 0 4px rgba(0,0,0,0.2)",
+                    }}
+                  />
+                ))}
+
+                {/* +count circle */}
+                {filteredEmployees.length > 4 && (
+                  <Box
+                    sx={{
+                      width: 40,
+                      height: 40,
+                      borderRadius: "50%",
+                      backgroundColor: "#ddd",
+                      border: "2px solid white",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontWeight: 600,
+                      color: "#555",
+                      ml: -1.5,
+                      fontSize: "0.9rem",
+                    }}
+                  >
+                    +{filteredEmployees.length - 4}
+                  </Box>
+                )}
+              </Box>
             </Box>
           )}
 
@@ -118,10 +141,14 @@ const HrData = () => {
               alignItems: "center",
               backgroundColor: "#fff",
               borderRadius: "30px",
-              boxShadow: 3,
-              width: { xs: "90%", sm: "70%", md: "50%" },
-              p: 1,
+              boxShadow: "0 8px 32px rgba(0, 0, 0, 0.2)",
+              border: "1px solid #e0e0e0ff",
+              width: "80%",
+              p: 1.5,
               zIndex: 1,
+              mx: "auto",
+              position: "absolute",
+              bottom: "-25px",
             }}
           >
             <TextField
@@ -138,7 +165,13 @@ const HrData = () => {
                   </InputAdornment>
                 ),
               }}
-              sx={{ mx: 1 }}
+              sx={{
+                mx: 1,
+                "& .MuiInputBase-input": {
+                  fontSize: "16px",
+                  padding: "8px 0",
+                },
+              }}
             />
           </Box>
         </Box>
@@ -148,12 +181,8 @@ const HrData = () => {
           <Grid
             container
             spacing={3}
-            justifyContent="center"
-            alignItems="stretch"
-            sx={{
-              maxWidth: "1200px",
-              margin: "0 auto",
-            }}
+            justifyContent="flex-start"
+            sx={{ gap: 6 }}
           >
             {filteredEmployees.length > 0 ? (
               filteredEmployees.map((emp) => (
@@ -162,11 +191,14 @@ const HrData = () => {
                     sx={{
                       borderRadius: "16px",
                       boxShadow: 3,
+                      width: "245px",
                       textAlign: "center",
                       transition: "transform 0.2s",
-                      "&:hover": { transform: "scale(1.03)" },
+                      "&:hover": {
+                        transform: "scale(1.03)",
+                        cursor: "pointer",
+                      },
                       backgroundColor: "#fff",
-                      height: "100%",
                     }}
                   >
                     <CardContent>
