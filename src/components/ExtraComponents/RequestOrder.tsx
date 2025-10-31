@@ -1,93 +1,345 @@
-import { Box, Typography, Button, TextField } from "@mui/material";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import {
+  Box,
+  Button,
+  Card,
+  CardContent,
+  Grid,
+  Typography,
+  CircularProgress,
+} from "@mui/material";
+import Header from "../Header";
 import { useNavigate } from "react-router-dom";
+import LaptopIcon from "@mui/icons-material/Laptop";
+import HeadphonesIcon from "@mui/icons-material/Headphones";
+import MonitorIcon from "@mui/icons-material/Monitor";
+import CameraAltIcon from "@mui/icons-material/CameraAlt";
+import KeyboardIcon from "@mui/icons-material/Keyboard";
+import MouseIcon from "@mui/icons-material/Mouse";
+import CategoryIcon from "@mui/icons-material/Category";
+import axios from "axios";
+import { useState, type JSX } from "react";
 
 const RequestOrder = () => {
   const navigate = useNavigate();
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [itemsData, setItemsData] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  const items = [
+    {
+      name: "Laptop",
+      icon: <LaptopIcon sx={{ fontSize: 35, color: "#ff3b30" }} />,
+    },
+    {
+      name: "Monitor",
+      icon: <MonitorIcon sx={{ fontSize: 35, color: "#22c55e" }} />,
+    },
+    {
+      name: "Keyboard",
+      icon: <KeyboardIcon sx={{ fontSize: 35, color: "#0084ff" }} />,
+    },
+    {
+      name: "Mouse",
+      icon: <MouseIcon sx={{ fontSize: 35, color: "#ff9800" }} />,
+    },
+    {
+      name: "Headphones",
+      icon: <HeadphonesIcon sx={{ fontSize: 35, color: "#9c27b0" }} />,
+    },
+    {
+      name: "Webcam",
+      icon: <CameraAltIcon sx={{ fontSize: 35, color: "#f44336" }} />,
+    },
+  ];
+
+  const categoryIcons: Record<string, JSX.Element> = {
+    laptop: <LaptopIcon sx={{ fontSize: 15, color: "#ff3b30" }} />,
+    monitor: <MonitorIcon sx={{ fontSize: 15, color: "#22c55e" }} />,
+    keyboard: <KeyboardIcon sx={{ fontSize: 15, color: "#0084ff" }} />,
+    mouse: <MouseIcon sx={{ fontSize: 15, color: "#ff9800" }} />,
+    headphones: <HeadphonesIcon sx={{ fontSize: 15, color: "#9c27b0" }} />,
+    webcam: <CameraAltIcon sx={{ fontSize: 15, color: "#f44336" }} />,
+  };
+
+  // Fetch specific category
+  const handleCategoryClick = async (category: string) => {
+    try {
+      setSelectedCategory(category);
+      setLoading(true);
+      const response = await axios.get(
+        `http://localhost:8000/v-1/application/inventory/${category}`
+      );
+      setItemsData(response.data);
+    } catch (error) {
+      console.error("Error fetching category data:", error);
+      setItemsData([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fetch all inventory items (for "Others")
+  const handleAllItemsClick = async () => {
+    try {
+      setSelectedCategory("others");
+      setLoading(true);
+      const response = await axios.get(
+        `http://localhost:8000/v-1/application/inventory/`
+      );
+      setItemsData(response.data);
+    } catch (error) {
+      console.error("Error fetching all inventory data:", error);
+      setItemsData([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-    <Box
-      sx={{
-        height: "100vh", // Full viewport height
-        display: "flex",
-        alignItems: "center", // Center vertically
-        justifyContent: "center", // Center horizontally
-        background: "linear-gradient(135deg, #ac8fff 0%, #6c63ff 100%)", // optional gradient background
-      }}
-    >
+    <Box sx={{ minHeight: "88vh", backgroundColor: "white" }}>
+      <Header role={""} />
+
+      {/* Header Row */}
       <Box
         sx={{
-          backgroundColor: "white",
-          borderRadius: 3,
-          boxShadow: 5,
-          p: 5,
-          width: "100%",
-          maxWidth: 450,
+          mt: 10,
+          px: 3,
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
         }}
       >
-        <Typography
-          variant="h5"
-          fontWeight={700}
-          gutterBottom
-          sx={{ color: "#6c63ff", textAlign: "center" }}
-        >
-          Request New Order
+        <Typography variant="h5" fontWeight="bold">
+          Select the Items
         </Typography>
 
-        <Typography
-          variant="body1"
-          sx={{ mb: 3, textAlign: "center", color: "text.secondary" }}
-        >
-          Fill in the details below to request a new order.
-        </Typography>
-
-        <Box
-          component="form"
+        <Button
+          variant="contained"
+          color="error"
+          onClick={() => navigate("/accountant")}
           sx={{
-            display: "flex",
-            flexDirection: "column",
-            gap: 2,
+            textTransform: "none",
+            borderRadius: 2,
+            boxShadow: 3,
+            "&:hover": { backgroundColor: "#d32f2f" },
           }}
         >
-          <TextField label="Order Name" variant="outlined" fullWidth />
-          <TextField
-            label="Description"
-            variant="outlined"
-            fullWidth
-            multiline
-            rows={3}
-          />
-          <TextField
-            label="Quantity"
-            type="number"
-            variant="outlined"
-            fullWidth
-          />
+          Close
+        </Button>
+      </Box>
 
-          <Button
-            variant="contained"
+      {/* Category Cards */}
+      <Grid container spacing={5} sx={{ p: 5 }}>
+        {items.map((item, index) => (
+          <Grid item xs={2} key={index}>
+            <Card
+              onClick={() => handleCategoryClick(item.name.toLowerCase())}
+              sx={{
+                height: 100,
+                width: 202,
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                borderRadius: 2,
+                boxShadow: 3,
+                backgroundColor:
+                  selectedCategory === item.name.toLowerCase()
+                    ? "#e8e8ff"
+                    : "#f9f9f9",
+                transition: "0.3s",
+                cursor: "pointer",
+                "&:hover": {
+                  backgroundColor: "#e8e8ff",
+                  transform: "scale(1.03)",
+                  boxShadow: 6,
+                },
+              }}
+            >
+              <CardContent
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 1.5,
+                }}
+              >
+                {item.icon}
+                <Typography
+                  variant="h6"
+                  fontWeight={600}
+                  sx={{ color: "#333", textAlign: "center" }}
+                >
+                  {item.name}
+                </Typography>
+              </CardContent>
+            </Card>
+          </Grid>
+        ))}
+
+        {/* "Others" Card */}
+        <Grid item xs={2}>
+          <Card
+            onClick={handleAllItemsClick}
             sx={{
-              mt: 2,
-              backgroundColor: "#906aff",
-              textTransform: "none",
-              fontWeight: 600,
-              "&:hover": { backgroundColor: "#7a5de0" },
+              height: 100,
+              width: 202,
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              borderRadius: 2,
+              boxShadow: 3,
+              backgroundColor:
+                selectedCategory === "others" ? "#e8e8ff" : "#f9f9f9",
+              transition: "0.3s",
+              cursor: "pointer",
+              "&:hover": {
+                backgroundColor: "#e8e8ff",
+                transform: "scale(1.03)",
+                boxShadow: 6,
+              },
             }}
           >
-            Submit Request
-          </Button>
+            <CardContent
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 1.5,
+              }}
+            >
+              <CategoryIcon sx={{ fontSize: 35, color: "#607d8b" }} />
+              <Typography
+                variant="h6"
+                fontWeight={600}
+                sx={{ color: "#333", textAlign: "center" }}
+              >
+                Others
+              </Typography>
+            </CardContent>
+          </Card>
+        </Grid>
+      </Grid>
 
-          <Button
-            onClick={() => navigate(-1)}
+      {/* Item Data Section */}
+      <Box sx={{ px: 5, pb: 5 }}>
+        {loading ? (
+          <Box
             sx={{
-              mt: 1,
-              textTransform: "none",
-              color: "#906aff",
-              alignSelf: "center",
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              mt: 4,
             }}
           >
-            ← Back to My Orders
-          </Button>
-        </Box>
+            <CircularProgress />
+          </Box>
+        ) : selectedCategory && itemsData.length > 0 ? (
+          <>
+            <Typography variant="h6" sx={{ mb: 2 }}>
+              Showing{" "}
+              {selectedCategory === "others"
+                ? "all items"
+                : selectedCategory + "s"}
+              :
+            </Typography>
+            <Grid container spacing={3}>
+              {itemsData.map((item) => (
+                <Grid item xs={3} key={item._id}>
+                  <Card
+                    sx={{
+                      p: 2,
+                      borderRadius: 2,
+                      boxShadow: 3,
+                      transition: "0.3s",
+                      display: "flex",
+                      flexDirection: "column",
+                      justifyContent: "space-between",
+                      height: 160,
+                      width: 150,
+                      "&:hover": { boxShadow: 6, transform: "scale(1.02)" },
+                    }}
+                  >
+                    {/* Top Content */}
+                    <Box>
+                      <Box
+                        sx={{
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "space-between",
+                          mb: 1,
+                        }}
+                      >
+                        <Typography variant="body2" color="text.secondary">
+                          <strong>{item.category}</strong>
+                        </Typography>
+                        {categoryIcons[item.category?.toLowerCase()] || (
+                          <CategoryIcon
+                            sx={{ fontSize: 15, color: "#757575" }}
+                          />
+                        )}
+                      </Box>
+
+                      <Typography variant="body2" color="text.secondary">
+                        Brand: {item.brand}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        Price: ₹{item.price}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        Quantity: {item.stock}
+                      </Typography>
+                    </Box>
+
+                    {/* Bottom Buttons */}
+                    <Box
+                      sx={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        mt: 2,
+                      }}
+                    >
+                      <Button
+                        variant="outlined"
+                        size="small"
+                        sx={{
+                          textTransform: "none",
+                          borderRadius: 2,
+                          height: 40,
+                          width: "48%",
+                          borderColor: "#e0e0e0",
+                        }}
+                      >
+                        Wishlist
+                      </Button>
+                      <Button
+                        variant="contained"
+                        size="small"
+                        sx={{
+                          textTransform: "none",
+                          width: "48%",
+                          borderRadius: 2,
+                          backgroundColor: "#ff5722",
+                          height: 40,
+                          p: 0,
+                          lineHeight: 1.1,
+                          fontSize: "13px",
+                          "&:hover": { backgroundColor: "#e64a19" },
+                        }}
+                      >
+                        Add to Cart
+                      </Button>
+                    </Box>
+                  </Card>
+                </Grid>
+              ))}
+            </Grid>
+          </>
+        ) : selectedCategory ? (
+          <Typography sx={{ textAlign: "center", mt: 3 }}>
+            No items found for {selectedCategory}.
+          </Typography>
+        ) : null}
       </Box>
     </Box>
   );

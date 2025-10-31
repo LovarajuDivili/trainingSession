@@ -14,6 +14,8 @@ import {
 import AccountCircle from "@mui/icons-material/AccountCircle";
 import LogoutIcon from "@mui/icons-material/Logout";
 import SwapHorizIcon from "@mui/icons-material/SwapHoriz";
+import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
+import { useCartDrawer } from "../context/CartDrawerContext";
 import { useNavigate } from "react-router-dom";
 import { useLocation } from "react-router-dom";
 import { roleIcons } from "../common/utility";
@@ -60,6 +62,12 @@ const Header = ({ role: propRole }: { role?: string }) => {
   const handleSwap = () => {
     sessionStorage.clear();
     navigate("/");
+  };
+
+  const { openDrawer } = useCartDrawer();
+
+  const handleCartClick = () => {
+    openDrawer(); // open the drawer instead of navigation
   };
 
   const roleIcon = role ? roleIcons[role.toLowerCase()] : null;
@@ -150,6 +158,25 @@ const Header = ({ role: propRole }: { role?: string }) => {
           marginRight: "10px",
         }}
       >
+        {role?.toLowerCase() === "accountant" && (
+          <Button
+            variant="contained"
+            startIcon={<ShoppingCartIcon />}
+            onClick={handleCartClick}
+            sx={{
+              textTransform: "none",
+              backgroundColor: "white",
+              color: "#906aff",
+              borderRadius: "20px",
+              boxShadow: 2,
+              "&:hover": {
+                backgroundColor: "#f3eaff",
+              },
+            }}
+          >
+            Cart
+          </Button>
+        )}
         <IconButton sx={{ color: "white" }} onClick={handleSwap}>
           <SwapHorizIcon />
         </IconButton>

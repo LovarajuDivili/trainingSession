@@ -42,6 +42,27 @@ const EmployeeData = () => {
 
   return (
     <Box sx={{ minHeight: "70vh", backgroundColor: "white" }}>
+      <Box sx={{ position: "relative" }}>
+        {/* Red Back FAB in Top-Left Corner */}
+        <Fab
+          color="error"
+          aria-label="back"
+          onClick={() => navigate("/accountant")}
+          sx={{
+            position: "absolute",
+            top: 20,
+            left: 20,
+            backgroundColor: "#ff4d4d",
+            color: "#fff",
+            boxShadow: "0 4px 10px rgba(0,0,0,0.2)",
+            "&:hover": {
+              backgroundColor: "#e60000",
+            },
+          }}
+        >
+          <ArrowBackIcon />
+        </Fab>
+      </Box>
       <Header role={""} />
 
       <Box sx={{ mt: 6 }}>
@@ -145,14 +166,14 @@ const EmployeeData = () => {
               alignItems: "center",
               backgroundColor: "#fff",
               borderRadius: "30px",
-              boxShadow: "0 8px 32px rgba(0, 0, 0, 0.2)", 
-              border: "1px solid #e0e0e0ff", 
+              boxShadow: "0 8px 32px rgba(0, 0, 0, 0.2)",
+              border: "1px solid #e0e0e0ff",
               width: "80%",
               p: 1.5,
               zIndex: 1,
               mx: "auto",
-              position: "absolute", 
-              bottom: "-25px", 
+              position: "absolute",
+              bottom: "-25px",
             }}
           >
             <TextField
@@ -298,23 +319,6 @@ const EmployeeData = () => {
           </Grid>
         </Box>
       </Box>
-      <Fab
-        color="primary"
-        aria-label="back"
-        onClick={() => navigate("/accountant")}
-        sx={{
-          position: "fixed",
-          bottom: 20,
-          left: 20,
-          backgroundColor: "#906aff",
-          color: "#fff",
-          "&:hover": {
-            backgroundColor: "#7a5df0",
-          },
-        }}
-      >
-        <ArrowBackIcon />
-      </Fab>
     </Box>
   );
 };
