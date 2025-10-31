@@ -25,6 +25,10 @@ import EmployeeData from "./components/ExtraComponents/EmployeesData";
 import HRTeam from "./components/SideBarComponents/HRTeam";
 import HrData from "./components/ExtraComponents/HrData";
 import EmployeeDetails from "./components/ExtraComponents/EmployeeDetails";
+import { CartDrawerProvider } from "./context/CartDrawerContext";
+import Header from "./components/Header";
+import CartDrawer from "./components/ExtraComponents/CartDrawer";
+//import Cart from "./components/ExtraComponents/Cart";
 
 const AppRoutes = () => {
   const { isAuthenticated, isLoading } = useAuth();
@@ -93,6 +97,7 @@ const AppRoutes = () => {
           </ProtectedRoute>
         }
       />
+
       <Route
         path="/accountant/employeedata"
         element={
@@ -193,9 +198,13 @@ const AppRoutes = () => {
 const App = () => {
   return (
     <AuthProvider>
-      <Box>
-        <AppRoutes />
-      </Box>
+      <CartDrawerProvider>
+        <Header />
+        <Box sx={{ mt: "50px" }}>
+          <AppRoutes />
+        </Box>
+        <CartDrawer />
+      </CartDrawerProvider>
     </AuthProvider>
   );
 };

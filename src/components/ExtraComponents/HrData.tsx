@@ -38,6 +38,27 @@ const HrData = () => {
   const navigate = useNavigate();
   return (
     <Box sx={{ minHeight: "70vh", backgroundColor: "white" }}>
+      <Box sx={{ position: "relative" }}>
+        {/* Red Back FAB */}
+        <Fab
+          color="error"
+          aria-label="back"
+          onClick={() => navigate("/accountant")}
+          sx={{
+            position: "absolute",
+            top: 20,
+            left: 20,
+            backgroundColor: "#ff4d4d",
+            color: "#fff",
+            boxShadow: "0 4px 10px rgba(0,0,0,0.2)",
+            "&:hover": {
+              backgroundColor: "#e60000",
+            },
+          }}
+        >
+          <ArrowBackIcon />
+        </Fab>
+      </Box>
       <Header role={"HR Team"} />
 
       <Box sx={{ mt: 6 }}>
@@ -295,23 +316,6 @@ const HrData = () => {
           </Grid>
         </Box>
       </Box>
-      <Fab
-        color="primary"
-        aria-label="back"
-        onClick={() => navigate("/accountant")}
-        sx={{
-          position: "fixed",
-          bottom: 20,
-          left: 20,
-          backgroundColor: "#906aff",
-          color: "#fff",
-          "&:hover": {
-            backgroundColor: "#7a5df0",
-          },
-        }}
-      >
-        <ArrowBackIcon />
-      </Fab>
     </Box>
   );
 };

@@ -69,7 +69,7 @@ const OrderProgress = () => {
           },
           {
             icon: <CameraAltIcon sx={{ color: "#54a0ff" }} />,
-            name: "CC Cameras",
+            name: "WebCameras",
             hours: "12:30",
           },
         ].map((course, index) => (
