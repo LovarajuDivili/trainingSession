@@ -7,11 +7,11 @@ import Admin from "./pages/Admin";
 import Logout from "./pages/Logout";
 import AllEmployees from "./components/SideBarComponents/AllEmployees";
 import Developers from "./components/SideBarComponents/Developers";
-import AWSTeam from "./components/SideBarComponents/AWSTeam";
+import Dashboard from "./components/SideBarComponents/Dashboard";
 import Logs from "./components/SideBarComponents/Logs";
 import Projects from "./components/SideBarComponents/Projects";
 import Statistics from "./components/SideBarComponents/Statistics";
-import Testers from "./components/SideBarComponents/Testers";
+
 import AddProject from "./components/ExtraComponents/AddProject";
 import SignIn from "./SignIn";
 import SignUp from "./SignUp";
@@ -22,7 +22,7 @@ import Tester from "./pages/Tester";
 import Accountant from "./pages/Accountant";
 import RequestOrder from "./components/ExtraComponents/RequestOrder";
 import EmployeeData from "./components/ExtraComponents/EmployeesData";
-import HRTeam from "./components/SideBarComponents/HRTeam";
+
 import HrData from "./components/ExtraComponents/HrData";
 import EmployeeDetails from "./components/ExtraComponents/EmployeeDetails";
 import { CartDrawerProvider } from "./context/CartDrawerContext";
@@ -71,13 +71,11 @@ const AppRoutes = () => {
       >
         <Route path="all-employees" element={<AllEmployees />} />
         <Route path="developers" element={<Developers />} />
-        <Route path="aws-team" element={<AWSTeam />} />
+        <Route path="dashboard" element={<Dashboard />} />
         <Route path="logs" element={<Logs />} />
         <Route path="projects" element={<Projects />} />
         <Route path="projects/add" element={<AddProject />} />
         <Route path="statistics" element={<Statistics />} />
-        <Route path="testers" element={<Testers />} />
-        <Route path="hrteam" element={<HRTeam />} />
       </Route>
 
       {/* Other protected routes */}
@@ -158,14 +156,7 @@ const AppRoutes = () => {
           </ProtectedRoute>
         }
       />
-      <Route
-        path="/hrteam"
-        element={
-          <ProtectedRoute>
-            <HRTeam />
-          </ProtectedRoute>
-        }
-      />
+
       <Route path="/logout" element={<Logout />} />
 
       {/* Default route - redirect based on authentication */}

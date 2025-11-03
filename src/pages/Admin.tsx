@@ -7,7 +7,7 @@ const Admin = () => {
   const location = useLocation();
 
   if (location.pathname === "/admin") {
-    return <Navigate to="/admin/all-employees" replace />;
+    return <Navigate to="/admin/dashboard" replace />;
   }
 
   return (
