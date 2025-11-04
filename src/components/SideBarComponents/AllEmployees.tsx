@@ -98,10 +98,10 @@ const AllEmployees = () => {
   const navigate = useNavigate();
 
   const handleCardClick = (employeeId: string) => {
-  navigate(`/admin/all-employees/employeedetails/${employeeId}`, { 
-    state: { from: '/admin/all-employees' }  // Store where we came from
-  });
-};
+    navigate(`/admin/all-employees/employeedetails/${employeeId}`, {
+      state: { from: "/admin/all-employees" }, // Store where we came from
+    });
+  };
 
   const handleSkillKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && skillInput.trim() !== "") {
@@ -745,9 +745,7 @@ const AllEmployees = () => {
                         fontWeight: 500,
                         fontSize: "14px",
                         px: 3,
-                        "&:hover": {
-                          //backgroundColor: "#3f5ce3",
-                        },
+                        
                       }}
                     >
                       {newEmployee.image ? "Change Image" : "Upload Image"}

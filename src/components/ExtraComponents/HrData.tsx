@@ -166,10 +166,10 @@ const HrData = () => {
               border: "1px solid #e0e0e0ff",
               width: "80%",
               p: 1.5,
-              zIndex: 1,
-              mx: "auto",
-              position: "absolute",
-              bottom: "-25px",
+              zIndex: 100,
+              //border: "1px solid red",
+              position: "fixed",
+              marginTop: "290px",
             }}
           >
             <TextField
@@ -198,7 +198,7 @@ const HrData = () => {
         </Box>
 
         {/* HR Cards Section */}
-        <Box sx={{ p: 4 }}>
+        <Box sx={{ p: 4, pt: 7 }}>
           <Grid
             container
             spacing={3}

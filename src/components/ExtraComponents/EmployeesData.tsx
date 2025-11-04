@@ -36,14 +36,14 @@ const EmployeeData = () => {
 
   const handleCardClick = (employeeId: string) => {
     navigate(`/accountant/employeedata/${employeeId}`, {
-      state: { from: "/accountant/employeedata" }, // Store where we came from
+      state: { from: "/accountant/employeedata" }, 
     });
   };
 
   return (
     <Box sx={{ minHeight: "70vh", backgroundColor: "white" }}>
       <Box sx={{ position: "relative" }}>
-        {/* Red Back FAB in Top-Left Corner */}
+        
         <Fab
           color="error"
           aria-label="back"
@@ -120,7 +120,7 @@ const EmployeeData = () => {
                       borderRadius: "50%",
                       border: "2px solid white",
                       objectFit: "cover",
-                      ml: index === 0 ? 0 : -1.5, // Overlapping effect
+                      ml: index === 0 ? 0 : -1.5, 
                       boxShadow: "0 0 4px rgba(0,0,0,0.2)",
                     }}
                   />
@@ -171,9 +171,9 @@ const EmployeeData = () => {
               width: "80%",
               p: 1.5,
               zIndex: 1,
-              mx: "auto",
-              position: "absolute",
-              bottom: "-25px",
+              //border: "1px solid red",
+              position: "fixed",
+              marginTop:"290px"
             }}
           >
             <TextField
@@ -202,7 +202,7 @@ const EmployeeData = () => {
         </Box>
 
         {/* Employees Card Section */}
-        <Box sx={{ p: 4 }}>
+        <Box sx={{ p: 4,pt:7 }}>
           <Grid
             container
             spacing={3}
@@ -228,7 +228,7 @@ const EmployeeData = () => {
                     }}
                   >
                     <CardContent>
-                      {/* Employee Profile Image */}
+                      
                       <Box
                         sx={{
                           width: 80,
@@ -254,7 +254,7 @@ const EmployeeData = () => {
                               : "/placeholder.jpg"
                           }
                           onError={(e) => {
-                            e.currentTarget.src = "/placeholder.jpg"; // fallback
+                            e.currentTarget.src = "/placeholder.jpg"; 
                           }}
                           alt={emp.name}
                           sx={{
