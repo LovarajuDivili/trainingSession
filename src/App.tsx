@@ -1,6 +1,6 @@
 import { Box } from "@mui/material";
 import { Routes, Route, Navigate } from "react-router-dom";
-import { AuthProvider, useAuth } from "./contexts/AuthContext"; // Import useAuth
+import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import WelcomeSasa from "./components/WelcomeSasa";
 import Admin from "./pages/Admin";
@@ -11,7 +11,6 @@ import Dashboard from "./components/SideBarComponents/Dashboard";
 import Logs from "./components/SideBarComponents/Logs";
 import Projects from "./components/SideBarComponents/Projects";
 import Statistics from "./components/SideBarComponents/Statistics";
-
 import AddProject from "./components/ExtraComponents/AddProject";
 import SignIn from "./SignIn";
 import SignUp from "./SignUp";
@@ -22,13 +21,11 @@ import Tester from "./pages/Tester";
 import Accountant from "./pages/Accountant";
 import RequestOrder from "./components/ExtraComponents/RequestOrder";
 import EmployeeData from "./components/ExtraComponents/EmployeesData";
-
 import HrData from "./components/ExtraComponents/HrData";
 import EmployeeDetails from "./components/ExtraComponents/EmployeeDetails";
 import { CartDrawerProvider } from "./context/CartDrawerContext";
-import Header from "./components/Header";
 import CartDrawer from "./components/ExtraComponents/CartDrawer";
-//import Cart from "./components/ExtraComponents/Cart";
+import { CartProvider } from "./context/CartContext";
 
 const AppRoutes = () => {
   const { isAuthenticated, isLoading } = useAuth();
@@ -52,7 +49,6 @@ const AppRoutes = () => {
       <Route path="/signin" element={<SignIn />} />
       <Route path="/signup" element={<SignUp />} />
 
-      {/* Protected routes */}
       <Route
         path="/welcome"
         element={
@@ -95,7 +91,6 @@ const AppRoutes = () => {
           </ProtectedRoute>
         }
       />
-
       <Route
         path="/accountant/employeedata"
         element={
@@ -156,10 +151,8 @@ const AppRoutes = () => {
           </ProtectedRoute>
         }
       />
-
       <Route path="/logout" element={<Logout />} />
 
-      {/* Default route - redirect based on authentication */}
       <Route
         path="/"
         element={
@@ -171,7 +164,6 @@ const AppRoutes = () => {
         }
       />
 
-      {/* Fallback route */}
       <Route
         path="*"
         element={
@@ -188,15 +180,16 @@ const AppRoutes = () => {
 
 const App = () => {
   return (
-    <AuthProvider>
-      <CartDrawerProvider>
-        <Header />
-        <Box sx={{ mt: "50px" }}>
-          <AppRoutes />
-        </Box>
-        <CartDrawer />
-      </CartDrawerProvider>
-    </AuthProvider>
+    <CartProvider>
+      <AuthProvider>
+        <CartDrawerProvider>
+          <Box sx={{ mt: "50px" }}>
+            <AppRoutes />
+          </Box>
+          <CartDrawer />
+        </CartDrawerProvider>
+      </AuthProvider>
+    </CartProvider>
   );
 };
 

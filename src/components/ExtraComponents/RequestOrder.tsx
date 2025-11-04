@@ -7,6 +7,8 @@ import {
   Grid,
   Typography,
   CircularProgress,
+  Snackbar,
+  Alert,
 } from "@mui/material";
 import Header from "../Header";
 import { useNavigate } from "react-router-dom";
@@ -19,12 +21,17 @@ import MouseIcon from "@mui/icons-material/Mouse";
 import CategoryIcon from "@mui/icons-material/Category";
 import axios from "axios";
 import { useState, type JSX } from "react";
+import { useCart } from "../../context/CartContext";
+import FavoriteIcon from "@mui/icons-material/FavoriteBorder";
 
 const RequestOrder = () => {
   const navigate = useNavigate();
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [itemsData, setItemsData] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const { cart, addToCart } = useCart();
 
   const items = [
     {
@@ -54,12 +61,12 @@ const RequestOrder = () => {
   ];
 
   const categoryIcons: Record<string, JSX.Element> = {
-    laptop: <LaptopIcon sx={{ fontSize: 15, color: "#ff3b30" }} />,
-    monitor: <MonitorIcon sx={{ fontSize: 15, color: "#22c55e" }} />,
-    keyboard: <KeyboardIcon sx={{ fontSize: 15, color: "#0084ff" }} />,
-    mouse: <MouseIcon sx={{ fontSize: 15, color: "#ff9800" }} />,
-    headphones: <HeadphonesIcon sx={{ fontSize: 15, color: "#9c27b0" }} />,
-    webcam: <CameraAltIcon sx={{ fontSize: 15, color: "#f44336" }} />,
+    laptop: <LaptopIcon sx={{ fontSize: 25, color: "#ff3b30" }} />,
+    monitor: <MonitorIcon sx={{ fontSize: 25, color: "#22c55e" }} />,
+    keyboard: <KeyboardIcon sx={{ fontSize: 25, color: "#0084ff" }} />,
+    mouse: <MouseIcon sx={{ fontSize: 25, color: "#ff9800" }} />,
+    headphones: <HeadphonesIcon sx={{ fontSize: 25, color: "#9c27b0" }} />,
+    webcam: <CameraAltIcon sx={{ fontSize: 25, color: "#f44336" }} />,
   };
 
   // Fetch specific category
@@ -96,6 +103,24 @@ const RequestOrder = () => {
     }
   };
 
+  // Add item to cart
+  const handleAddToCart = (item: any) => {
+    addToCart(item);
+    setSnackbarMessage(`Added ${item.brand} ${item.category} to cart`);
+    setSnackbarOpen(true);
+  };
+
+  // Save cart to localStorage (optional) and navigate back
+  const handleClose = () => {
+    // Save cart to localStorage or context for persistence
+    localStorage.setItem("orderCart", JSON.stringify(cart));
+    navigate("/accountant");
+  };
+
+  const handleSnackbarClose = () => {
+    setSnackbarOpen(false);
+  };
+
   return (
     <Box sx={{ minHeight: "88vh", backgroundColor: "white" }}>
       <Header role={""} />
@@ -114,19 +139,28 @@ const RequestOrder = () => {
           Select the Items
         </Typography>
 
-        <Button
-          variant="contained"
-          color="error"
-          onClick={() => navigate("/accountant")}
-          sx={{
-            textTransform: "none",
-            borderRadius: 2,
-            boxShadow: 3,
-            "&:hover": { backgroundColor: "#d32f2f" },
-          }}
-        >
-          Close
-        </Button>
+        <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
+          <Typography
+            variant="body1"
+            sx={{ color: "#906aff", fontWeight: 600 }}
+          >
+            Cart: {cart.length} items
+          </Typography>
+          <Button
+            variant="contained"
+            color="error"
+            onClick={handleClose}
+            sx={{
+              textTransform: "none",
+              borderRadius: 2,
+              boxShadow: 3,
+              backgroundColor: "#ac8fff",
+              "&:hover": { backgroundColor: "#ac8fff" },
+            }}
+          >
+            Close
+          </Button>
+        </Box>
       </Box>
 
       {/* Category Cards */}
@@ -243,7 +277,7 @@ const RequestOrder = () => {
                 : selectedCategory + "s"}
               :
             </Typography>
-            <Grid container spacing={3}>
+            <Grid container spacing={7}>
               {itemsData.map((item) => (
                 <Grid item xs={3} key={item._id}>
                   <Card
@@ -256,7 +290,7 @@ const RequestOrder = () => {
                       flexDirection: "column",
                       justifyContent: "space-between",
                       height: 160,
-                      width: 150,
+                      width: 205,
                       "&:hover": { boxShadow: 6, transform: "scale(1.02)" },
                     }}
                   >
@@ -286,9 +320,6 @@ const RequestOrder = () => {
                       <Typography variant="body2" color="text.secondary">
                         Price: ₹{item.price}
                       </Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        Quantity: {item.stock}
-                      </Typography>
                     </Box>
 
                     {/* Bottom Buttons */}
@@ -297,6 +328,7 @@ const RequestOrder = () => {
                         display: "flex",
                         justifyContent: "space-between",
                         mt: 2,
+                        gap: 1,
                       }}
                     >
                       <Button
@@ -306,24 +338,28 @@ const RequestOrder = () => {
                           textTransform: "none",
                           borderRadius: 2,
                           height: 40,
+                          fontSize: "12px",
                           width: "48%",
                           borderColor: "#e0e0e0",
+                          gap: 1,
                         }}
                       >
+                        <FavoriteIcon sx={{ fontSize: 13, color: "red" }} />
                         Wishlist
                       </Button>
                       <Button
                         variant="contained"
                         size="small"
+                        onClick={() => handleAddToCart(item)}
                         sx={{
                           textTransform: "none",
-                          width: "48%",
+                          width: "55%",
                           borderRadius: 2,
                           backgroundColor: "#ff5722",
                           height: 40,
                           p: 0,
                           lineHeight: 1.1,
-                          fontSize: "13px",
+                          fontSize: "12px",
                           "&:hover": { backgroundColor: "#e64a19" },
                         }}
                       >
@@ -341,6 +377,21 @@ const RequestOrder = () => {
           </Typography>
         ) : null}
       </Box>
+
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={3000}
+        onClose={handleSnackbarClose}
+        anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
+      >
+        <Alert
+          onClose={handleSnackbarClose}
+          severity="success"
+          sx={{ width: "100%" }}
+        >
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };
