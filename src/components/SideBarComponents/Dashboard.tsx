@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import {
   Box,
   Card,
@@ -45,19 +46,70 @@ const Dashboard = () => {
     "https://picsum.photos/900/300?random=2",
     "https://picsum.photos/900/300?random=3",
   ];
-  const [index, setIndex] = useState(0);
-  const handleNext = () => setIndex((prev) => (prev + 1) % images.length);
-  const handlePrev = () =>
-    setIndex((prev) => (prev - 1 + images.length) % images.length);
+  const [imageIndex, setImageIndex] = useState(0);
+  const handleNextImage = () =>
+    setImageIndex((prev) => (prev + 1) % images.length);
+  const handlePrevImage = () =>
+    setImageIndex((prev) => (prev - 1 + images.length) % images.length);
 
   useEffect(() => {
-    const timer = setInterval(handleNext, 4000);
+    const timer = setInterval(handleNextImage, 4000);
     return () => clearInterval(timer);
   }, []);
 
-  // Compute monthly join counts (Jan–Dec)
+  const recentJoiners = useMemo(() => {
+    return [...employees]
+      .filter((emp) => emp.joinDate)
+      .sort(
+        (a, b) =>
+          new Date(b.joinDate).getTime() - new Date(a.joinDate).getTime()
+      );
+  }, [employees]);
+
+  const [currentJoinerIndex, setCurrentJoinerIndex] = useState(0);
+  const visibleJoiners = 3;
+
+  const handleNextJoiners = () => {
+    setCurrentJoinerIndex((prev) =>
+      prev + visibleJoiners >= recentJoiners.length ? 0 : prev + 1
+    );
+  };
+
+  const handlePrevJoiners = () => {
+    setCurrentJoinerIndex((prev) =>
+      prev === 0 ? Math.max(0, recentJoiners.length - visibleJoiners) : prev - 1
+    );
+  };
+
+  useEffect(() => {
+    if (recentJoiners.length > visibleJoiners) {
+      const timer = setInterval(handleNextJoiners, 3000);
+      return () => clearInterval(timer);
+    }
+  }, [recentJoiners.length]);
+
+  const getVisibleJoiners = () => {
+    if (recentJoiners.length === 0) return [];
+
+    const endIndex = Math.min(
+      currentJoinerIndex + visibleJoiners,
+      recentJoiners.length
+    );
+    let visible = recentJoiners.slice(currentJoinerIndex, endIndex);
+
+    if (
+      visible.length < visibleJoiners &&
+      recentJoiners.length > visibleJoiners
+    ) {
+      const remaining = visibleJoiners - visible.length;
+      visible = [...visible, ...recentJoiners.slice(0, remaining)];
+    }
+
+    return visible;
+  };
+
   const monthlyData = useMemo(() => {
-    const data = Array(12).fill(0); // index 0 = Jan, 11 = Dec
+    const data = Array(12).fill(0);
     employees.forEach((emp) => {
       if (emp.joinDate) {
         const date = new Date(emp.joinDate);
@@ -80,6 +132,11 @@ const Dashboard = () => {
       { month: "Dec", count: data[11] },
     ];
   }, [employees]);
+
+  const currentOpenings = [
+    { title: "Frontend Developer", department: "Engineering", applicants: 12 },
+    { title: "UX Designer", department: "Design", applicants: 8 },
+  ];
 
   if (employeesLoading) {
     return (
@@ -104,12 +161,7 @@ const Dashboard = () => {
     );
   }
 
-  const recentJoiners = [...employees]
-    .filter((emp) => emp.joinDate)
-    .sort(
-      (a, b) => new Date(b.joinDate).getTime() - new Date(a.joinDate).getTime()
-    )
-    .slice(0, 3);
+  const visibleJoinersList = getVisibleJoiners();
 
   return (
     <Box>
@@ -123,136 +175,277 @@ const Dashboard = () => {
         {/* LEFT COLUMN — New Joiners */}
         <Box
           sx={{
-            height: "calc(100vh - 150px)",
+            height: "calc(108vh - 150px)",
             width: "30%",
             display: "flex",
             flexDirection: "column",
-            gap: 2,
             p: 2,
+            pt: 0.5,
+            position: "relative",
           }}
         >
-          <Typography variant="h6" sx={{ mb: 1, fontWeight: 600 }}>
-            New Joiners
-          </Typography>
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              gap: 12,
+              //justifyContent: "space-between",
+              mb: 1,
+            }}
+          >
+            <Typography variant="h6" sx={{ fontWeight: 600 }}>
+              New Joiners ({recentJoiners.length})
+            </Typography>
 
-          {recentJoiners.length > 0 ? (
-            recentJoiners.map((emp) => (
-              <Card
-                key={emp.id}
-                sx={{
-                  p: 2,
-                  borderRadius: 4,
-                  boxShadow: "0 2px 10px rgba(0,0,0,0.08)",
-                  backgroundColor: "#fdfefe",
-                  width: "100%",
-                  maxWidth: 280,
-                }}
-              >
-                <Box sx={{ display: "flex", alignItems: "center", mb: 1.5 }}>
-                  <Box
-                    sx={{
-                      width: 50,
-                      height: 50,
-                      borderRadius: "50%",
-                      overflow: "hidden",
-                      mr: 2,
-                    }}
-                  >
-                    <img
-                      src={
-                        typeof emp.image === "string"
-                          ? emp.image.startsWith("http")
-                            ? emp.image
-                            : `${import.meta.env.VITE_API_BASE_URL}/uploads/${
-                                emp.image
-                              }`
-                          : emp.image
-                          ? URL.createObjectURL(emp.image as File)
-                          : "/placeholder.jpg"
-                      }
-                      alt={emp.name}
-                      style={{
-                        width: "100%",
-                        height: "100%",
-                        objectFit: "cover",
-                      }}
-                      onError={(e) =>
-                        (e.currentTarget.src = "/placeholder.jpg")
-                      }
-                    />
-                  </Box>
-
-                  <Box>
-                    <Typography
-                      variant="subtitle1"
-                      sx={{ fontWeight: 600, fontSize: "15px" }}
-                    >
-                      {emp.name}
-                    </Typography>
-                    <Typography
-                      variant="body2"
-                      color="text.secondary"
-                      sx={{ fontSize: "13px" }}
-                    >
-                      {emp.role || "—"}
-                    </Typography>
-                  </Box>
-                </Box>
-
-                <Box
+            {recentJoiners.length > visibleJoiners && (
+              <Box sx={{ display: "flex", gap: 0.5 }}>
+                <IconButton
+                  onClick={handlePrevJoiners}
+                  size="small"
                   sx={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    mb: 1,
-                    px: 0.5,
+                    backgroundColor: "rgba(0,0,0,0.04)",
+                    "&:hover": { backgroundColor: "rgba(0,0,0,0.08)" },
                   }}
                 >
-                  <Box>
-                    <Typography
-                      variant="caption"
-                      sx={{ color: "#00bcd4", fontWeight: 600 }}
+                  <ArrowBackIosNewIcon fontSize="small" />
+                </IconButton>
+                <IconButton
+                  onClick={handleNextJoiners}
+                  size="small"
+                  sx={{
+                    backgroundColor: "rgba(0,0,0,0.04)",
+                    "&:hover": { backgroundColor: "rgba(0,0,0,0.08)" },
+                  }}
+                >
+                  <ArrowForwardIosIcon fontSize="small" />
+                </IconButton>
+              </Box>
+            )}
+          </Box>
+
+          <Box sx={{ flex: 1, overflow: "hidden", mb: 1 }}>
+            {" "}
+            {visibleJoinersList.length > 0 ? (
+              visibleJoinersList.map((emp, index) => (
+                <Card
+                  key={`${emp.id}-${currentJoinerIndex + index}`}
+                  sx={{
+                    p: 1.5,
+                    borderRadius: 4,
+                    boxShadow: "0 2px 10px rgba(0,0,0,0.08)",
+                    backgroundColor: "#fdfefe",
+                    width: "80%",
+                    mb: 1.5,
+                    transition: "transform 0.3s ease, opacity 0.3s ease",
+                    transform: "translateX(0)",
+                    opacity: 1,
+                    minHeight: "auto",
+                  }}
+                >
+                  <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+                    <Box
+                      sx={{
+                        width: 45,
+                        height: 45,
+                        borderRadius: "50%",
+                        overflow: "hidden",
+                        mr: 1.5,
+                      }}
                     >
-                      Date
-                    </Typography>
-                    <Typography
-                      variant="body2"
-                      sx={{ fontWeight: 600, fontSize: "13px" }}
-                    >
-                      {emp.joinDate
-                        ? new Date(emp.joinDate).toLocaleDateString()
-                        : "—"}
-                    </Typography>
+                      <img
+                        src={
+                          typeof emp.image === "string"
+                            ? emp.image.startsWith("http")
+                              ? emp.image
+                              : `${import.meta.env.VITE_API_BASE_URL}/uploads/${
+                                  emp.image
+                                }`
+                            : emp.image
+                            ? URL.createObjectURL(emp.image as File)
+                            : "/placeholder.jpg"
+                        }
+                        alt={emp.name}
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          objectFit: "cover",
+                        }}
+                        onError={(e) =>
+                          (e.currentTarget.src = "/placeholder.jpg")
+                        }
+                      />
+                    </Box>
+
+                    <Box>
+                      <Typography
+                        variant="subtitle1"
+                        sx={{ fontWeight: 600, fontSize: "14px" }}
+                      >
+                        {emp.name}
+                      </Typography>
+                      <Typography
+                        variant="body2"
+                        color="text.secondary"
+                        sx={{ fontSize: "12px" }}
+                      >
+                        {emp.role || "—"}
+                      </Typography>
+                    </Box>
                   </Box>
-                  <Box>
-                    <Typography
-                      variant="caption"
-                      sx={{ color: "#00bcd4", fontWeight: 600 }}
-                    >
-                      Time
-                    </Typography>
-                    <Typography
-                      variant="body2"
-                      sx={{ fontWeight: 600, fontSize: "13px" }}
-                    >
-                      9:30 AM
-                    </Typography>
+
+                  <Box
+                    sx={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      px: 0.5,
+                      mt: 0.5,
+                    }}
+                  >
+                    <Box>
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          color: "#00bcd4",
+                          fontWeight: 600,
+                          fontSize: "11px",
+                        }}
+                      >
+                        Date
+                      </Typography>
+                      <Typography
+                        variant="body2"
+                        sx={{ fontWeight: 600, fontSize: "12px" }}
+                      >
+                        {emp.joinDate
+                          ? new Date(emp.joinDate).toLocaleDateString()
+                          : "—"}
+                      </Typography>
+                    </Box>
+                    <Box>
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          color: "#00bcd4",
+                          fontWeight: 600,
+                          fontSize: "11px",
+                        }}
+                      >
+                        Time
+                      </Typography>
+                      <Typography
+                        variant="body2"
+                        sx={{ fontWeight: 600, fontSize: "12px" }}
+                      >
+                        9:30 AM
+                      </Typography>
+                    </Box>
                   </Box>
-                </Box>
-              </Card>
-            ))
-          ) : (
-            <Typography color="text.secondary">
-              No recent joiners found.
-            </Typography>
+                </Card>
+              ))
+            ) : (
+              <Typography color="text.secondary">
+                No recent joiners found.
+              </Typography>
+            )}
+          </Box>
+
+          {recentJoiners.length > visibleJoiners && (
+            <Box
+              sx={{ display: "flex", justifyContent: "center", gap: 1, mb: 1 }}
+            >
+              {" "}
+              {Array.from({
+                length: Math.ceil(recentJoiners.length / visibleJoiners),
+              }).map((_, dotIndex) => (
+                <Box
+                  key={dotIndex}
+                  sx={{
+                    width: 6,
+                    height: 6,
+                    borderRadius: "50%",
+                    backgroundColor:
+                      Math.floor(currentJoinerIndex / visibleJoiners) ===
+                      dotIndex
+                        ? "primary.main"
+                        : "grey.300",
+                    transition: "background-color 0.3s ease",
+                  }}
+                />
+              ))}
+            </Box>
           )}
 
-          <Typography variant="body1" sx={{ mt: 2, fontWeight: 500 }}>
+          <Typography
+            variant="body1"
+            sx={{ fontWeight: 500, fontSize: "14px", pb: 0.5 }}
+          >
+            {" "}
             {new Date().toLocaleDateString("en-US", {
               year: "numeric",
               month: "long",
               day: "numeric",
             })}
           </Typography>
+
+          <Box sx={{ mb: 2 }}>
+            <Typography variant="h6" sx={{ fontWeight: 600, mb: 1.5 }}>
+              Current Openings
+            </Typography>
+
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
+              {currentOpenings.map((opening, index) => (
+                <Card
+                  key={index}
+                  sx={{
+                    p: 1.5,
+                    height: "35px",
+                    width: "80%",
+                    borderRadius: 3,
+                    boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
+                    backgroundColor: "#f8f9fa",
+                    border: "1px solid #e9ecef",
+                    transition: "all 0.2s ease",
+                    "&:hover": {
+                      boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+                      transform: "translateY(-1px)",
+                    },
+                  }}
+                >
+                  <Typography
+                    variant="subtitle1"
+                    sx={{ fontWeight: 600, fontSize: "13px", mb: 0.5 }}
+                  >
+                    {opening.title}
+                  </Typography>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                    }}
+                  >
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      sx={{ fontSize: "11px" }}
+                    >
+                      {opening.department}
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        fontSize: "11px",
+                        fontWeight: 600,
+                        color: "primary.main",
+                      }}
+                    >
+                      {opening.applicants} applicants
+                    </Typography>
+                  </Box>
+                </Card>
+              ))}
+            </Box>
+          </Box>
         </Box>
 
         {/* RIGHT COLUMN — Greeting + Carousel + Chart */}
@@ -289,8 +482,8 @@ const Dashboard = () => {
             >
               <Box
                 component="img"
-                src={images[index]}
-                alt={`Slide ${index + 1}`}
+                src={images[imageIndex]}
+                alt={`Slide ${imageIndex + 1}`}
                 sx={{
                   width: "100%",
                   height: 250,
@@ -301,7 +494,7 @@ const Dashboard = () => {
             </Card>
 
             <IconButton
-              onClick={handlePrev}
+              onClick={handlePrevImage}
               sx={{
                 position: "absolute",
                 top: "50%",
@@ -315,7 +508,7 @@ const Dashboard = () => {
             </IconButton>
 
             <IconButton
-              onClick={handleNext}
+              onClick={handleNextImage}
               sx={{
                 position: "absolute",
                 top: "50%",
