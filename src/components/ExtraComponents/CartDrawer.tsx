@@ -500,6 +500,7 @@ const CartDrawer = () => {
                   mt: 3,
                   fontSize: "1.1rem",
                   bgcolor: "#906aff",
+                  borderRadius: "20px",
                 }}
               >
                 Place Order
