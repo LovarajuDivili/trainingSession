@@ -47,7 +47,7 @@ const HrData = () => {
           sx={{
             position: "absolute",
             top: 20,
-            left: 20,
+            right: 20,
             backgroundColor: "#ff4d4d",
             color: "#fff",
             boxShadow: "0 4px 10px rgba(0,0,0,0.2)",
@@ -85,14 +85,14 @@ const HrData = () => {
             <Box
               sx={{
                 position: "absolute",
-                top: 40,
+                top: 75,
                 display: "flex",
                 justifyContent: "center",
                 width: "100%",
               }}
             >
               <Box sx={{ display: "flex", alignItems: "center" }}>
-                {filteredEmployees.slice(0, 6).map((emp, index) => (
+                {filteredEmployees.slice(0, 4).map((emp, index) => (
                   <Box
                     key={index}
                     component="img"
@@ -116,7 +116,7 @@ const HrData = () => {
                       borderRadius: "50%",
                       border: "2px solid white",
                       objectFit: "cover",
-                      ml: index === 0 ? 0 : -1.5, // Overlapping effect
+                      ml: index === 0 ? 0 : -1.5,
                       boxShadow: "0 0 4px rgba(0,0,0,0.2)",
                     }}
                   />
@@ -166,7 +166,7 @@ const HrData = () => {
               border: "1px solid #e0e0e0ff",
               width: "80%",
               p: 1.5,
-              zIndex: 100,
+              zIndex: 1,
               //border: "1px solid red",
               position: "fixed",
               marginTop: "290px",
@@ -182,7 +182,7 @@ const HrData = () => {
                 disableUnderline: true,
                 startAdornment: (
                   <InputAdornment position="start">
-                    <SearchIcon sx={{ color: "#888" }} />
+                    <SearchIcon sx={{ color: "#888", mr: 1 }} />
                   </InputAdornment>
                 ),
               }}
@@ -198,7 +198,7 @@ const HrData = () => {
         </Box>
 
         {/* HR Cards Section */}
-        <Box sx={{ p: 4, pt: 7 }}>
+        <Box sx={{ p: 4, pt: 7, height: "40vh", overflow: "auto" }}>
           <Grid
             container
             spacing={3}
@@ -211,7 +211,8 @@ const HrData = () => {
                   <Card
                     sx={{
                       borderRadius: "16px",
-                      boxShadow: 3,
+                      boxShadow:
+                        "2px 3px 1px -2px #ac8fff, 2px 2px 2px 0px rgba(0,0,0,0.14), 0px 1px 5px 0px rgba(0,0,0,0.12)",
                       width: "245px",
                       textAlign: "center",
                       transition: "transform 0.2s",
@@ -228,7 +229,7 @@ const HrData = () => {
                           width: 80,
                           height: 80,
                           borderRadius: "50%",
-                          overflow: "hidden",
+                          //overflow: "hidden",
                           mx: "auto",
                           mb: 2,
                           boxShadow: 3,

@@ -45,9 +45,9 @@ const Card = styled(MuiCard)(({ theme }) => ({
 const SignInContainer = styled(Stack)(({ theme }) => ({
   height: "calc((1 - var(--template-frame-height, 0)) * 100dvh)",
   minHeight: "100%",
-  padding: theme.spacing(2),
+  //padding: theme.spacing(2),
   [theme.breakpoints.up("sm")]: {
-    padding: theme.spacing(4),
+    //padding: theme.spacing(4),
   },
   
   backgroundImage: 'url("/public/aifaBG.jpg")',
@@ -127,7 +127,7 @@ export default function SignIn(props: { disableCustomTheme?: boolean }) {
     <AppTheme {...props}>
       <CssBaseline enableColorScheme />
       <SignInContainer direction="column" justifyContent="space-between">
-        <Card variant="outlined">
+        <Card >
           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
             <Box
               component="img"

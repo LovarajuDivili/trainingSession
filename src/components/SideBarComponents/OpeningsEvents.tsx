@@ -2,22 +2,22 @@ import { Box, Typography } from "@mui/material";
 import DashboardHeader from "../DashboardHeader";
 import { sidebarItems } from "../../common/sidebarItems";
 
-const Developers = () => {
+const OpeningsEvents = () => {
   const currentItem = sidebarItems.find(
-    (item) => item.route === "/admin/developers"
+    (item) => item.route === "/admin/openingsEvents"
   );
 
   return (
     <Box>
       <DashboardHeader
-        title={currentItem?.label || "Developers"}
+        title={currentItem?.label || "OpeningsEvents"}
         icon={currentItem?.icon}
       />
       <Typography sx={{ p: 2 }}>
-        No data available for Developers yet.
+        No data available for Openings and Events yet.
       </Typography>
     </Box>
   );
 };
 
-export default Developers;
+export default OpeningsEvents;

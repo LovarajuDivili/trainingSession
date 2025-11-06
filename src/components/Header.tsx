@@ -10,6 +10,7 @@ import {
   DialogActions,
   Snackbar,
   Alert,
+  Badge,
 } from "@mui/material";
 import AccountCircle from "@mui/icons-material/AccountCircle";
 import LogoutIcon from "@mui/icons-material/Logout";
@@ -27,11 +28,13 @@ import {
   Logout_Confirm,
   Logout_Success,
 } from "../common/labelConstants";
+import { useCart } from "../context/CartContext";
 
 const Header = ({ role: propRole }: { role?: string }) => {
   const [showLogout, setShowLogout] = useState<boolean>(false);
   const [openDialog, setOpenDialog] = useState<boolean>(false);
   const [openSnackbar, setOpenSnackbar] = useState<boolean>(false);
+  const { cart } = useCart();
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -161,7 +164,22 @@ const Header = ({ role: propRole }: { role?: string }) => {
         {role?.toLowerCase() === "accountant" && (
           <Button
             variant="contained"
-            startIcon={<ShoppingCartIcon />}
+            startIcon={
+              <Badge
+                badgeContent={cart.length}
+                color="error"
+                overlap="circular"
+                sx={{
+                  "& .MuiBadge-badge": {
+                    fontSize: "0.7rem",
+                    height: "16px",
+                    minWidth: "16px",
+                  },
+                }}
+              >
+                <ShoppingCartIcon />
+              </Badge>
+            }
             onClick={handleCartClick}
             sx={{
               textTransform: "none",
