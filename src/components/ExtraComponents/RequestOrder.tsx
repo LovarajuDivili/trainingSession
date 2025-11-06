@@ -23,6 +23,7 @@ import axios from "axios";
 import { useState, type JSX } from "react";
 import { useCart } from "../../context/CartContext";
 import FavoriteIcon from "@mui/icons-material/FavoriteBorder";
+import { useEffect } from "react";
 
 const RequestOrder = () => {
   const navigate = useNavigate();
@@ -33,6 +34,9 @@ const RequestOrder = () => {
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const { cart, addToCart } = useCart();
 
+  useEffect(() => {
+    handleCategoryClick("laptop"); // Load laptops on initial render
+  }, []);
   const items = [
     {
       name: "Laptop",
@@ -86,7 +90,6 @@ const RequestOrder = () => {
     }
   };
 
-  // Fetch all inventory items (for "Others")
   const handleAllItemsClick = async () => {
     try {
       setSelectedCategory("others");
@@ -94,7 +97,9 @@ const RequestOrder = () => {
       const response = await axios.get(
         `http://localhost:8000/v-1/application/inventory/`
       );
-      setItemsData(response.data);
+
+      const shuffled = shuffleArray(response.data);
+      setItemsData(shuffled);
     } catch (error) {
       console.error("Error fetching all inventory data:", error);
       setItemsData([]);
@@ -103,11 +108,22 @@ const RequestOrder = () => {
     }
   };
 
+  const shuffleArray = (array: any[]) => {
+    return array
+      .map((item) => ({ item, sort: Math.random() }))
+      .sort((a, b) => a.sort - b.sort)
+      .map(({ item }) => item);
+  };
+
   // Add item to cart
   const handleAddToCart = (item: any) => {
     addToCart(item);
     setSnackbarMessage(`Added ${item.brand} ${item.category} to cart`);
     setSnackbarOpen(true);
+  };
+
+  const isInCart = (id: string) => {
+    return cart.some((cartItem: any) => cartItem._id === id);
   };
 
   // Save cart to localStorage (optional) and navigate back
@@ -348,22 +364,31 @@ const RequestOrder = () => {
                         Wishlist
                       </Button>
                       <Button
-                        variant="contained"
+                        variant={isInCart(item._id) ? "outlined" : "contained"}
                         size="small"
+                        disabled={isInCart(item._id)}
                         onClick={() => handleAddToCart(item)}
                         sx={{
                           textTransform: "none",
                           width: "55%",
                           borderRadius: 2,
-                          backgroundColor: "#ff5722",
+                          backgroundColor: isInCart(item._id)
+                            ? "#c8e6c9"
+                            : "#ff5722",
+                          color: isInCart(item._id) ? "#2e7d32" : "white",
                           height: 40,
                           p: 0,
                           lineHeight: 1.1,
                           fontSize: "12px",
-                          "&:hover": { backgroundColor: "#e64a19" },
+                          borderColor: "#2e7d32",
+                          "&:hover": {
+                            backgroundColor: isInCart(item._id)
+                              ? "#c8e6c9"
+                              : "#e64a19",
+                          },
                         }}
                       >
-                        Add to Cart
+                        {isInCart(item._id) ? "✓ Added" : "Add to Cart"}
                       </Button>
                     </Box>
                   </Card>

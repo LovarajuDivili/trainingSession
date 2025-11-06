@@ -6,7 +6,6 @@ import WelcomeSasa from "./components/WelcomeSasa";
 import Admin from "./pages/Admin";
 import Logout from "./pages/Logout";
 import AllEmployees from "./components/SideBarComponents/AllEmployees";
-import Developers from "./components/SideBarComponents/Developers";
 import Dashboard from "./components/SideBarComponents/Dashboard";
 import Logs from "./components/SideBarComponents/Logs";
 import Projects from "./components/SideBarComponents/Projects";
@@ -14,7 +13,6 @@ import Statistics from "./components/SideBarComponents/Statistics";
 import AddProject from "./components/ExtraComponents/AddProject";
 import SignIn from "./SignIn";
 import SignUp from "./SignUp";
-import Developer from "./pages/Developer";
 import Functional from "./pages/Funtional";
 import Migrator from "./pages/Migrator";
 import Tester from "./pages/Tester";
@@ -26,6 +24,9 @@ import EmployeeDetails from "./components/ExtraComponents/EmployeeDetails";
 import { CartDrawerProvider } from "./context/CartDrawerContext";
 import CartDrawer from "./components/ExtraComponents/CartDrawer";
 import { CartProvider } from "./context/CartContext";
+import OpeningsEvents from "./components/SideBarComponents/OpeningsEvents";
+import OpeningsAndEvents from "./pages/OpeningsAndEvents";
+import { OrdersProvider } from "./context/OrderContext";
 
 const AppRoutes = () => {
   const { isAuthenticated, isLoading } = useAuth();
@@ -45,7 +46,6 @@ const AppRoutes = () => {
 
   return (
     <Routes>
-      {/* Public routes */}
       <Route path="/signin" element={<SignIn />} />
       <Route path="/signup" element={<SignUp />} />
 
@@ -57,6 +57,7 @@ const AppRoutes = () => {
           </ProtectedRoute>
         }
       />
+
       <Route
         path="/admin"
         element={
@@ -66,7 +67,7 @@ const AppRoutes = () => {
         }
       >
         <Route path="all-employees" element={<AllEmployees />} />
-        <Route path="developers" element={<Developers />} />
+        <Route path="openingsEvents" element={<OpeningsEvents />} />
         <Route path="dashboard" element={<Dashboard />} />
         <Route path="logs" element={<Logs />} />
         <Route path="projects" element={<Projects />} />
@@ -74,7 +75,6 @@ const AppRoutes = () => {
         <Route path="statistics" element={<Statistics />} />
       </Route>
 
-      {/* Other protected routes */}
       <Route
         path="/accountant"
         element={
@@ -111,22 +111,16 @@ const AppRoutes = () => {
         path="/accountant/employeedata/:employeeId"
         element={<EmployeeDetails />}
       />
+
       <Route
-        path="/accountant/shareholderdata"
+        path="/openingsandEvents"
         element={
           <ProtectedRoute>
-            <EmployeeData />
+            <OpeningsAndEvents />
           </ProtectedRoute>
         }
       />
-      <Route
-        path="/developer"
-        element={
-          <ProtectedRoute>
-            <Developer />
-          </ProtectedRoute>
-        }
-      />
+
       <Route
         path="/functional"
         element={
@@ -151,6 +145,7 @@ const AppRoutes = () => {
           </ProtectedRoute>
         }
       />
+
       <Route path="/logout" element={<Logout />} />
 
       <Route
@@ -163,7 +158,6 @@ const AppRoutes = () => {
           )
         }
       />
-
       <Route
         path="*"
         element={
@@ -180,16 +174,21 @@ const AppRoutes = () => {
 
 const App = () => {
   return (
-    <CartProvider>
-      <AuthProvider>
-        <CartDrawerProvider>
-          <Box sx={{ mt: "50px" }}>
-            <AppRoutes />
-          </Box>
-          <CartDrawer />
-        </CartDrawerProvider>
-      </AuthProvider>
-    </CartProvider>
+    <AuthProvider>
+      <CartProvider>
+        <OrdersProvider>
+          {" "}
+          {/* ✅ Wrap here */}
+          <CartDrawerProvider>
+            <Box>
+              <AppRoutes />
+            </Box>
+            <CartDrawer />
+          </CartDrawerProvider>
+        </OrdersProvider>{" "}
+        {/* ✅ Close wrapper */}
+      </CartProvider>
+    </AuthProvider>
   );
 };
 

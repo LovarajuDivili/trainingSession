@@ -36,14 +36,13 @@ const EmployeeData = () => {
 
   const handleCardClick = (employeeId: string) => {
     navigate(`/accountant/employeedata/${employeeId}`, {
-      state: { from: "/accountant/employeedata" }, 
+      state: { from: "/accountant/employeedata" },
     });
   };
 
   return (
     <Box sx={{ minHeight: "70vh", backgroundColor: "white" }}>
       <Box sx={{ position: "relative" }}>
-        
         <Fab
           color="error"
           aria-label="back"
@@ -51,7 +50,7 @@ const EmployeeData = () => {
           sx={{
             position: "absolute",
             top: 20,
-            left: 20,
+            right: 20,
             backgroundColor: "#ff4d4d",
             color: "#fff",
             boxShadow: "0 4px 10px rgba(0,0,0,0.2)",
@@ -89,7 +88,7 @@ const EmployeeData = () => {
             <Box
               sx={{
                 position: "absolute",
-                top: 40,
+                top: 75,
                 display: "flex",
                 justifyContent: "center",
                 width: "100%",
@@ -120,7 +119,7 @@ const EmployeeData = () => {
                       borderRadius: "50%",
                       border: "2px solid white",
                       objectFit: "cover",
-                      ml: index === 0 ? 0 : -1.5, 
+                      ml: index === 0 ? 0 : -1.5,
                       boxShadow: "0 0 4px rgba(0,0,0,0.2)",
                     }}
                   />
@@ -173,7 +172,7 @@ const EmployeeData = () => {
               zIndex: 1,
               //border: "1px solid red",
               position: "fixed",
-              marginTop:"290px"
+              marginTop: "290px",
             }}
           >
             <TextField
@@ -202,7 +201,7 @@ const EmployeeData = () => {
         </Box>
 
         {/* Employees Card Section */}
-        <Box sx={{ p: 4,pt:7 }}>
+        <Box sx={{ p: 4, pt: 7, height: "40vh", overflow: "auto" }}>
           <Grid
             container
             spacing={3}
@@ -216,7 +215,7 @@ const EmployeeData = () => {
                     onClick={() => handleCardClick(emp.id)}
                     sx={{
                       borderRadius: "16px",
-                      boxShadow: 3,
+                      boxShadow: '2px 3px 1px -2px #ac8fff, 2px 2px 2px 0px rgba(0,0,0,0.14), 0px 1px 5px 0px rgba(0,0,0,0.12)',
                       width: "245px",
                       textAlign: "center",
                       transition: "transform 0.2s",
@@ -228,13 +227,12 @@ const EmployeeData = () => {
                     }}
                   >
                     <CardContent>
-                      
                       <Box
                         sx={{
                           width: 80,
                           height: 80,
                           borderRadius: "50%",
-                          overflow: "hidden",
+                          // overflow: "hidden",
                           mx: "auto",
                           mb: 2,
                           boxShadow: 3,
@@ -254,7 +252,7 @@ const EmployeeData = () => {
                               : "/placeholder.jpg"
                           }
                           onError={(e) => {
-                            e.currentTarget.src = "/placeholder.jpg"; 
+                            e.currentTarget.src = "/placeholder.jpg";
                           }}
                           alt={emp.name}
                           sx={{
