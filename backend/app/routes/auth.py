@@ -64,7 +64,7 @@ async def signup(user_data: UserCreate):
         
         if is_bcrypt_hash(user_data.password):
             
-            user_dict["password"] = user_data.password
+            user_dict["password"] = (user_data.password)
             user_dict["password_hashed_on"] = "frontend"
         else:
             
@@ -168,12 +168,15 @@ async def send_otp(data: SendOtpRequest):
     if not user:
         raise HTTPException(status_code=404, detail="Email not found")
 
-    otp = random.randint(100000, 999999)
+    otp = str(random.randint(100000, 999999))
     save_otp(email, otp)
-    send_email(email, otp)
+
+    subject = "Password Reset OTP"
+    message = f"Your OTP for password reset is {otp}"
+
+    send_email(email, subject, message) 
 
     return {"message": "OTP sent successfully"}
-
 
 
 class VerifyOtpRequest(BaseModel):
@@ -193,8 +196,18 @@ class ResetPasswordRequest(BaseModel):
 
 @router.post("/reset-password")
 async def reset_password_route(data: ResetPasswordRequest):
-    hashed = get_password_hash(data.newPassword)
-    db.users.update_one({"email": data.email}, {"$set": {"password": hashed}})
+    
+    hashed = get_password_hash(data.newPassword)  
+
+    db.users.update_one(
+        {"email": data.email},
+        {
+            "$set": {
+                "password": hashed,
+                "password_hashed_on": "frontend"  
+            }
+        }
+    )
     return {"message": "Password reset successful"}
 
 @router.get("/me", response_model=UserResponse)

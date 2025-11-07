@@ -202,7 +202,7 @@ export default function SignUp(props: { disableCustomTheme?: boolean }) {
         direction="column"
         justifyContent="space-between"
         sx={{
-          height: "89vh",
+          height: "91.2vh",
         }}
       >
         <Card
