@@ -12,6 +12,7 @@ import {
   Box,
 } from "@mui/material";
 import axios from "axios";
+import sha256 from "crypto-js/sha256";
 
 interface ForgotPasswordProps {
   open: boolean;
@@ -61,9 +62,10 @@ export default function ForgotPassword({
       return;
     }
     try {
+      const shaHashedPassword = sha256(newPassword).toString();
       await axios.post(
         "http://localhost:8000/v-1/application/auth/reset-password",
-        { email, newPassword }
+        { email, newPassword: shaHashedPassword }
       );
       setMessage("Password reset successful");
       setTimeout(() => {
@@ -85,6 +87,7 @@ export default function ForgotPassword({
             fullWidth
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            sx={{ width: 300, mt: 1 }}
           />
         )}
 
@@ -94,6 +97,7 @@ export default function ForgotPassword({
             fullWidth
             value={otp}
             onChange={(e) => setOtp(e.target.value)}
+            sx={{ width: 300, mt: 1 }}
           />
         )}
 
@@ -105,6 +109,7 @@ export default function ForgotPassword({
               fullWidth
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
+              sx={{ width: 300, mt: 1 }}
             />
             <TextField
               type="password"
@@ -112,6 +117,7 @@ export default function ForgotPassword({
               fullWidth
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
+              sx={{ width: 300, mt: 1 }}
             />
           </Box>
         )}
@@ -125,7 +131,6 @@ export default function ForgotPassword({
 
       <DialogActions>
         <Button onClick={handleClose}>Cancel</Button>
-
         {step === 1 && <Button onClick={sendOtp}>Send OTP</Button>}
         {step === 2 && <Button onClick={verifyOtp}>Verify OTP</Button>}
         {step === 3 && <Button onClick={resetPassword}>Reset Password</Button>}

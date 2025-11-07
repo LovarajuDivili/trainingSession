@@ -9,5 +9,5 @@ def save_otp(email, otp):
     })
 
 def verify_otp(email, otp):
-    record = db.password_reset_otps.find_one({"email": email, "otp": otp})
+    record = db.password_reset_otps.find_one({"email": email, "otp": str(otp)})
     return record is not None
