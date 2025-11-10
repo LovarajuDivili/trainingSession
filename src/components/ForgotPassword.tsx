@@ -13,6 +13,7 @@ import {
 } from "@mui/material";
 import axios from "axios";
 import sha256 from "crypto-js/sha256";
+import { CircularProgress } from "@mui/material";
 
 interface ForgotPasswordProps {
   open: boolean;
@@ -29,8 +30,12 @@ export default function ForgotPassword({
   const [newPassword, setNewPassword] = React.useState("");
   const [confirmPassword, setConfirmPassword] = React.useState("");
   const [message, setMessage] = React.useState("");
+  const [loadingSend, setLoadingSend] = React.useState(false);
+  const [loadingVerify, setLoadingVerify] = React.useState(false);
+  const [loadingReset, setLoadingReset] = React.useState(false);
 
   const sendOtp = async () => {
+    setLoadingSend(true);
     try {
       await axios.post("http://localhost:8000/v-1/application/auth/send-otp", {
         email,
@@ -40,10 +45,13 @@ export default function ForgotPassword({
       setStep(2);
     } catch (err: any) {
       setMessage(err.response?.data?.detail || "Error sending OTP");
+    } finally {
+      setLoadingSend(false);
     }
   };
 
   const verifyOtp = async () => {
+    setLoadingVerify(true);
     try {
       await axios.post(
         "http://localhost:8000/v-1/application/auth/verify-otp",
@@ -53,6 +61,8 @@ export default function ForgotPassword({
       setStep(3);
     } catch (err: any) {
       setMessage("Invalid OTP");
+    } finally {
+      setLoadingVerify(false);
     }
   };
 
@@ -61,6 +71,7 @@ export default function ForgotPassword({
       setMessage("Passwords do not match");
       return;
     }
+    setLoadingReset(true);
     try {
       const shaHashedPassword = sha256(newPassword).toString();
       await axios.post(
@@ -74,7 +85,26 @@ export default function ForgotPassword({
       }, 1500);
     } catch (err) {
       setMessage("Error resetting password");
+    } finally {
+      setLoadingReset(false);
     }
+  };
+
+  const resetAll = () => {
+    setStep(1);
+    setEmail("");
+    setOtp("");
+    setNewPassword("");
+    setConfirmPassword("");
+    setMessage("");
+    setLoadingSend(false);
+    setLoadingVerify(false);
+    setLoadingReset(false);
+  };
+
+  const onCancel = () => {
+    resetAll();
+    handleClose();
   };
 
   return (
@@ -87,7 +117,7 @@ export default function ForgotPassword({
             fullWidth
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            sx={{ width: 300, mt: 1 }}
+            sx={{ width: 400, mt: 1 }}
           />
         )}
 
@@ -97,7 +127,7 @@ export default function ForgotPassword({
             fullWidth
             value={otp}
             onChange={(e) => setOtp(e.target.value)}
-            sx={{ width: 300, mt: 1 }}
+            sx={{ width: 400, mt: 1 }}
           />
         )}
 
@@ -109,7 +139,7 @@ export default function ForgotPassword({
               fullWidth
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
-              sx={{ width: 300, mt: 1 }}
+              sx={{ width: 400, mt: 1 }}
             />
             <TextField
               type="password"
@@ -117,7 +147,7 @@ export default function ForgotPassword({
               fullWidth
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
-              sx={{ width: 300, mt: 1 }}
+              sx={{ width: 400, mt: 1 }}
             />
           </Box>
         )}
@@ -130,10 +160,24 @@ export default function ForgotPassword({
       </DialogContent>
 
       <DialogActions>
-        <Button onClick={handleClose}>Cancel</Button>
-        {step === 1 && <Button onClick={sendOtp}>Send OTP</Button>}
-        {step === 2 && <Button onClick={verifyOtp}>Verify OTP</Button>}
-        {step === 3 && <Button onClick={resetPassword}>Reset Password</Button>}
+        <Button onClick={onCancel}>Cancel</Button>
+        {step === 1 && (
+          <Button onClick={sendOtp} disabled={loadingSend}>
+            {loadingSend ? <CircularProgress size={20} /> : "Send OTP"}
+          </Button>
+        )}
+
+        {step === 2 && (
+          <Button onClick={verifyOtp} disabled={loadingVerify}>
+            {loadingVerify ? <CircularProgress size={20} /> : "Verify OTP"}
+          </Button>
+        )}
+
+        {step === 3 && (
+          <Button onClick={resetPassword} disabled={loadingReset}>
+            {loadingReset ? <CircularProgress size={20} /> : "Reset Password"}
+          </Button>
+        )}
       </DialogActions>
     </Dialog>
   );

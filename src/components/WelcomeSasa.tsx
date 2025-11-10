@@ -1,17 +1,8 @@
 import { useState } from "react";
-import {
-  Box,
-  FormControl,
-  Select,
-  MenuItem,
-  Button,
-  Typography,
-  ListItemIcon,
-} from "@mui/material";
+import { Box, Button, Typography } from "@mui/material";
 import Header from "./Header";
-import type { SelectChangeEvent } from "@mui/material";
+
 import {
-  Account_Type,
   Cerebro_Sasa,
   Proceed,
   Select_Account,
@@ -19,15 +10,12 @@ import {
 } from "../common/labelConstants";
 import ArrowRightAltIcon from "@mui/icons-material/ArrowRightAlt";
 import { useNavigate } from "react-router-dom";
-import { roleDropdowns } from "../common/utility";
+import { roles } from "../common/utility";
 
 const WelcomeSasa = () => {
   const [dropdownValue, setDropdownValue] = useState<string>("admin");
   const navigate = useNavigate();
 
-  const handleDropdownChange = (event: SelectChangeEvent) => {
-    setDropdownValue(event.target.value);
-  };
   const handleProceed = () => {
     switch (dropdownValue) {
       case "admin":
@@ -73,7 +61,7 @@ const WelcomeSasa = () => {
         }}
       >
         <Typography
-          sx={{ marginLeft: "-42px", fontSize: "14px" }}
+          sx={{ marginLeft: "-4px", fontSize: "20px" }}
           variant="h6"
           gutterBottom
         >
@@ -81,47 +69,80 @@ const WelcomeSasa = () => {
           <span style={{ color: "#906aff" }}>{Cerebro_Sasa.CEREBRO_SASA}</span>
         </Typography>
         <Typography
-          sx={{ marginLeft: "-3px", fontSize: "13px" }}
+          sx={{ marginLeft: "-3px", fontSize: "15px" }}
           variant="body1"
           gutterBottom
         >
           {Select_Account.SELECT_ACCOUNT}
         </Typography>
 
-        <FormControl sx={{ width: "250px", mt: 2 }}>
-          <Typography
-            variant="subtitle1"
-            sx={{ mb: 1, fontSize: "13px", marginLeft: "0px" }}
-          >
-            <strong>{Account_Type.ACCOUNT_TYPE}</strong>
-          </Typography>
+        <Box
+          sx={{
+            display: "grid",
+            gridTemplateColumns: "repeat(4, 260px)",
+            gap: 3,
+            mt: 6,
+          }}
+        >
+          {roles.map((role) => (
+            <Box
+              key={role.value}
+              onClick={() => role.active && setDropdownValue(role.value)}
+              sx={{
+                height: "90px",
+                borderRadius: "18px",
+                cursor: role.active ? "pointer" : "not-allowed",
+                border:
+                  dropdownValue === role.value
+                    ? "2px solid #906aff"
+                    : "1px solid #dcdcdc",
+                backgroundColor: role.active ? "#ffffff" : "#f0f0f0",
+                opacity: role.active ? 1 : 0.6,
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                padding: "20px",
+                transition: "0.3s",
+                "&:hover": {
+                  boxShadow: role.active
+                    ? "0px 0px 10px rgba(144, 106, 255, 0.4)"
+                    : "none",
+                },
+              }}
+            >
+              {/* Left Side */}
+              <Box>
+                <Typography sx={{ fontWeight: "bold", fontSize: "16px" }}>
+                  {role.label}
+                </Typography>
+                <Typography sx={{ fontSize: "13px", color: "#555" }}>
+                  {role.description}
+                </Typography>
+              </Box>
 
-          <Select
-            id="my-dropdown"
-            value={dropdownValue}
-            onChange={handleDropdownChange}
-            displayEmpty
-            sx={{
-              borderRadius: "20px",
-            }}
-          >
-            {roleDropdowns.map((item) => (
-              <MenuItem key={item.value} value={item.value}>
-                <ListItemIcon>{item.icon}</ListItemIcon>
-                {item.label}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
+              {/* Right Icon */}
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  
+                }}
+              >
+                {role.icon}
+              </Box>
+            </Box>
+          ))}
+        </Box>
 
         <Button
           variant="contained"
-          color="primary"
           sx={{
-            width: "250px !important",
-            mt: 3,
-            backgroundColor: "#906aff !important",
-            borderRadius: "19px",
+            width: "250px",
+            mt: 5,
+            backgroundColor: dropdownValue ? "#906aff" : "#d2c7ff",
+            color: "white",
+            borderRadius: "20px",
           }}
           disabled={!dropdownValue}
           onClick={handleProceed}
