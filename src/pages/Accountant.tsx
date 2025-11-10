@@ -31,6 +31,7 @@ const Accountant = () => {
   });
 
   const [currentTime, setCurrentTime] = useState<string>("");
+  const [showInfo, setShowInfo] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -306,7 +307,10 @@ const Accountant = () => {
               </CardContent>
             </Card>
             <Card
-              //onClick={() => navigate("/accountant/employeedata")}
+              onClick={() => {
+                setShowInfo(true);
+                setTimeout(() => setShowInfo(false), 1500);
+              }}
               sx={{
                 height: 70,
                 display: "flex",
@@ -354,10 +358,18 @@ const Accountant = () => {
                     Share Holders
                   </Typography>
                 </Box>
-                <Typography sx={{ pr: 30 }}>
+
+                <Typography sx={{ pr: 20 }}>
                   A shareholder is a partial owner of a company who holds shares
                   of its stock.{" "}
                 </Typography>
+                {showInfo && (
+                  <Typography
+                    sx={{ color: "#ff6a6fff", fontSize: "12px", ml: 1 }}
+                  >
+                    Info: Under progress...
+                  </Typography>
+                )}
                 <Box
                   sx={{
                     width: 40,

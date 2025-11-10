@@ -35,6 +35,7 @@ const Header = ({ role: propRole }: { role?: string }) => {
   const [openDialog, setOpenDialog] = useState<boolean>(false);
   const [openSnackbar, setOpenSnackbar] = useState<boolean>(false);
   const { cart } = useCart();
+  const { clearCart } = useCart();
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -63,7 +64,8 @@ const Header = ({ role: propRole }: { role?: string }) => {
   };
 
   const handleSwap = () => {
-    sessionStorage.clear();
+    clearCart(); // Clear context state
+    localStorage.removeItem("orderCart"); // Clear only cart from storage
     navigate("/");
   };
 
