@@ -206,7 +206,10 @@ const Dashboard = () => {
                   "&:hover": { backgroundColor: "rgba(0,0,0,0.08)" },
                 }}
               >
-                <ArrowBackIosNewIcon fontSize="small" />
+                <ArrowBackIosNewIcon
+                  fontSize="small"
+                  sx={{ color: "#ac8fff" }}
+                />
               </IconButton>
               <IconButton
                 onClick={handleNextJoiners}
@@ -216,7 +219,10 @@ const Dashboard = () => {
                   "&:hover": { backgroundColor: "rgba(0,0,0,0.08)" },
                 }}
               >
-                <ArrowForwardIosIcon fontSize="small" />
+                <ArrowForwardIosIcon
+                  fontSize="small"
+                  sx={{ color: "#ac8fff" }}
+                />
               </IconButton>
             </Box>
           )}
@@ -407,7 +413,7 @@ const Dashboard = () => {
                   width: "80%",
                   borderRadius: 3,
                   boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
-                  backgroundColor: "#f8f9fa",
+                  backgroundColor: "#f4f0ff",
                   border: "1px solid #e9ecef",
                   transition: "all 0.2s ease",
                   "&:hover": {
