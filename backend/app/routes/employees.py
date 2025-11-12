@@ -1,4 +1,5 @@
 import json
+import base64
 from fastapi import APIRouter, HTTPException
 from fastapi import Form, File, UploadFile
 from ..database import db
@@ -29,35 +30,39 @@ async def create_employee(
     role: str = Form(...),
     joinDate: str = Form(...),
     id: str = Form(...),
-    skills: str = Form(...),  # send as JSON string
+    skills: str = Form(...),
     laptop: str = Form("false"),
     headphones: str = Form("false"),
     monitor: str = Form("false"),
     image: UploadFile = File(None),
 ):
     try:
+        # Check duplicate email
         existing_employee_email = db["employees"].find_one({"email": email})
         if existing_employee_email:
-            return JSONResponse(status_code=400, content={"detail": "Employee with this email already exists"})
-        
+            return JSONResponse(
+                status_code=400,
+                content={"detail": "Employee with this email already exists"}
+            )
+
+        # Convert booleans
         laptop_bool = laptop.lower() == "true"
         headphones_bool = headphones.lower() == "true"
         monitor_bool = monitor.lower() == "true"
 
-        image_url = None
-        if image:
-            upload_dir = "uploads"
-            file_location = f"{upload_dir}/{image.filename}"
-            with open(file_location, "wb") as file_object:
-                file_object.write(await image.read())
-
-            image_url = image.filename
-
+        # Handle skills JSON or CSV
         try:
             parsed_skills = json.loads(skills)
         except Exception:
             parsed_skills = [s.strip() for s in skills.split(",")] if skills else []
 
+        # Handle image → Base64
+        image_base64 = None
+        if image:
+            file_bytes = await image.read()
+            image_base64 = base64.b64encode(file_bytes).decode("utf-8")
+
+        # Build employee record
         employee_data = {
             "name": name,
             "email": email,
@@ -68,13 +73,15 @@ async def create_employee(
             "laptop": laptop_bool,
             "headphones": headphones_bool,
             "monitor": monitor_bool,
-            "image": image_url,
+            "image": image_base64,  # stored as base64 string
             "created_at": datetime.utcnow(),
         }
 
         result = db["employees"].insert_one(employee_data)
         new_employee = db["employees"].find_one({"_id": result.inserted_id})
+
         return {"status": "success", "data": convert_objectid(new_employee)}
+
     except Exception as e:
         return JSONResponse(status_code=500, content={"detail": str(e)})
 
@@ -95,7 +102,7 @@ async def update_employee(
     email: str = Form(None),
     role: str = Form(None),
     joinDate: str = Form(None),
-    skills: str = Form(None),  # send as JSON string
+    skills: str = Form(None),
     laptop: str = Form("false"),
     headphones: str = Form("false"),
     monitor: str = Form("false"),
@@ -104,15 +111,13 @@ async def update_employee(
     try:
         update_fields = {}
 
-        # Handle image upload (if provided)
+        # Handle image upload (base64)
         if image:
-            upload_dir = "uploads"
-            file_location = f"{upload_dir}/{image.filename}"
-            with open(file_location, "wb") as file_object:
-                file_object.write(await image.read())
-            update_fields["image"] = image.filename
+            file_bytes = await image.read()
+            image_base64 = base64.b64encode(file_bytes).decode("utf-8")
+            update_fields["image"] = image_base64
 
-        # Parse other fields if provided
+        # Parse other fields as before
         if name:
             update_fields["name"] = name
         if email:

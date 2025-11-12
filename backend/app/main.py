@@ -22,27 +22,12 @@ def start_application():
         allow_headers=["*"],
     )
 
-    @app.exception_handler(Exception)
-    async def global_exception_handler(request: Request, exc: Exception):
-        
-        print(f"Global error handler: {str(exc)}")
-        return JSONResponse(
-            status_code=500,
-            content={"detail": "Internal Server Error"}
-        )
-    
-    if not os.path.exists("uploads"):
-        os.makedirs("uploads")
-
-    app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
-
     app.include_router(api_router, prefix="/v-1/application")
     
 
     return app
 
 app = start_application()
-
 
 
 if __name__ == '__main__':

@@ -285,15 +285,7 @@ const AllEmployees = () => {
       headerName: "Name",
       flex: 1.5,
       renderCell: (params) => {
-        const { image, name } = params.row;
-
-        const imageUrl = image
-          ? typeof image === "string"
-            ? image.startsWith("http")
-              ? image
-              : `${import.meta.env.VITE_API_BASE_URL}/uploads/${image}`
-            : URL.createObjectURL(image as File)
-          : "/placeholder.jpg";
+        const { image, name } = params.row; // Use params.row instead of employee
 
         return (
           <Box
@@ -306,7 +298,7 @@ const AllEmployees = () => {
             }}
           >
             <img
-              src={imageUrl}
+              src={`data:image/jpeg;base64,${image}`}
               alt={name || "Employee"}
               style={{
                 width: 30,
@@ -745,7 +737,6 @@ const AllEmployees = () => {
                         fontWeight: 500,
                         fontSize: "14px",
                         px: 3,
-                        
                       }}
                     >
                       {newEmployee.image ? "Change Image" : "Upload Image"}
