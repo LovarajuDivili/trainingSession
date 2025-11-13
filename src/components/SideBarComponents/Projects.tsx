@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useEffect } from "react";
 import {
   Box,
@@ -21,10 +20,7 @@ import { Loading } from "../../common/labelConstants";
 import DashboardHeader from "../DashboardHeader";
 import { sidebarItems } from "../../common/sidebarItems";
 import { useAppDispatch, useAppSelector } from "../../hooks/reduxHooks";
-import {
-  deleteProjectAPI,
-  fetchProjects,
-} from "../../store/ProjectsSlice";
+import { deleteProjectAPI, fetchProjects } from "../../store/ProjectsSlice";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import CloseIcon from "@mui/icons-material/Close";
@@ -104,9 +100,14 @@ const Projects = () => {
       setDeleteConfirmOpen(false);
       setProjectToDelete(null);
       setConfirmChecked(false);
-    } catch (error: any) {
-      console.error("Error deleting project:", error);
-      alert(error?.detail || "⚠️ Failed to delete project");
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        console.error("Error deleting project:", error.message);
+        alert(error.message || "⚠️ Failed to delete project");
+      } else {
+        console.error("Unexpected error:", error);
+        alert("⚠️ Failed to delete project");
+      }
     }
   };
 

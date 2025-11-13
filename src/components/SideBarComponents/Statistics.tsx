@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/rules-of-hooks */
 import { Box, Card, CardContent, Typography, Grid } from "@mui/material";
 import DashboardHeader from "../DashboardHeader";
 import { sidebarItems } from "../../common/sidebarItems";

@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   createSlice,
   createAsyncThunk,
@@ -6,8 +5,8 @@ import {
 } from "@reduxjs/toolkit";
 import type { Employee } from "../common/types";
 import { Errors } from "../common/labelConstants";
+import { API_BASE } from "../common/apiService";
 
-const API_BASE = "/api";
 export const fetchEmployees = createAsyncThunk(
   "employees/fetchEmployees",
   async () => {
@@ -26,14 +25,16 @@ export const addEmployeeAPI = createAsyncThunk<
     const formData = new FormData();
 
     for (const key in employee) {
-      const value = (employee as any)[key];
+      const typedKey = key as keyof typeof employee;
+      const value = employee[typedKey];
+
       if (value !== undefined && value !== null) {
-        if (key === "skills") {
+        if (typedKey === "skills") {
           formData.append("skills", JSON.stringify(value));
-        } else if (key === "image" && value instanceof File) {
+        } else if (typedKey === "image" && value instanceof File) {
           formData.append("image", value);
         } else {
-          formData.append(key, value);
+          formData.append(typedKey, value as string);
         }
       }
     }
@@ -72,14 +73,16 @@ export const updateEmployeeAPI = createAsyncThunk<
     const formData = new FormData();
 
     for (const key in employee) {
-      const value = (employee as any)[key];
+      const typedKey = key as keyof typeof employee;
+      const value = employee[typedKey];
+
       if (value !== undefined && value !== null) {
-        if (key === "skills") {
+        if (typedKey === "skills") {
           formData.append("skills", JSON.stringify(value));
-        } else if (key === "image" && value instanceof File) {
+        } else if (typedKey === "image" && value instanceof File) {
           formData.append("image", value);
         } else {
-          formData.append(key, value);
+          formData.append(typedKey, String(value));
         }
       }
     }

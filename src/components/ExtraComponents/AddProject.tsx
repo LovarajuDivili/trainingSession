@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   Box,
   Typography,
@@ -18,6 +17,7 @@ import { useLocation } from "react-router-dom";
 import { Snackbar, Alert } from "@mui/material";
 import type {
   AddProjectProps,
+  APIError,
   Project,
   ProjectFormFieldsProps,
 } from "../../common/types";
@@ -175,16 +175,13 @@ const AddProject = ({
 
       setSnackbarOpen(true);
 
-      // Wait for 1.5s before navigating so user sees Snackbar
       setTimeout(() => {
         if (onSuccess) onSuccess();
         else navigate("/admin/projects");
       }, 1500);
-    } catch (err: any) {
-      let message = "Unknown error occurred";
-      if (typeof err === "string") message = err;
-      else if (err?.detail) message = err.detail;
-      else if (err?.message) message = err.message;
+    } catch (err: unknown) {
+      const error = err as APIError;
+      const message = error.detail || error.message || "Unknown error occurred";
 
       setSnackbarMessage(message);
       setSnackbarSeverity("error");
