@@ -1,11 +1,8 @@
 /* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useState, type ReactNode } from "react";
+import type { CartDrawerContextType } from "../common/types";
 
-interface CartDrawerContextType {
-  isDrawerOpen: boolean;
-  openDrawer: () => void;
-  closeDrawer: () => void;
-}
+
 
 const CartDrawerContext = createContext<CartDrawerContextType | undefined>(
   undefined

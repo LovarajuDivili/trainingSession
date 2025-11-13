@@ -23,7 +23,6 @@ export const addEmployeeAPI = createAsyncThunk<
   { rejectValue: { detail: string } }
 >("employees/addEmployee", async (employee, { rejectWithValue }) => {
   try {
-    console.log("Sending employee data:", employee);
     const formData = new FormData();
 
     for (const key in employee) {
@@ -44,13 +43,10 @@ export const addEmployeeAPI = createAsyncThunk<
       body: formData,
     });
 
-    console.log("Response status:", response.status);
-
     if (!response.ok) {
       let errorData;
       try {
         errorData = await response.json();
-        console.log("Error response:", errorData);
       } catch {
         errorData = response.statusText || "Failed to add employee";
       }
@@ -58,10 +54,9 @@ export const addEmployeeAPI = createAsyncThunk<
     }
 
     const data = await response.json();
-    console.log("Success response:", data);
+
     return data.data;
   } catch (err) {
-    console.error("Fetch error:", err);
     return rejectWithValue({
       detail: err instanceof Error ? err.message : "Unknown error",
     });
@@ -74,8 +69,6 @@ export const updateEmployeeAPI = createAsyncThunk<
   { rejectValue: { detail: string } }
 >("employees/updateEmployee", async (employee, { rejectWithValue }) => {
   try {
-    console.log("Updating employee data:", employee);
-
     const formData = new FormData();
 
     for (const key in employee) {
@@ -99,13 +92,10 @@ export const updateEmployeeAPI = createAsyncThunk<
       }
     );
 
-    console.log("Update response status:", response.status);
-
     if (!response.ok) {
       let errorData;
       try {
         errorData = await response.json();
-        console.log("Update error response:", errorData);
       } catch {
         errorData = response.statusText || "Failed to update employee";
       }
@@ -113,10 +103,9 @@ export const updateEmployeeAPI = createAsyncThunk<
     }
 
     const data = await response.json();
-    console.log("Update success response:", data);
+
     return data.data;
   } catch (err) {
-    console.error("Update fetch error:", err);
     return rejectWithValue({
       detail: err instanceof Error ? err.message : "Unknown error",
     });
@@ -138,24 +127,18 @@ export const deleteEmployeeAPI = createAsyncThunk<
         }
       );
 
-      console.log("Delete response status:", response.status);
-
       if (!response.ok) {
         let errorData;
         try {
           errorData = await response.json();
-          console.log("Delete error response:", errorData);
         } catch {
           errorData = response.statusText || "Failed to delete employee";
         }
         return rejectWithValue(errorData);
       }
 
-      const data = await response.json();
-      console.log("Delete success response:", data);
       return employeeId;
     } catch (err) {
-      console.error("Delete fetch error:", err);
       return rejectWithValue({
         detail: err instanceof Error ? err.message : "Unknown error",
       });

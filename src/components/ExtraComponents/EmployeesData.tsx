@@ -103,9 +103,7 @@ const EmployeeData = () => {
                       typeof emp.image === "string"
                         ? emp.image.startsWith("http")
                           ? emp.image
-                          : `${import.meta.env.VITE_API_BASE_URL}/uploads/${
-                              emp.image
-                            }`
+                          : emp.image
                         : emp.image
                         ? URL.createObjectURL(emp.image as File)
                         : `https://randomuser.me/api/portraits/men/${
@@ -215,7 +213,8 @@ const EmployeeData = () => {
                     onClick={() => handleCardClick(emp.id)}
                     sx={{
                       borderRadius: "16px",
-                      boxShadow: '2px 3px 1px -2px #ac8fff, 2px 2px 2px 0px rgba(0,0,0,0.14), 0px 1px 5px 0px rgba(0,0,0,0.12)',
+                      boxShadow:
+                        "2px 3px 1px -2px #ac8fff, 2px 2px 2px 0px rgba(0,0,0,0.14), 0px 1px 5px 0px rgba(0,0,0,0.12)",
                       width: "245px",
                       textAlign: "center",
                       transition: "transform 0.2s",
@@ -244,9 +243,7 @@ const EmployeeData = () => {
                             typeof emp.image === "string"
                               ? emp.image.startsWith("http")
                                 ? emp.image
-                                : `${
-                                    import.meta.env.VITE_API_BASE_URL
-                                  }/uploads/${emp.image}`
+                                : emp.image
                               : emp.image
                               ? URL.createObjectURL(emp.image as File)
                               : "/placeholder.jpg"

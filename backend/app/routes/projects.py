@@ -4,8 +4,8 @@ from ..database import db
 from bson import ObjectId
 from datetime import datetime
 from app.helpers import convert_objectid, validate_project_uniqueness
-from typing import List
-from app.schemas import ProjectBase, ProjectCreate, ProjectUpdate
+#from typing import List
+from app.models.schemas import ProjectBase, ProjectUpdate
 
 router = APIRouter(prefix="/projects", tags=["projects"])
 

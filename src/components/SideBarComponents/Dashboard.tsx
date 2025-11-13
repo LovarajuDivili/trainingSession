@@ -260,13 +260,11 @@ const Dashboard = () => {
                     <img
                       src={
                         typeof emp.image === "string"
-                          ? emp.image.startsWith("http")
+                          ? emp.image.startsWith("data:image")
                             ? emp.image
-                            : `${import.meta.env.VITE_API_BASE_URL}/uploads/${
-                                emp.image
-                              }`
-                          : emp.image
-                          ? URL.createObjectURL(emp.image as File)
+                            : `data:image/jpeg;base64,${emp.image}`
+                          : emp.image instanceof File
+                          ? URL.createObjectURL(emp.image)
                           : "/placeholder.jpg"
                       }
                       alt={emp.name}

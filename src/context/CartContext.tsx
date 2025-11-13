@@ -7,22 +7,7 @@ import {
   type ReactNode,
   useEffect,
 } from "react";
-
-interface CartItem {
-  _id: string;
-  category: string;
-  brand: string;
-  price: number;
-  stock: number;
-  quantity: number;
-}
-
-interface CartContextType {
-  cart: CartItem[];
-  addToCart: (item: any) => void;
-  removeFromCart: (id: string) => void;
-  clearCart: () => void;
-}
+import type { CartContextType, CartItem } from "../common/types";
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
@@ -32,7 +17,6 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       const saved = localStorage.getItem("orderCart");
       return saved ? JSON.parse(saved) : [];
     } catch {
-      console.error("Invalid cart data in localStorage");
       return [];
     }
   });

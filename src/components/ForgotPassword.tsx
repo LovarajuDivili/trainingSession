@@ -14,11 +14,9 @@ import {
 import axios from "axios";
 import sha256 from "crypto-js/sha256";
 import { CircularProgress } from "@mui/material";
+import type { ForgotPasswordProps } from "../common/types";
 
-interface ForgotPasswordProps {
-  open: boolean;
-  handleClose: () => void;
-}
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export default function ForgotPassword({
   open,
@@ -37,7 +35,7 @@ export default function ForgotPassword({
   const sendOtp = async () => {
     setLoadingSend(true);
     try {
-      await axios.post("http://localhost:8000/v-1/application/auth/send-otp", {
+      await axios.post(`${API_BASE_URL}/v-1/application/auth/send-otp`, {
         email,
       });
 
@@ -53,10 +51,10 @@ export default function ForgotPassword({
   const verifyOtp = async () => {
     setLoadingVerify(true);
     try {
-      await axios.post(
-        "http://localhost:8000/v-1/application/auth/verify-otp",
-        { email, otp }
-      );
+      await axios.post(`${API_BASE_URL}/v-1/application/auth/verify-otp`, {
+        email,
+        otp,
+      });
       setMessage("OTP Verified");
       setStep(3);
     } catch (err: any) {
@@ -74,10 +72,10 @@ export default function ForgotPassword({
     setLoadingReset(true);
     try {
       const shaHashedPassword = sha256(newPassword).toString();
-      await axios.post(
-        "http://localhost:8000/v-1/application/auth/reset-password",
-        { email, newPassword: shaHashedPassword }
-      );
+      await axios.post(`${API_BASE_URL}/v-1/application/auth/reset-password`, {
+        email,
+        newPassword: shaHashedPassword,
+      });
       setMessage("Password reset successful");
       setTimeout(() => {
         handleClose();

@@ -1,10 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import * as React from "react";
+import { useState, useEffect, type FormEvent, type MouseEvent } from "react";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
-//import Checkbox from "@mui/material/Checkbox";
 import Divider from "@mui/material/Divider";
-//import FormControlLabel from "@mui/material/FormControlLabel";
 import FormLabel from "@mui/material/FormLabel";
 import FormControl from "@mui/material/FormControl";
 import Link from "@mui/material/Link";
@@ -73,23 +71,23 @@ const SignUpContainer = styled(Stack)(({ theme }) => ({
 export default function SignUp(props: { disableCustomTheme?: boolean }) {
   const navigate = useNavigate();
   const { signup, isSigningUp: contextIsSigningUp } = useAuth();
-  const [isLoading, setIsLoading] = React.useState(false);
-  const [emailError, setEmailError] = React.useState(false);
-  const [emailErrorMessage, setEmailErrorMessage] = React.useState("");
-  const [passwordError, setPasswordError] = React.useState(false);
-  const [passwordErrorMessage, setPasswordErrorMessage] = React.useState("");
-  const [nameError, setNameError] = React.useState(false);
-  const [nameErrorMessage, setNameErrorMessage] = React.useState("");
-  const [error, setError] = React.useState("");
-  const [success, setSuccess] = React.useState("");
-  const [showPassword, setShowPassword] = React.useState(false);
-  const [role, setRole] = React.useState("");
-  const [roleError, setRoleError] = React.useState(false);
-  const [roleErrorMessage, setRoleErrorMessage] = React.useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [emailError, setEmailError] = useState(false);
+  const [emailErrorMessage, setEmailErrorMessage] = useState("");
+  const [passwordError, setPasswordError] = useState(false);
+  const [passwordErrorMessage, setPasswordErrorMessage] = useState("");
+  const [nameError, setNameError] = useState(false);
+  const [nameErrorMessage, setNameErrorMessage] = useState("");
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [role, setRole] = useState("");
+  const [roleError, setRoleError] = useState(false);
+  const [roleErrorMessage, setRoleErrorMessage] = useState("");
 
   const isSigningUp = contextIsSigningUp || isLoading;
 
-  React.useEffect(() => {
+  useEffect(() => {
     const token = sessionStorage.getItem("token");
     if (token) {
       navigate("/welcome", { replace: true });
@@ -161,7 +159,7 @@ export default function SignUp(props: { disableCustomTheme?: boolean }) {
     return isValid;
   };
 
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     if (!validateInputs()) return;
@@ -190,9 +188,7 @@ export default function SignUp(props: { disableCustomTheme?: boolean }) {
   };
 
   const handleClickShowPassword = () => setShowPassword((show) => !show);
-  const handleMouseDownPassword = (
-    event: React.MouseEvent<HTMLButtonElement>
-  ) => {
+  const handleMouseDownPassword = (event: MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
   };
 

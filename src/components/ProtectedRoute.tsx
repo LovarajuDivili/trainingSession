@@ -1,12 +1,7 @@
-import { type ReactNode } from "react";
 import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { Box, CircularProgress, Typography } from "@mui/material";
-
-interface ProtectedRouteProps {
-  children: ReactNode;
-  requiredRole?: string;
-}
+import type { ProtectedRouteProps } from "../common/types";
 
 const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
   const { isAuthenticated, user, isLoading } = useAuth();
