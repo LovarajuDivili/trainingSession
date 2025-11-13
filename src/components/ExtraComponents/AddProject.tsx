@@ -13,11 +13,14 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAppDispatch } from "../../hooks/reduxHooks";
 import { addProjectAPI, updateProjectAPI } from "../../store/ProjectsSlice";
-import type { Project } from "../../store/ProjectsSlice";
 import { Add_New, Cancel } from "../../common/labelConstants";
 import { useLocation } from "react-router-dom";
 import { Snackbar, Alert } from "@mui/material";
-import type { AddProjectProps, ProjectFormFieldsProps } from "../../common/types";
+import type {
+  AddProjectProps,
+  Project,
+  ProjectFormFieldsProps,
+} from "../../common/types";
 
 const AddProject = ({
   onClose,
@@ -270,8 +273,6 @@ const AddProject = ({
     </Box>
   );
 };
-
-
 
 const ProjectFormFields = ({
   projects,
