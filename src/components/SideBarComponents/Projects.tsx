@@ -24,12 +24,12 @@ import { useAppDispatch, useAppSelector } from "../../hooks/reduxHooks";
 import {
   deleteProjectAPI,
   fetchProjects,
-  type Project,
 } from "../../store/ProjectsSlice";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import CloseIcon from "@mui/icons-material/Close";
 import NoData from "../../common/noData";
+import type { Project } from "../../common/types";
 
 const CustomNoRowsOverlay = () => {
   return (

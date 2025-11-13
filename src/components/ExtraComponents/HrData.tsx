@@ -100,9 +100,7 @@ const HrData = () => {
                       typeof emp.image === "string"
                         ? emp.image.startsWith("http")
                           ? emp.image
-                          : `${import.meta.env.VITE_API_BASE_URL}/uploads/${
-                              emp.image
-                            }`
+                          : emp.image
                         : emp.image
                         ? URL.createObjectURL(emp.image as File)
                         : `https://randomuser.me/api/portraits/men/${
@@ -241,9 +239,7 @@ const HrData = () => {
                             typeof emp.image === "string"
                               ? emp.image.startsWith("http")
                                 ? emp.image
-                                : `${
-                                    import.meta.env.VITE_API_BASE_URL
-                                  }/uploads/${emp.image}`
+                                : emp.image
                               : emp.image
                               ? URL.createObjectURL(emp.image as File)
                               : "/placeholder.jpg"

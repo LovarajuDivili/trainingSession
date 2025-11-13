@@ -7,7 +7,7 @@ from bson import ObjectId
 from datetime import datetime
 from app.helpers import convert_objectid
 from typing import List
-from app.schemas import EmployeeCreate,EmployeeUpdate
+#from app.models.schemas import EmployeeCreate,EmployeeUpdate
 from fastapi.responses import JSONResponse
 
 router = APIRouter(prefix="/employees", tags=["employees"])
@@ -62,7 +62,7 @@ async def create_employee(
             file_bytes = await image.read()
             image_base64 = base64.b64encode(file_bytes).decode("utf-8")
 
-        # Build employee record
+       
         employee_data = {
             "name": name,
             "email": email,
@@ -73,7 +73,7 @@ async def create_employee(
             "laptop": laptop_bool,
             "headphones": headphones_bool,
             "monitor": monitor_bool,
-            "image": image_base64,  # stored as base64 string
+            "image": image_base64,  
             "created_at": datetime.utcnow(),
         }
 
@@ -111,13 +111,13 @@ async def update_employee(
     try:
         update_fields = {}
 
-        # Handle image upload (base64)
+        
         if image:
             file_bytes = await image.read()
             image_base64 = base64.b64encode(file_bytes).decode("utf-8")
             update_fields["image"] = image_base64
 
-        # Parse other fields as before
+       
         if name:
             update_fields["name"] = name
         if email:

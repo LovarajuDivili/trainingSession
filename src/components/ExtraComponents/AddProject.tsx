@@ -17,13 +17,7 @@ import type { Project } from "../../store/ProjectsSlice";
 import { Add_New, Cancel } from "../../common/labelConstants";
 import { useLocation } from "react-router-dom";
 import { Snackbar, Alert } from "@mui/material";
-
-interface AddProjectProps {
-  open?: boolean;
-  onClose?: () => void;
-  project?: Project | null;
-  onSuccess?: () => void;
-}
+import type { AddProjectProps, ProjectFormFieldsProps } from "../../common/types";
 
 const AddProject = ({
   onClose,
@@ -277,19 +271,7 @@ const AddProject = ({
   );
 };
 
-interface ProjectFormFieldsProps {
-  projects: {
-    projectName: string;
-    projectOwner: string;
-    jiraId: string;
-    status: string;
-    startDate: string;
-    endDate: string;
-  };
-  handleChange: (field: string, value: string) => void;
-  startDateError?: string;
-  endDateError?: string;
-}
+
 
 const ProjectFormFields = ({
   projects,

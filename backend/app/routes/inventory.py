@@ -4,7 +4,6 @@ from app.database import db
 
 router = APIRouter(prefix="/inventory", tags=["Inventory"])
 
-# Helper to convert MongoDB _id to string
 def serialize_item(item):
     item["_id"] = str(item["_id"])
     return item

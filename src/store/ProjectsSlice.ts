@@ -5,24 +5,7 @@ import {
 } from "@reduxjs/toolkit";
 import { Errors } from "../common/labelConstants";
 import { API_BASE } from "../common/apiService";
-
-export interface ProjectBase {
-  projectName: string;
-  projectOwner: string;
-  jiraId: string;
-  status: string;
-  startDate: string;
-  endDate: string;
-}
-export interface Project extends ProjectBase {
-  id: string;
-}
-
-interface ProjectsState {
-  projects: Project[];
-  loading: boolean;
-  error: string | null;
-}
+import type { Project, ProjectBase, ProjectsState } from "../common/types";
 
 const initialState: ProjectsState = {
   projects: [],
@@ -48,14 +31,11 @@ export const addProjectAPI = createAsyncThunk<
   { rejectValue: string }
 >("projects/addProject", async (project, { rejectWithValue }) => {
   try {
-    console.log("Sending project data:", project);
     const response = await fetch(`${API_BASE}/projects/create/`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(project),
     });
-
-    console.log("Response status:", response.status);
 
     if (!response.ok) {
       let errorData;
@@ -91,9 +71,9 @@ export const addProjectAPI = createAsyncThunk<
 });
 
 export const updateProjectAPI = createAsyncThunk<
-  Project, // ✅ Return type
-  { id: string; projectData: ProjectBase }, // ✅ Argument type
-  { rejectValue: string } // ✅ Reject type
+  Project,
+  { id: string; projectData: ProjectBase },
+  { rejectValue: string }
 >(
   "projects/updateProject",
   async ({ id, projectData }, { rejectWithValue }) => {
@@ -112,7 +92,7 @@ export const updateProjectAPI = createAsyncThunk<
       }
 
       const data = await response.json();
-      return data.data; // ✅ assuming backend returns { data: project }
+      return data.data;
     } catch (err) {
       return rejectWithValue(
         err instanceof Error ? err.message : "Unknown error"

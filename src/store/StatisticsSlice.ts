@@ -1,27 +1,6 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
-
-interface EmployeeRoleCounts {
-  AllEmployees: number;
-  Developers: number;
-  AWSTeam: number;
-  Testers: number;
-}
-
-interface ProjectStatusCounts {
-  Active: number;
-  Inactive: number;
-  InProgress: number;
-}
-
-interface StatisticsState {
-  employeeRoleCounts: EmployeeRoleCounts;
-  projectStatusCounts: ProjectStatusCounts;
-  totalEmployees: number;
-  totalProjects: number;
-  loading: boolean;
-  error: string | null;
-}
+import type { StatisticsState } from "../common/types";
 
 const initialState: StatisticsState = {
   employeeRoleCounts: {
@@ -99,11 +78,9 @@ const statisticsSlice = createSlice({
         state.loading = false;
         state.error = action.error.message || "Failed to fetch statistics";
       })
-      // Employee Role Counts
       .addCase(fetchEmployeeRoleCounts.fulfilled, (state, action) => {
         state.employeeRoleCounts = action.payload;
       })
-      // Project Status Counts
       .addCase(fetchProjectStatusCounts.fulfilled, (state, action) => {
         state.projectStatusCounts = action.payload;
       });

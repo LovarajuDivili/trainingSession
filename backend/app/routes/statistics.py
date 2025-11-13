@@ -1,8 +1,8 @@
 from fastapi import APIRouter, HTTPException
 from ..database import db
 from app.helpers import convert_objectid
-from typing import Dict, Any
-import logging
+#from typing import Dict, Any
+#import logging
 
 router = APIRouter(prefix="/statistics", tags=["statistics"])
 

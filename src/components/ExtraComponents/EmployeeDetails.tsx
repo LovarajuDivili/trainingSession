@@ -107,9 +107,7 @@ const EmployeeDetails = () => {
               typeof employee.image === "string"
                 ? employee.image.startsWith("http")
                   ? employee.image
-                  : `${import.meta.env.VITE_API_BASE_URL}/uploads/${
-                      employee.image
-                    }`
+                  : employee.image
                 : employee.image
                 ? URL.createObjectURL(employee.image as File)
                 : "/placeholder.jpg"

@@ -5,7 +5,6 @@ from app.models.auth import UserCreate, UserLogin, Token, UserResponse
 from app.utils.auth import (
     verify_password, 
     get_password_hash,
-    verify_frontend_hashed_password,
     is_bcrypt_hash, 
     create_access_token, 
     verify_token,
