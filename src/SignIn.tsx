@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
 import { useState, useEffect, type FormEvent, type MouseEvent } from "react";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
@@ -110,12 +108,11 @@ export default function SignIn(props: { disableCustomTheme?: boolean }) {
 
     try {
       const shaHashedPassword = sha256(password).toString();
-
       await login(email, shaHashedPassword);
-
       navigate(from, { replace: true });
-    } catch (err: any) {
-      setError(err.message || "Login failed");
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "Login failed";
+      setError(errorMessage);
     }
   };
 

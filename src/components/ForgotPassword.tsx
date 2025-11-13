@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import * as React from "react";
 import {
   Button,
@@ -41,8 +39,11 @@ export default function ForgotPassword({
 
       setMessage("OTP sent to your email");
       setStep(2);
-    } catch (err: any) {
-      setMessage(err.response?.data?.detail || "Error sending OTP");
+    } catch (err) {
+      const errorMessage = axios.isAxiosError(err)
+        ? err.response?.data?.detail || err.message
+        : "Error sending OTP";
+      setMessage(errorMessage);
     } finally {
       setLoadingSend(false);
     }
@@ -57,8 +58,12 @@ export default function ForgotPassword({
       });
       setMessage("OTP Verified");
       setStep(3);
-    } catch (err: any) {
-      setMessage("Invalid OTP");
+    } catch (err: unknown) {
+      if (axios.isAxiosError(err)) {
+        setMessage(err.response?.data?.detail || "Invalid OTP");
+      } else {
+        setMessage("An unexpected error occurred");
+      }
     } finally {
       setLoadingVerify(false);
     }
@@ -81,7 +86,7 @@ export default function ForgotPassword({
         handleClose();
         setStep(1);
       }, 1500);
-    } catch (err) {
+    } catch {
       setMessage("Error resetting password");
     } finally {
       setLoadingReset(false);

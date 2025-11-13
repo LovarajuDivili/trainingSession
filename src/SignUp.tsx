@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useEffect, type FormEvent, type MouseEvent } from "react";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
@@ -175,13 +174,14 @@ export default function SignUp(props: { disableCustomTheme?: boolean }) {
 
     try {
       const shaHashedPassword = sha256(password).toString();
-
       await signup(name, email, shaHashedPassword, selectedRole);
 
       setSuccess("Account created! Redirecting to login...");
       setTimeout(() => navigate("/signin"), 2000);
-    } catch (error: any) {
-      setError(error.message);
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : "An unknown error occurred";
+      setError(errorMessage);
     } finally {
       setIsLoading(false);
     }

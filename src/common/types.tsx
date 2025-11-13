@@ -189,3 +189,8 @@ export interface AppThemeProps {
   disableCustomTheme?: boolean;
   themeComponents?: ThemeOptions["components"];
 }
+
+export interface APIError {
+  detail?: string;
+  message?: string;
+}
