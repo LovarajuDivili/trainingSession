@@ -6,7 +6,7 @@ export const HomePage = {
 
 export const HomePage_Dropdowns = {
   ADMIN: "Admin",
-  TECHNICAL: "Technical",
+  ACCOUNTANT: "Accountant",
   TRAINING: "Training",
   HR: "HR",
 };

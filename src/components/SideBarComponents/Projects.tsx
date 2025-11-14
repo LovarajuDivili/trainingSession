@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useEffect } from "react";
 import {
   Box,
@@ -7,6 +6,7 @@ import {
   Dialog,
   DialogContent,
   DialogTitle,
+  Divider,
   IconButton,
   Typography,
 } from "@mui/material";
@@ -20,15 +20,12 @@ import { Loading } from "../../common/labelConstants";
 import DashboardHeader from "../DashboardHeader";
 import { sidebarItems } from "../../common/sidebarItems";
 import { useAppDispatch, useAppSelector } from "../../hooks/reduxHooks";
-import {
-  deleteProjectAPI,
-  fetchProjects,
-  type Project,
-} from "../../store/ProjectsSlice";
+import { deleteProjectAPI, fetchProjects } from "../../store/ProjectsSlice";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import CloseIcon from "@mui/icons-material/Close";
 import NoData from "../../common/noData";
+import type { Project } from "../../common/types";
 
 const CustomNoRowsOverlay = () => {
   return (
@@ -103,9 +100,14 @@ const Projects = () => {
       setDeleteConfirmOpen(false);
       setProjectToDelete(null);
       setConfirmChecked(false);
-    } catch (error: any) {
-      console.error("Error deleting project:", error);
-      alert(error?.detail || "⚠️ Failed to delete project");
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        console.error("Error deleting project:", error.message);
+        alert(error.message || "⚠️ Failed to delete project");
+      } else {
+        console.error("Unexpected error:", error);
+        alert("⚠️ Failed to delete project");
+      }
     }
   };
 
@@ -321,8 +323,9 @@ const Projects = () => {
             <CloseIcon sx={{ fontSize: "18px" }} />
           </IconButton>
         </DialogTitle>
+        <Divider sx={{ mb: 1 }} />
         <DialogContent>
-          <Typography sx={{ mb: 2 }}>
+          <Typography sx={{ mb: 1 }}>
             Are you sure you want to delete project -{" "}
             <strong>
               {projects.find((proj) => proj.id === projectToDelete)

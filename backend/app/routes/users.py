@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException
 from ..database import db
-from ..schemas import User
+from ..models.schemas import User
 from bson import ObjectId
 
 router = APIRouter(prefix="/users", tags=["users"])

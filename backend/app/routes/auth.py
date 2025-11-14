@@ -5,7 +5,6 @@ from app.models.auth import UserCreate, UserLogin, Token, UserResponse
 from app.utils.auth import (
     verify_password, 
     get_password_hash,
-    verify_frontend_hashed_password,
     is_bcrypt_hash, 
     create_access_token, 
     verify_token,
@@ -14,6 +13,12 @@ from app.utils.auth import (
 )
 from datetime import datetime
 from bson import ObjectId
+from pydantic import BaseModel
+import random
+from app.models.otp import save_otp, verify_otp
+from app.utils.email_service import send_email
+from app.utils.email_service import send_email 
+
 
 router = APIRouter(prefix="/auth", tags=["authentication"])
 security = HTTPBearer()
@@ -58,7 +63,7 @@ async def signup(user_data: UserCreate):
         
         if is_bcrypt_hash(user_data.password):
             
-            user_dict["password"] = user_data.password
+            user_dict["password"] = (user_data.password)
             user_dict["password_hashed_on"] = "frontend"
         else:
             
@@ -149,6 +154,60 @@ async def login(user_data: UserLogin):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Internal server error during login"
         )
+    
+
+class SendOtpRequest(BaseModel):
+    email: str
+
+@router.post("/send-otp")
+async def send_otp(data: SendOtpRequest):
+    email = data.email
+
+    user = db.users.find_one({"email": email})
+    if not user:
+        raise HTTPException(status_code=404, detail="Email not found")
+
+    otp = str(random.randint(100000, 999999))
+    save_otp(email, otp)
+
+    subject = "Password Reset OTP"
+    message = f"Your OTP for password reset is {otp}"
+
+    send_email(email, subject, message) 
+
+    return {"message": "OTP sent successfully"}
+
+
+class VerifyOtpRequest(BaseModel):
+    email: str
+    otp: str
+
+@router.post("/verify-otp")
+async def verify_otp_route(data: VerifyOtpRequest):
+    if not verify_otp(data.email, data.otp):
+        raise HTTPException(status_code=400, detail="Invalid OTP")
+    return {"message": "OTP verified"}
+
+
+class ResetPasswordRequest(BaseModel):
+    email: str
+    newPassword: str
+
+@router.post("/reset-password")
+async def reset_password_route(data: ResetPasswordRequest):
+    
+    hashed = get_password_hash(data.newPassword)  
+
+    db.users.update_one(
+        {"email": data.email},
+        {
+            "$set": {
+                "password": hashed,
+                "password_hashed_on": "frontend"  
+            }
+        }
+    )
+    return {"message": "Password reset successful"}
 
 @router.get("/me", response_model=UserResponse)
 async def get_current_user_info(current_user: dict = Depends(get_current_user)):

@@ -1,10 +1,7 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import * as React from "react";
+import { useState, useEffect, type FormEvent, type MouseEvent } from "react";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
-import Checkbox from "@mui/material/Checkbox";
 import Divider from "@mui/material/Divider";
-import FormControlLabel from "@mui/material/FormControlLabel";
 import FormLabel from "@mui/material/FormLabel";
 import FormControl from "@mui/material/FormControl";
 import Link from "@mui/material/Link";
@@ -22,6 +19,7 @@ import IconButton from "@mui/material/IconButton";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import sha256 from "crypto-js/sha256";
+import MenuItem from "@mui/material/MenuItem";
 
 const Card = styled(MuiCard)(({ theme }) => ({
   display: "flex",
@@ -72,21 +70,24 @@ const SignUpContainer = styled(Stack)(({ theme }) => ({
 export default function SignUp(props: { disableCustomTheme?: boolean }) {
   const navigate = useNavigate();
   const { signup, isSigningUp: contextIsSigningUp } = useAuth();
-  const [isLoading, setIsLoading] = React.useState(false);
-  const [emailError, setEmailError] = React.useState(false);
-  const [emailErrorMessage, setEmailErrorMessage] = React.useState("");
-  const [passwordError, setPasswordError] = React.useState(false);
-  const [passwordErrorMessage, setPasswordErrorMessage] = React.useState("");
-  const [nameError, setNameError] = React.useState(false);
-  const [nameErrorMessage, setNameErrorMessage] = React.useState("");
-  const [error, setError] = React.useState("");
-  const [success, setSuccess] = React.useState("");
-  const [showPassword, setShowPassword] = React.useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [emailError, setEmailError] = useState(false);
+  const [emailErrorMessage, setEmailErrorMessage] = useState("");
+  const [passwordError, setPasswordError] = useState(false);
+  const [passwordErrorMessage, setPasswordErrorMessage] = useState("");
+  const [nameError, setNameError] = useState(false);
+  const [nameErrorMessage, setNameErrorMessage] = useState("");
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [role, setRole] = useState("");
+  const [roleError, setRoleError] = useState(false);
+  const [roleErrorMessage, setRoleErrorMessage] = useState("");
 
   const isSigningUp = contextIsSigningUp || isLoading;
 
-  React.useEffect(() => {
-    const token = localStorage.getItem("token");
+  useEffect(() => {
+    const token = sessionStorage.getItem("token");
     if (token) {
       navigate("/welcome", { replace: true });
     }
@@ -145,10 +146,19 @@ export default function SignUp(props: { disableCustomTheme?: boolean }) {
       setNameErrorMessage("");
     }
 
+    if (!role) {
+      setRoleError(true);
+      setRoleErrorMessage("Please select a role.");
+      isValid = false;
+    } else {
+      setRoleError(false);
+      setRoleErrorMessage("");
+    }
+
     return isValid;
   };
 
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     if (!validateInputs()) return;
@@ -157,28 +167,28 @@ export default function SignUp(props: { disableCustomTheme?: boolean }) {
     const name = data.get("name") as string;
     const email = data.get("email") as string;
     const password = data.get("password") as string;
+    const selectedRole = role;
 
     setIsLoading(true);
     setError("");
 
     try {
       const shaHashedPassword = sha256(password).toString();
-
-      await signup(name, email, shaHashedPassword);
+      await signup(name, email, shaHashedPassword, selectedRole);
 
       setSuccess("Account created! Redirecting to login...");
       setTimeout(() => navigate("/signin"), 2000);
-    } catch (error: any) {
-      setError(error.message);
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : "An unknown error occurred";
+      setError(errorMessage);
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleClickShowPassword = () => setShowPassword((show) => !show);
-  const handleMouseDownPassword = (
-    event: React.MouseEvent<HTMLButtonElement>
-  ) => {
+  const handleMouseDownPassword = (event: MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
   };
 
@@ -188,7 +198,7 @@ export default function SignUp(props: { disableCustomTheme?: boolean }) {
         direction="column"
         justifyContent="space-between"
         sx={{
-          height: "89vh",
+          height: "91.2vh",
         }}
       >
         <Card
@@ -292,6 +302,28 @@ export default function SignUp(props: { disableCustomTheme?: boolean }) {
               />
             </FormControl>
             <FormControl>
+              <FormLabel htmlFor="role">Role</FormLabel>
+              <TextField
+                id="role"
+                name="role"
+                select
+                required
+                fullWidth
+                value={role}
+                onChange={(e) => setRole(e.target.value)}
+                error={roleError}
+                helperText={roleErrorMessage}
+                disabled={isSigningUp}
+              >
+                <MenuItem value="">Select a role</MenuItem>
+                <MenuItem value="Admin">Admin</MenuItem>
+                <MenuItem value="Accountant">Accountant</MenuItem>
+                <MenuItem value="Developer">Developer</MenuItem>
+                <MenuItem value="Tester">Tester</MenuItem>
+                <MenuItem value="Migrator">Migrator</MenuItem>
+              </TextField>
+            </FormControl>
+            <FormControl>
               <FormLabel htmlFor="password">Password</FormLabel>
               <TextField
                 required
@@ -324,10 +356,7 @@ export default function SignUp(props: { disableCustomTheme?: boolean }) {
                 }}
               />
             </FormControl>
-            <FormControlLabel
-              control={<Checkbox value="allowExtraEmails" color="primary" />}
-              label="I want to receive updates via email."
-            />
+
             <Button
               type="submit"
               fullWidth

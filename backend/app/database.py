@@ -7,7 +7,8 @@ load_dotenv()
 MONGO_URL = os.getenv("MONGO_URL")
 DB_NAME = os.getenv("DB_NAME")
 
-collections_to_create = ["users", "projects", "employees"]
+collections_to_create = ["users", "projects", "employees","inventory"]
+
 
 try:
     client = MongoClient(MONGO_URL)

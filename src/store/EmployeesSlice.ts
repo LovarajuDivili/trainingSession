@@ -5,8 +5,8 @@ import {
 } from "@reduxjs/toolkit";
 import type { Employee } from "../common/types";
 import { Errors } from "../common/labelConstants";
+import { API_BASE } from "../common/apiService";
 
-const API_BASE = "/api";
 export const fetchEmployees = createAsyncThunk(
   "employees/fetchEmployees",
   async () => {
@@ -22,20 +22,32 @@ export const addEmployeeAPI = createAsyncThunk<
   { rejectValue: { detail: string } }
 >("employees/addEmployee", async (employee, { rejectWithValue }) => {
   try {
-    console.log("Sending employee data:", employee);
-    const response = await fetch(`${API_BASE}/employees/create`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(employee),
-    });
+    const formData = new FormData();
 
-    console.log("Response status:", response.status);
+    for (const key in employee) {
+      const typedKey = key as keyof typeof employee;
+      const value = employee[typedKey];
+
+      if (value !== undefined && value !== null) {
+        if (typedKey === "skills") {
+          formData.append("skills", JSON.stringify(value));
+        } else if (typedKey === "image" && value instanceof File) {
+          formData.append("image", value);
+        } else {
+          formData.append(typedKey, value as string);
+        }
+      }
+    }
+
+    const response = await fetch(`${API_BASE}/employees/create/`, {
+      method: "POST",
+      body: formData,
+    });
 
     if (!response.ok) {
       let errorData;
       try {
         errorData = await response.json();
-        console.log("Error response:", errorData);
       } catch {
         errorData = response.statusText || "Failed to add employee";
       }
@@ -43,10 +55,9 @@ export const addEmployeeAPI = createAsyncThunk<
     }
 
     const data = await response.json();
-    console.log("Success response:", data);
+
     return data.data;
   } catch (err) {
-    console.error("Fetch error:", err);
     return rejectWithValue({
       detail: err instanceof Error ? err.message : "Unknown error",
     });
@@ -59,23 +70,35 @@ export const updateEmployeeAPI = createAsyncThunk<
   { rejectValue: { detail: string } }
 >("employees/updateEmployee", async (employee, { rejectWithValue }) => {
   try {
-    console.log("Updating employee data:", employee);
+    const formData = new FormData();
+
+    for (const key in employee) {
+      const typedKey = key as keyof typeof employee;
+      const value = employee[typedKey];
+
+      if (value !== undefined && value !== null) {
+        if (typedKey === "skills") {
+          formData.append("skills", JSON.stringify(value));
+        } else if (typedKey === "image" && value instanceof File) {
+          formData.append("image", value);
+        } else {
+          formData.append(typedKey, String(value));
+        }
+      }
+    }
+
     const response = await fetch(
       `${API_BASE}/employees/update/${employee.id}`,
       {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(employee),
+        body: formData,
       }
     );
-
-    console.log("Update response status:", response.status);
 
     if (!response.ok) {
       let errorData;
       try {
         errorData = await response.json();
-        console.log("Update error response:", errorData);
       } catch {
         errorData = response.statusText || "Failed to update employee";
       }
@@ -83,10 +106,9 @@ export const updateEmployeeAPI = createAsyncThunk<
     }
 
     const data = await response.json();
-    console.log("Update success response:", data);
+
     return data.data;
   } catch (err) {
-    console.error("Update fetch error:", err);
     return rejectWithValue({
       detail: err instanceof Error ? err.message : "Unknown error",
     });
@@ -108,24 +130,18 @@ export const deleteEmployeeAPI = createAsyncThunk<
         }
       );
 
-      console.log("Delete response status:", response.status);
-
       if (!response.ok) {
         let errorData;
         try {
           errorData = await response.json();
-          console.log("Delete error response:", errorData);
         } catch {
           errorData = response.statusText || "Failed to delete employee";
         }
         return rejectWithValue(errorData);
       }
 
-      const data = await response.json();
-      console.log("Delete success response:", data);
       return employeeId;
     } catch (err) {
-      console.error("Delete fetch error:", err);
       return rejectWithValue({
         detail: err instanceof Error ? err.message : "Unknown error",
       });

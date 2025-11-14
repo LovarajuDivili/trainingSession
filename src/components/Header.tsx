@@ -10,10 +10,13 @@ import {
   DialogActions,
   Snackbar,
   Alert,
+  Badge,
 } from "@mui/material";
 import AccountCircle from "@mui/icons-material/AccountCircle";
 import LogoutIcon from "@mui/icons-material/Logout";
 import SwapHorizIcon from "@mui/icons-material/SwapHoriz";
+import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
+import { useCartDrawer } from "../context/CartDrawerContext";
 import { useNavigate } from "react-router-dom";
 import { useLocation } from "react-router-dom";
 import { roleIcons } from "../common/utility";
@@ -25,11 +28,14 @@ import {
   Logout_Confirm,
   Logout_Success,
 } from "../common/labelConstants";
+import { useCart } from "../context/CartContext";
 
 const Header = ({ role: propRole }: { role?: string }) => {
   const [showLogout, setShowLogout] = useState<boolean>(false);
   const [openDialog, setOpenDialog] = useState<boolean>(false);
   const [openSnackbar, setOpenSnackbar] = useState<boolean>(false);
+  const { cart } = useCart();
+  const { clearCart } = useCart();
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -58,8 +64,15 @@ const Header = ({ role: propRole }: { role?: string }) => {
   };
 
   const handleSwap = () => {
-    sessionStorage.clear();
+    clearCart(); // Clear context state
+    localStorage.removeItem("orderCart"); // Clear only cart from storage
     navigate("/");
+  };
+
+  const { openDrawer } = useCartDrawer();
+
+  const handleCartClick = () => {
+    openDrawer(); // open the drawer instead of navigation
   };
 
   const roleIcon = role ? roleIcons[role.toLowerCase()] : null;
@@ -150,6 +163,40 @@ const Header = ({ role: propRole }: { role?: string }) => {
           marginRight: "10px",
         }}
       >
+        {role?.toLowerCase() === "accountant" && (
+          <Button
+            variant="contained"
+            startIcon={
+              <Badge
+                badgeContent={cart.length}
+                color="error"
+                overlap="circular"
+                sx={{
+                  "& .MuiBadge-badge": {
+                    fontSize: "0.7rem",
+                    height: "16px",
+                    minWidth: "16px",
+                  },
+                }}
+              >
+                <ShoppingCartIcon />
+              </Badge>
+            }
+            onClick={handleCartClick}
+            sx={{
+              textTransform: "none",
+              backgroundColor: "white",
+              color: "#906aff",
+              borderRadius: "20px",
+              boxShadow: 2,
+              "&:hover": {
+                backgroundColor: "#f3eaff",
+              },
+            }}
+          >
+            Cart
+          </Button>
+        )}
         <IconButton sx={{ color: "white" }} onClick={handleSwap}>
           <SwapHorizIcon />
         </IconButton>

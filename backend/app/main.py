@@ -1,4 +1,6 @@
 from fastapi import FastAPI, Request
+from fastapi.staticfiles import StaticFiles
+import os
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 from fastapi.responses import JSONResponse
@@ -20,24 +22,12 @@ def start_application():
         allow_headers=["*"],
     )
 
-    @app.exception_handler(Exception)
-    async def global_exception_handler(request: Request, exc: Exception):
-        
-        print(f"Global error handler: {str(exc)}")
-        return JSONResponse(
-            status_code=500,
-            content={"detail": "Internal Server Error"}
-        )
-
-    app.include_router(api_router, prefix="/v-1/application")
-
     app.include_router(api_router, prefix="/v-1/application")
     
 
     return app
 
 app = start_application()
-
 
 
 if __name__ == '__main__':

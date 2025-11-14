@@ -2,20 +2,22 @@ import { Box, Typography } from "@mui/material";
 import DashboardHeader from "../DashboardHeader";
 import { sidebarItems } from "../../common/sidebarItems";
 
-const AWSTeam = () => {
+const OpeningsEvents = () => {
   const currentItem = sidebarItems.find(
-    (item) => item.route === "/admin/aws-team"
+    (item) => item.route === "/admin/openingsEvents"
   );
 
   return (
     <Box>
       <DashboardHeader
-        title={currentItem?.label || "AWSTeam"}
+        title={currentItem?.label || "OpeningsEvents"}
         icon={currentItem?.icon}
       />
-      <Typography sx={{ p: 2 }}>No data available for AWSTeam yet.</Typography>
+      <Typography sx={{ p: 2 }}>
+        No data available for Openings and Events yet.
+      </Typography>
     </Box>
   );
 };
 
-export default AWSTeam;
+export default OpeningsEvents;

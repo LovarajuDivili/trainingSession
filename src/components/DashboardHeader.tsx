@@ -7,21 +7,7 @@ import {
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import AddIcon from "@mui/icons-material/Add";
-import type { ReactNode } from "react";
-
-interface DashboardHeaderProps {
-  title: string;
-  icon?: ReactNode;
-  count?: number;
-  showSearch?: boolean;
-  searchText?: string;
-  onSearchChange?: (value: string) => void;
-  showAddButton?: boolean;
-  onAddClick?: () => void;
-  addButtonLabel?: string;
-  rightContent?: ReactNode;
-  gridIcon?: ReactNode;
-}
+import type { DashboardHeaderProps } from "../common/types";
 
 const DashboardHeader = ({
   title,
