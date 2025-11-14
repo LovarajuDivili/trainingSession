@@ -1,5 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import * as React from "react";
+import { useState, useEffect, type FormEvent, type MouseEvent } from "react";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Checkbox from "@mui/material/Checkbox";
@@ -45,13 +44,10 @@ const Card = styled(MuiCard)(({ theme }) => ({
 const SignInContainer = styled(Stack)(({ theme }) => ({
   height: "calc((1 - var(--template-frame-height, 0)) * 100dvh)",
   minHeight: "100%",
-  padding: theme.spacing(2),
-  [theme.breakpoints.up("sm")]: {
-    padding: theme.spacing(4),
-  },
-  
+  [theme.breakpoints.up("sm")]: {},
+
   backgroundImage: 'url("/public/aifaBG.jpg")',
-  backgroundSize: "100% 100%", 
+  backgroundSize: "100% 100%",
   backgroundPosition: "center",
   backgroundRepeat: "no-repeat",
   position: "relative",
@@ -72,13 +68,13 @@ export default function SignIn(props: { disableCustomTheme?: boolean }) {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const [open, setOpen] = React.useState(false);
-  const [error, setError] = React.useState("");
-  const [showPassword, setShowPassword] = React.useState(false);
+  const [open, setOpen] = useState(false);
+  const [error, setError] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const { login, isLoggingIn } = useAuth();
 
-  React.useEffect(() => {
-    const token = localStorage.getItem("token");
+  useEffect(() => {
+    const token = sessionStorage.getItem("token");
     if (token) {
       const from = location.state?.from?.pathname || "/welcome";
       navigate(from, { replace: true });
@@ -95,13 +91,11 @@ export default function SignIn(props: { disableCustomTheme?: boolean }) {
   };
 
   const handleClickShowPassword = () => setShowPassword((show) => !show);
-  const handleMouseDownPassword = (
-    event: React.MouseEvent<HTMLButtonElement>
-  ) => {
+  const handleMouseDownPassword = (event: MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
   };
 
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
     const email = data.get("email") as string;
@@ -114,12 +108,11 @@ export default function SignIn(props: { disableCustomTheme?: boolean }) {
 
     try {
       const shaHashedPassword = sha256(password).toString();
-
       await login(email, shaHashedPassword);
-
       navigate(from, { replace: true });
-    } catch (err: any) {
-      setError(err.message || "Login failed");
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "Login failed";
+      setError(errorMessage);
     }
   };
 
@@ -127,7 +120,7 @@ export default function SignIn(props: { disableCustomTheme?: boolean }) {
     <AppTheme {...props}>
       <CssBaseline enableColorScheme />
       <SignInContainer direction="column" justifyContent="space-between">
-        <Card variant="outlined">
+        <Card>
           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
             <Box
               component="img"

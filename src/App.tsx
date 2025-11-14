@@ -1,26 +1,32 @@
 import { Box } from "@mui/material";
 import { Routes, Route, Navigate } from "react-router-dom";
-import { AuthProvider, useAuth } from "./contexts/AuthContext"; // Import useAuth
+import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import WelcomeSasa from "./components/WelcomeSasa";
 import Admin from "./pages/Admin";
 import Logout from "./pages/Logout";
 import AllEmployees from "./components/SideBarComponents/AllEmployees";
-import Developers from "./components/SideBarComponents/Developers";
-import AWSTeam from "./components/SideBarComponents/AWSTeam";
+import Dashboard from "./components/SideBarComponents/Dashboard";
 import Logs from "./components/SideBarComponents/Logs";
 import Projects from "./components/SideBarComponents/Projects";
 import Statistics from "./components/SideBarComponents/Statistics";
-import Testers from "./components/SideBarComponents/Testers";
 import AddProject from "./components/ExtraComponents/AddProject";
-import Technical from "./pages/Technical";
 import SignIn from "./SignIn";
 import SignUp from "./SignUp";
-import Developer from "./pages/Developer";
 import Functional from "./pages/Funtional";
 import Migrator from "./pages/Migrator";
 import Tester from "./pages/Tester";
-
+import Accountant from "./pages/Accountant";
+import RequestOrder from "./components/ExtraComponents/RequestOrder";
+import EmployeeData from "./components/ExtraComponents/EmployeesData";
+import HrData from "./components/ExtraComponents/HrData";
+import EmployeeDetails from "./components/ExtraComponents/EmployeeDetails";
+import { CartDrawerProvider } from "./context/CartDrawerContext";
+import CartDrawer from "./components/ExtraComponents/CartDrawer";
+import { CartProvider } from "./context/CartContext";
+import OpeningsEvents from "./components/SideBarComponents/OpeningsEvents";
+import OpeningsAndEvents from "./pages/OpeningsAndEvents";
+import { OrdersProvider } from "./context/OrderContext";
 
 const AppRoutes = () => {
   const { isAuthenticated, isLoading } = useAuth();
@@ -40,11 +46,9 @@ const AppRoutes = () => {
 
   return (
     <Routes>
-      {/* Public routes */}
       <Route path="/signin" element={<SignIn />} />
       <Route path="/signup" element={<SignUp />} />
 
-      {/* Protected routes */}
       <Route
         path="/welcome"
         element={
@@ -53,41 +57,70 @@ const AppRoutes = () => {
           </ProtectedRoute>
         }
       />
+
       <Route
         path="/admin"
         element={
-          <ProtectedRoute requiredRole="user">
+          <ProtectedRoute requiredRole="Admin">
             <Admin />
           </ProtectedRoute>
         }
       >
         <Route path="all-employees" element={<AllEmployees />} />
-        <Route path="developers" element={<Developers />} />
-        <Route path="aws-team" element={<AWSTeam />} />
+        <Route path="openingsEvents" element={<OpeningsEvents />} />
+        <Route path="dashboard" element={<Dashboard />} />
         <Route path="logs" element={<Logs />} />
         <Route path="projects" element={<Projects />} />
         <Route path="projects/add" element={<AddProject />} />
         <Route path="statistics" element={<Statistics />} />
-        <Route path="testers" element={<Testers />} />
       </Route>
 
-      {/* Other protected routes */}
       <Route
-        path="/technical"
+        path="/accountant"
         element={
           <ProtectedRoute>
-            <Technical />
+            <Accountant />
           </ProtectedRoute>
         }
       />
       <Route
-        path="/developer"
+        path="/accountant/requestorder"
         element={
           <ProtectedRoute>
-            <Developer />
+            <RequestOrder />
           </ProtectedRoute>
         }
       />
+      <Route
+        path="/accountant/employeedata"
+        element={
+          <ProtectedRoute>
+            <EmployeeData />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/accountant/hrdata"
+        element={
+          <ProtectedRoute>
+            <HrData />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/accountant/employeedata/:employeeId"
+        element={<EmployeeDetails />}
+      />
+
+      <Route
+        path="/openingsandEvents"
+        element={
+          <ProtectedRoute>
+            <OpeningsAndEvents />
+          </ProtectedRoute>
+        }
+      />
+
       <Route
         path="/functional"
         element={
@@ -112,9 +145,9 @@ const AppRoutes = () => {
           </ProtectedRoute>
         }
       />
+
       <Route path="/logout" element={<Logout />} />
 
-      {/* Default route - redirect based on authentication */}
       <Route
         path="/"
         element={
@@ -125,8 +158,6 @@ const AppRoutes = () => {
           )
         }
       />
-
-      {/* Fallback route */}
       <Route
         path="*"
         element={
@@ -144,9 +175,19 @@ const AppRoutes = () => {
 const App = () => {
   return (
     <AuthProvider>
-      <Box>
-        <AppRoutes />
-      </Box>
+      <CartProvider>
+        <OrdersProvider>
+          {" "}
+          {/* ✅ Wrap here */}
+          <CartDrawerProvider>
+            <Box>
+              <AppRoutes />
+            </Box>
+            <CartDrawer />
+          </CartDrawerProvider>
+        </OrdersProvider>{" "}
+        {/* ✅ Close wrapper */}
+      </CartProvider>
     </AuthProvider>
   );
 };

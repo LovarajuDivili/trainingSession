@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   Box,
   Typography,
@@ -13,17 +12,15 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAppDispatch } from "../../hooks/reduxHooks";
 import { addProjectAPI, updateProjectAPI } from "../../store/ProjectsSlice";
-import type { Project } from "../../store/ProjectsSlice";
 import { Add_New, Cancel } from "../../common/labelConstants";
 import { useLocation } from "react-router-dom";
 import { Snackbar, Alert } from "@mui/material";
-
-interface AddProjectProps {
-  open?: boolean;
-  onClose?: () => void;
-  project?: Project | null;
-  onSuccess?: () => void;
-}
+import type {
+  AddProjectProps,
+  APIError,
+  Project,
+  ProjectFormFieldsProps,
+} from "../../common/types";
 
 const AddProject = ({
   onClose,
@@ -178,16 +175,13 @@ const AddProject = ({
 
       setSnackbarOpen(true);
 
-      // Wait for 1.5s before navigating so user sees Snackbar
       setTimeout(() => {
         if (onSuccess) onSuccess();
         else navigate("/admin/projects");
       }, 1500);
-    } catch (err: any) {
-      let message = "Unknown error occurred";
-      if (typeof err === "string") message = err;
-      else if (err?.detail) message = err.detail;
-      else if (err?.message) message = err.message;
+    } catch (err: unknown) {
+      const error = err as APIError;
+      const message = error.detail || error.message || "Unknown error occurred";
 
       setSnackbarMessage(message);
       setSnackbarSeverity("error");
@@ -276,20 +270,6 @@ const AddProject = ({
     </Box>
   );
 };
-
-interface ProjectFormFieldsProps {
-  projects: {
-    projectName: string;
-    projectOwner: string;
-    jiraId: string;
-    status: string;
-    startDate: string;
-    endDate: string;
-  };
-  handleChange: (field: string, value: string) => void;
-  startDateError?: string;
-  endDateError?: string;
-}
 
 const ProjectFormFields = ({
   projects,

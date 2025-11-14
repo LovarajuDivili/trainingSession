@@ -2,7 +2,7 @@ import { Box, Typography } from "@mui/material";
 //import React from 'react'
 import Header from "../components/Header";
 
-const Developer = () => {
+const OpeningsAndEvents = () => {
   return (
     <Box mt={5}>
       <Header role={""} />
@@ -13,4 +13,4 @@ const Developer = () => {
   );
 };
 
-export default Developer;
+export default OpeningsAndEvents;

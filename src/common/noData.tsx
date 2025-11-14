@@ -1,10 +1,5 @@
 import { Box, Typography } from "@mui/material";
-
-interface NoDataProps {
-  imageSrc: string;
-  altText?: string;
-  message: string;
-}
+import type { NoDataProps } from "./types";
 
 const NoData = ({ imageSrc, altText = "No data", message }: NoDataProps) => {
   return (

@@ -13,6 +13,10 @@ import {
   Chip,
   Divider,
   Checkbox,
+  Select,
+  MenuItem,
+  FormControl,
+  Card,
 } from "@mui/material";
 import {
   DataGrid,
@@ -36,6 +40,9 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import CloseIcon from "@mui/icons-material/Close";
 import { Snackbar, Alert } from "@mui/material";
 import NoData from "../../common/noData";
+import CloudUploadIcon from "@mui/icons-material/CloudUpload";
+import { useNavigate } from "react-router-dom";
+//import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 
 const CustomNoRowsOverlay = () => {
   return (
@@ -80,10 +87,21 @@ const AllEmployees = () => {
     joinDate: "",
     id: "",
     skills: [],
+    laptop: false,
+    headphones: false,
+    monitor: false,
+    image: null as File | null,
   });
   const [skillInput, setSkillInput] = useState("");
   const dispatch = useAppDispatch();
   const employees = useAppSelector((state) => state.employees.employees);
+  const navigate = useNavigate();
+
+  const handleCardClick = (employeeId: string) => {
+    navigate(`/admin/all-employees/employeedetails/${employeeId}`, {
+      state: { from: "/admin/all-employees" }, // Store where we came from
+    });
+  };
 
   const handleSkillKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && skillInput.trim() !== "") {
@@ -141,6 +159,9 @@ const AllEmployees = () => {
         joinDate: "",
         id: String(nextId),
         skills: [],
+        laptop: false,
+        headphones: false,
+        monitor: false,
       });
     }
     setOpenDialog(true);
@@ -155,6 +176,9 @@ const AllEmployees = () => {
       joinDate: "",
       id: "",
       skills: [],
+      laptop: false,
+      headphones: false,
+      monitor: false,
     });
     setSkillInput("");
   };
@@ -221,7 +245,7 @@ const AllEmployees = () => {
   const handleDeleteEmployee = async (employeeId: string) => {
     setEmployeeToDelete(employeeId);
     setDeleteConfirmOpen(true);
-    setConfirmChecked(false); // Reset checkbox when dialog opens
+    setConfirmChecked(false);
   };
 
   const handleConfirmDelete = async () => {
@@ -245,11 +269,54 @@ const AllEmployees = () => {
     setConfirmChecked(false);
   };
 
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setNewEmployee((prev) => ({ ...prev, image: file }));
+    }
+  };
+
   const dialogTitle = isEditing ? "Edit Employee" : "Add New Employee";
   const saveButtonLabel = isEditing ? "Save" : "Add";
 
   const columns: GridColDef<Employee>[] = [
-    { field: "name", headerName: "Name", flex: 1 },
+    {
+      field: "name",
+      headerName: "Name",
+      flex: 1.5,
+      renderCell: (params) => {
+        const { image, name } = params.row; // Use params.row instead of employee
+
+        return (
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              height: "100%",
+              pl: 1,
+              gap: 1,
+            }}
+          >
+            <img
+              src={`data:image/jpeg;base64,${image}`}
+              alt={name || "Employee"}
+              style={{
+                width: 30,
+                height: 30,
+                borderRadius: "50%",
+                objectFit: "cover",
+              }}
+              onError={(e) => {
+                e.currentTarget.src = "/placeholder.jpg";
+              }}
+            />
+            <Typography variant="body1" sx={{ fontWeight: 500 }}>
+              {name || "No Name"}
+            </Typography>
+          </Box>
+        );
+      },
+    },
     { field: "email", headerName: "Email", flex: 1.5 },
     { field: "role", headerName: "Role", flex: 1 },
     { field: "joinDate", headerName: "Join Date", flex: 1 },
@@ -351,20 +418,27 @@ const AllEmployees = () => {
             <Grid container spacing={2}>
               {filteredEmployees.map((emp) => (
                 <Grid item xs={12} sm={6} md={4} lg={3} key={emp.id}>
-                  <Box
+                  <Card
+                    onClick={() => handleCardClick(emp.id)}
                     sx={{
                       p: 2,
-                      m: 1,
+                      m: 2,
                       border: "1px solid #ddd",
-                      borderRadius: 2,
+                      borderRadius: 3,
                       boxShadow: 1,
                       backgroundColor: "#fff",
                       justifyContent: "space-between",
                       height: "100%",
-                      maxWidth: "180px",
-                      maxHeight: "185px",
+                      width: "160px",
+                      maxHeight: "220px",
                       wordWrap: "break-word",
                       overflowWrap: "break-word",
+                      "&:hover": {
+                        transform: "scale(1.02)",
+                        cursor: "pointer",
+                        boxShadow: 3,
+                      },
+                      transition: "transform 0.2s",
                     }}
                   >
                     <Box>
@@ -380,24 +454,50 @@ const AllEmployees = () => {
                           {emp.name}
                         </Typography>
 
-                        <Box
-                          sx={{
-                            width: 30,
-                            height: 30,
-                            borderRadius: "50%",
-                            backgroundColor: "lightgray",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                          }}
-                        >
-                          <Typography
-                            variant="h6"
-                            sx={{ fontWeight: 600, color: "white" }}
+                        {emp.image ? (
+                          <Box
+                            sx={{
+                              display: "flex",
+                              justifyContent: "center",
+                              mb: 1,
+                            }}
                           >
-                            {emp.name.charAt(0).toUpperCase()}{" "}
-                          </Typography>
-                        </Box>
+                            <img
+                              src={
+                                typeof emp.image === "string"
+                                  ? emp.image.startsWith("http")
+                                    ? emp.image
+                                    : `${
+                                        import.meta.env.VITE_API_BASE_URL
+                                      }/uploads/${emp.image}`
+                                  : URL.createObjectURL(emp.image as File)
+                              }
+                              alt={emp.name}
+                              style={{
+                                width: "60px",
+                                height: "60px",
+                                borderRadius: "50%",
+                                objectFit: "cover",
+                              }}
+                            />
+                          </Box>
+                        ) : (
+                          <Box
+                            sx={{
+                              width: 60,
+                              height: 60,
+                              borderRadius: "50%",
+                              backgroundColor: "#ccc",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              fontSize: "20px",
+                              color: "#fff",
+                            }}
+                          >
+                            {emp.name.charAt(0).toUpperCase()}
+                          </Box>
+                        )}
                       </Box>
                       <Typography variant="body2" sx={{ mt: 1 }}>
                         <strong>Emp Id:</strong> {emp.id}
@@ -414,6 +514,7 @@ const AllEmployees = () => {
                           ? new Date(emp.joinDate).toLocaleDateString()
                           : ""}
                       </Typography>
+
                       {emp.skills?.length ? (
                         <Box
                           sx={{
@@ -441,7 +542,7 @@ const AllEmployees = () => {
                         </Box>
                       ) : null}
                     </Box>
-                  </Box>
+                  </Card>
                 </Grid>
               ))}
             </Grid>
@@ -561,19 +662,216 @@ const AllEmployees = () => {
 
             <Grid item size={{ xs: 2, sm: 4, md: 4 }}>
               <Typography sx={{ fontSize: "15px", mb: 0.5 }}>Role</Typography>
-              <TextField
-                placeholder="Enter role"
-                value={newEmployee.role}
-                onChange={(e) => handleChange("role", e.target.value)}
-                fullWidth
-                required
-                sx={{
-                  "& .MuiOutlinedInput-root": {
+              <FormControl fullWidth required>
+                <Select
+                  value={newEmployee.role}
+                  onChange={(e) => handleChange("role", e.target.value)}
+                  displayEmpty
+                  sx={{
                     borderRadius: "20px",
-                  },
-                }}
-              />
+                    "& .MuiOutlinedInput-notchedOutline": {
+                      borderRadius: "20px",
+                    },
+                  }}
+                >
+                  <MenuItem value="" disabled>
+                    Select Role
+                  </MenuItem>
+                  <MenuItem value="Developer">Developer</MenuItem>
+                  <MenuItem value="Tester">Tester</MenuItem>
+                  <MenuItem value="HR Team">HR Team</MenuItem>
+                  <MenuItem value="Accountant">Accountant</MenuItem>
+                  <MenuItem value="AWS Team">AWS Team</MenuItem>
+                </Select>
+              </FormControl>
             </Grid>
+
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "center",
+                width: "100%",
+                mt: 2,
+              }}
+            >
+              <Grid
+                container
+                spacing={2}
+                alignItems="center"
+                sx={{ maxWidth: "md", width: "100%" }}
+              >
+                {/* Upload box */}
+                <Grid item xs={12} sx={{ width: "50%" }}>
+                  <Box
+                    sx={{
+                      border: "1px dashed #b08cff",
+                      borderRadius: 2,
+                      backgroundColor: "#f8f5ff",
+                      p: 2,
+                      textAlign: "center",
+                    }}
+                  >
+                    <CloudUploadIcon sx={{ fontSize: 40, color: "#7e57c2" }} />
+                    <Typography
+                      variant="subtitle1"
+                      sx={{ mt: 1, fontWeight: 500 }}
+                    >
+                      Upload Image
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      sx={{ color: "text.secondary", fontSize: "13px" }}
+                    >
+                      Image size must be less than 2MB
+                    </Typography>
+
+                    <Button
+                      variant="contained"
+                      component="label"
+                      sx={{
+                        mt: 2,
+                        borderRadius: "999px",
+                        textTransform: "none",
+                        backgroundColor: "white",
+                        color: "black",
+                        fontWeight: 500,
+                        fontSize: "14px",
+                        px: 3,
+                      }}
+                    >
+                      {newEmployee.image ? "Change Image" : "Upload Image"}
+                      <input
+                        type="file"
+                        accept="image/*"
+                        hidden
+                        onChange={handleImageUpload}
+                      />
+                    </Button>
+                  </Box>
+                </Grid>
+
+                {/* Preview section beside upload box */}
+                <Grid
+                  item
+                  xs={12}
+                  sm={6}
+                  md={6}
+                  sx={{
+                    display: "flex",
+                    justifyContent: "center",
+                    width: "40%",
+                  }}
+                >
+                  {newEmployee.image ? (
+                    <Box
+                      sx={{
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        border: "1px solid #ddd",
+                        borderRadius: 2,
+                        p: 2,
+                      }}
+                    >
+                      <img
+                        src={
+                          typeof newEmployee.image === "string"
+                            ? newEmployee.image.startsWith("http")
+                              ? newEmployee.image
+                              : `${import.meta.env.VITE_API_BASE_URL}/uploads/${
+                                  newEmployee.image
+                                }`
+                            : URL.createObjectURL(newEmployee.image as File)
+                        }
+                        alt="Preview"
+                        style={{
+                          width: "130px",
+                          height: "130px",
+                          borderRadius: "10px",
+                          objectFit: "cover",
+                        }}
+                      />
+                      <Typography variant="body2" sx={{ mt: 1 }}>
+                        <strong>Filename:</strong>{" "}
+                        {typeof newEmployee.image === "string"
+                          ? newEmployee.image
+                          : (newEmployee.image as File).name}
+                      </Typography>
+                      <Typography variant="body2">
+                        <strong>File Size:</strong>{" "}
+                        {typeof newEmployee.image === "string"
+                          ? "-"
+                          : `${(
+                              (newEmployee.image as File).size / 1024
+                            ).toFixed(2)} KB`}
+                      </Typography>
+                    </Box>
+                  ) : (
+                    <Typography
+                      variant="body2"
+                      sx={{ color: "text.secondary", textAlign: "center" }}
+                    >
+                      No image selected
+                    </Typography>
+                  )}
+                </Grid>
+              </Grid>
+            </Box>
+
+            <Grid item size={{ xs: 2, sm: 4, md: 4 }}>
+              <Box sx={{ display: "flex", alignItems: "center" }}>
+                <Checkbox
+                  checked={newEmployee.laptop || false}
+                  onChange={(e) =>
+                    handleChange("laptop", e.target.checked.toString())
+                  }
+                  sx={{
+                    color: "#906aff",
+                    "&.Mui-checked": {
+                      color: "#906aff",
+                    },
+                  }}
+                />
+                <Typography>Laptop</Typography>
+              </Box>
+            </Grid>
+            <Grid item size={{ xs: 2, sm: 4, md: 4 }}>
+              <Box sx={{ display: "flex", alignItems: "center" }}>
+                <Checkbox
+                  checked={newEmployee.headphones || false}
+                  onChange={(e) =>
+                    handleChange("headphones", e.target.checked.toString())
+                  }
+                  sx={{
+                    color: "#906aff",
+                    "&.Mui-checked": {
+                      color: "#906aff",
+                    },
+                  }}
+                />
+                <Typography>Headphones</Typography>
+              </Box>
+            </Grid>
+            <Grid item size={{ xs: 2, sm: 4, md: 4 }}>
+              <Box sx={{ display: "flex", alignItems: "center" }}>
+                <Checkbox
+                  checked={newEmployee.monitor || false}
+                  onChange={(e) =>
+                    handleChange("monitor", e.target.checked.toString())
+                  }
+                  sx={{
+                    color: "#906aff",
+                    "&.Mui-checked": {
+                      color: "#906aff",
+                    },
+                  }}
+                />
+                <Typography>Monitor</Typography>
+              </Box>
+            </Grid>
+
+            {/* Equipment Checkboxes */}
 
             <Grid item size={{ xs: 2, sm: 4, md: 4 }}>
               <Typography sx={{ fontSize: "15px", mb: 0.5 }}>
@@ -679,8 +977,9 @@ const AllEmployees = () => {
             <CloseIcon sx={{ fontSize: "18px" }} />
           </IconButton>
         </DialogTitle>
+        <Divider sx={{ mb: 1 }} />
         <DialogContent>
-          <Typography sx={{ mb: 2 }}>
+          <Typography sx={{ mb: 1 }}>
             Are you sure you want to delete the employee -{" "}
             <strong>
               {employees.find((emp) => emp.id === employeeToDelete)?.name || ""}
