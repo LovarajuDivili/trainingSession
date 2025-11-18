@@ -16,6 +16,8 @@ import AccountCircle from "@mui/icons-material/AccountCircle";
 import LogoutIcon from "@mui/icons-material/Logout";
 import SwapHorizIcon from "@mui/icons-material/SwapHoriz";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
+import Brightness4Icon from "@mui/icons-material/Brightness4"; // Moon icon for dark mode
+import Brightness7Icon from "@mui/icons-material/Brightness7"; // Sun icon for light mode
 import { useCartDrawer } from "../context/CartDrawerContext";
 import { useNavigate } from "react-router-dom";
 import { useLocation } from "react-router-dom";
@@ -29,6 +31,8 @@ import {
   Logout_Success,
 } from "../common/labelConstants";
 import { useCart } from "../context/CartContext";
+import { useTheme } from "../context/ThemeContext";
+import { useThemeColors } from "../hooks/useThemeColors";
 
 const Header = ({ role: propRole }: { role?: string }) => {
   const [showLogout, setShowLogout] = useState<boolean>(false);
@@ -36,6 +40,8 @@ const Header = ({ role: propRole }: { role?: string }) => {
   const [openSnackbar, setOpenSnackbar] = useState<boolean>(false);
   const { cart } = useCart();
   const { clearCart } = useCart();
+  const { themeMode, toggleTheme } = useTheme();
+  const colors = useThemeColors();
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -84,7 +90,7 @@ const Header = ({ role: propRole }: { role?: string }) => {
         top: 0,
         left: 0,
         right: 0,
-        backgroundColor: "#906aff",
+        backgroundColor: colors.background.header,
         width: "100%",
         height: "50px",
         display: "flex",
@@ -163,6 +169,15 @@ const Header = ({ role: propRole }: { role?: string }) => {
           marginRight: "10px",
         }}
       >
+        {/* Theme Toggle Button */}
+        <IconButton 
+          onClick={toggleTheme} 
+          sx={{ color: "white" }}
+          title={themeMode === 'light' ? 'Switch to dark mode' : 'Switch to light mode'}
+        >
+          {themeMode === 'light' ? <Brightness4Icon /> : <Brightness7Icon />}
+        </IconButton>
+
         {role?.toLowerCase() === "accountant" && (
           <Button
             variant="contained"
@@ -186,7 +201,7 @@ const Header = ({ role: propRole }: { role?: string }) => {
             sx={{
               textTransform: "none",
               backgroundColor: "white",
-              color: "#906aff",
+              color: colors.primary.main,
               borderRadius: "20px",
               boxShadow: 2,
               "&:hover": {
@@ -226,7 +241,6 @@ const Header = ({ role: propRole }: { role?: string }) => {
               width: "125px",
               height: "35px",
               borderRadius: "50%",
-
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -245,7 +259,7 @@ const Header = ({ role: propRole }: { role?: string }) => {
           </Box>
 
           <Box sx={{ position: "relative" }}>
-            <IconButton onClick={handleIconClick} sx={{ color: "#906aff" }}>
+            <IconButton onClick={handleIconClick} sx={{ color: colors.primary.main }}>
               <AccountCircle sx={{ fontSize: 43 }} />
             </IconButton>
 
@@ -255,7 +269,7 @@ const Header = ({ role: propRole }: { role?: string }) => {
                   position: "absolute",
                   top: "55px",
                   right: 0,
-                  backgroundColor: "white",
+                  backgroundColor: colors.background.white,
                   boxShadow: 3,
                   borderRadius: 20,
                 }}
@@ -267,12 +281,12 @@ const Header = ({ role: propRole }: { role?: string }) => {
                     width: "120px",
                     height: "40px",
                     borderRadius: "20px",
-                    backgroundColor: "white",
-                    color: "#000",
+                    backgroundColor: colors.background.white,
+                    color: colors.text.primary,
                     boxShadow: 3,
                     textTransform: "none",
                     "&:hover": {
-                      backgroundColor: "#f0f0f0",
+                      backgroundColor: colors.state.hoverLight,
                     },
                   }}
                 >
@@ -290,7 +304,7 @@ const Header = ({ role: propRole }: { role?: string }) => {
           <Button
             onClick={cancelLogout}
             sx={{
-              color: "#906aff", // Purple color
+              color: colors.primary.main,
             }}
           >
             {Cancel.CANCEL}
@@ -300,9 +314,9 @@ const Header = ({ role: propRole }: { role?: string }) => {
             color="primary"
             variant="contained"
             sx={{
-              backgroundColor: "#906aff",
+              backgroundColor: colors.primary.main,
               "&:hover": {
-                backgroundColor: "#7a5aff", // darker shade for hover
+                backgroundColor: colors.primary.dark,
               },
             }}
           >

@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useEffect } from "react";
 import {
   Box,
@@ -42,19 +41,19 @@ import { Snackbar, Alert } from "@mui/material";
 import NoData from "../../common/noData";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import { useNavigate } from "react-router-dom";
-//import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
+import "./AllEmployees.css";
+import axios from "axios";
+//import { colors } from "../../common/colorConstants";
+import { useThemeColors } from "../../hooks/useThemeColors";
 
 const CustomNoRowsOverlay = () => {
+  const colors = useThemeColors();
   return (
     <Box
+      className="no-rows-overlay"
       sx={{
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        height: "100%",
-        gap: 2,
-        p: 3,
+        backgroundColor: colors.background.card, // Add this
+        color: colors.text.primary,
       }}
     >
       <NoData
@@ -96,10 +95,11 @@ const AllEmployees = () => {
   const dispatch = useAppDispatch();
   const employees = useAppSelector((state) => state.employees.employees);
   const navigate = useNavigate();
+  const colors = useThemeColors();
 
   const handleCardClick = (employeeId: string) => {
     navigate(`/admin/all-employees/employeedetails/${employeeId}`, {
-      state: { from: "/admin/all-employees" }, // Store where we came from
+      state: { from: "/admin/all-employees" },
     });
   };
 
@@ -133,7 +133,10 @@ const AllEmployees = () => {
       emp.role.toLowerCase().includes(searchText.toLowerCase())
   );
 
-  const handleSnackbarClose = (_?: any, reason?: string) => {
+  const handleSnackbarClose = (
+    _: React.SyntheticEvent | Event,
+    reason?: string
+  ) => {
     if (reason === "clickaway") return;
     setSnackbarOpen(false);
   };
@@ -166,6 +169,7 @@ const AllEmployees = () => {
     }
     setOpenDialog(true);
   };
+
   const handleCloseDialog = () => {
     setOpenDialog(false);
     setIsEditing(false);
@@ -199,6 +203,7 @@ const AllEmployees = () => {
     newEmployee.id &&
     newEmployee.skills.length > 0
   );
+
   const handleChange = (field: keyof Employee, value: string) => {
     setNewEmployee((prev) => ({ ...prev, [field]: value }));
   };
@@ -231,11 +236,17 @@ const AllEmployees = () => {
       dispatch(fetchEmployees());
       handleCloseDialog();
       setSnackbarOpen(true);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error saving employee:", error);
 
-      const message =
-        error?.detail || `Failed to ${isEditing ? "update" : "add"} employee`;
+      let message = `Failed to ${isEditing ? "update" : "add"} employee`;
+
+      if (axios.isAxiosError(error)) {
+        message = error.response?.data?.detail || message;
+      } else if (error instanceof Error) {
+        message = error.message || message;
+      }
+
       setSnackbarMessage(message);
       setSnackbarSeverity("error");
       setSnackbarOpen(true);
@@ -257,9 +268,18 @@ const AllEmployees = () => {
       setDeleteConfirmOpen(false);
       setEmployeeToDelete(null);
       setConfirmChecked(false);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error deleting employee:", error);
-      alert(error?.detail || "⚠️ Failed to delete employee");
+
+      let message = "⚠️ Failed to delete employee";
+
+      if (axios.isAxiosError(error)) {
+        message = error.response?.data?.detail || message;
+      } else if (error instanceof Error) {
+        message = error.message || message;
+      }
+
+      alert(message);
     }
   };
 
@@ -285,18 +305,9 @@ const AllEmployees = () => {
       headerName: "Name",
       flex: 1.5,
       renderCell: (params) => {
-        const { image, name } = params.row; // Use params.row instead of employee
-
+        const { image, name } = params.row;
         return (
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              height: "100%",
-              pl: 1,
-              gap: 1,
-            }}
-          >
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
             <img
               src={`data:image/jpeg;base64,${image}`}
               alt={name || "Employee"}
@@ -310,7 +321,10 @@ const AllEmployees = () => {
                 e.currentTarget.src = "/placeholder.jpg";
               }}
             />
-            <Typography variant="body1" sx={{ fontWeight: 500 }}>
+            <Typography
+              variant="body1"
+              sx={{ fontWeight: 500, color: colors.text.primary }}
+            >
               {name || "No Name"}
             </Typography>
           </Box>
@@ -328,24 +342,13 @@ const AllEmployees = () => {
       renderCell: (params: GridRenderCellParams<Employee>) => (
         <>
           {params?.row?.skills?.map((each, index) => (
-            <button
-              key={index}
-              style={{
-                margin: "5px",
-                backgroundColor: "#906aff",
-                color: "white",
-                padding: "6px 6px",
-                border: "none",
-                borderRadius: "6px",
-              }}
-            >
+            <button key={index} className="skill-button">
               {each}
             </button>
           ))}
         </>
       ),
     },
-
     {
       field: "currentDate",
       headerName: "Current Date",
@@ -404,7 +407,10 @@ const AllEmployees = () => {
             sx={{ ml: 0.5 }}
           >
             <ViewCompactIcon
-              sx={{ fontSize: "35px", color: cardView ? "black" : "#666" }}
+              sx={{
+                fontSize: "35px",
+                color: cardView ? colors.text.primary : colors.text.gray,
+              }}
             />
           </IconButton>
         }
@@ -413,7 +419,13 @@ const AllEmployees = () => {
       {loading ? (
         <Typography>{Loading.LOADING}</Typography>
       ) : (
-        <Box sx={{ height: cardView ? "auto" : 500, width: "100%" }}>
+        <Box
+          sx={{
+            height: cardView ? "auto" : 500,
+            width: "100%",
+            backgroundColor: colors.background.white,
+          }}
+        >
           {cardView ? (
             <Grid container spacing={2}>
               {filteredEmployees.map((emp) => (
@@ -422,23 +434,17 @@ const AllEmployees = () => {
                     onClick={() => handleCardClick(emp.id)}
                     sx={{
                       p: 2,
-                      m: 2,
-                      border: "1px solid #ddd",
+                      border: `1px solid ${colors.border.light}`,
                       borderRadius: 3,
-                      boxShadow: 1,
-                      backgroundColor: "#fff",
-                      justifyContent: "space-between",
+                      boxShadow: `0 2px 8px ${colors.shadow.light}`,
+                      backgroundColor: colors.background.card,
                       height: "100%",
-                      width: "160px",
-                      maxHeight: "220px",
-                      wordWrap: "break-word",
-                      overflowWrap: "break-word",
+                      transition: "transform 0.2s, box-shadow 0.2s",
                       "&:hover": {
-                        transform: "scale(1.02)",
+                        transform: "translateY(-2px)",
+                        boxShadow: `0 4px 12px ${colors.shadow.medium}`,
                         cursor: "pointer",
-                        boxShadow: 3,
                       },
-                      transition: "transform 0.2s",
                     }}
                   >
                     <Box>
@@ -446,36 +452,31 @@ const AllEmployees = () => {
                         display="flex"
                         justifyContent="space-between"
                         alignItems="center"
+                        mb={2}
                       >
                         <Typography
                           variant="h6"
-                          sx={{ fontWeight: 600, color: "#906aff" }}
+                          sx={{
+                            fontWeight: 600,
+                            color: colors.primary.main,
+                          }}
                         >
                           {emp.name}
                         </Typography>
-
                         {emp.image ? (
-                          <Box
-                            sx={{
-                              display: "flex",
-                              justifyContent: "center",
-                              mb: 1,
-                            }}
-                          >
+                          <Box>
                             <img
                               src={
                                 typeof emp.image === "string"
                                   ? emp.image.startsWith("http")
                                     ? emp.image
-                                    : `${
-                                        import.meta.env.VITE_API_BASE_URL
-                                      }/uploads/${emp.image}`
+                                    : `data:image/jpeg;base64,${emp.image}`
                                   : URL.createObjectURL(emp.image as File)
                               }
                               alt={emp.name}
                               style={{
-                                width: "60px",
-                                height: "60px",
+                                width: 60,
+                                height: 60,
                                 borderRadius: "50%",
                                 objectFit: "cover",
                               }}
@@ -487,28 +488,42 @@ const AllEmployees = () => {
                               width: 60,
                               height: 60,
                               borderRadius: "50%",
-                              backgroundColor: "#ccc",
+                              backgroundColor: colors.special.placeholder,
                               display: "flex",
                               alignItems: "center",
                               justifyContent: "center",
-                              fontSize: "20px",
-                              color: "#fff",
+                              color: colors.special.placeholderText,
+                              fontSize: 20,
+                              fontWeight: "bold",
                             }}
                           >
                             {emp.name.charAt(0).toUpperCase()}
                           </Box>
                         )}
                       </Box>
-                      <Typography variant="body2" sx={{ mt: 1 }}>
+
+                      <Typography
+                        variant="body2"
+                        sx={{ mt: 1, color: colors.text.primary }}
+                      >
                         <strong>Emp Id:</strong> {emp.id}
                       </Typography>
-                      <Typography variant="body2" sx={{ mt: 1 }}>
+                      <Typography
+                        variant="body2"
+                        sx={{ mt: 1, color: colors.text.primary }}
+                      >
                         <strong>Email:</strong> {emp.email}
                       </Typography>
-                      <Typography variant="body2">
+                      <Typography
+                        variant="body2"
+                        sx={{ color: colors.text.primary }}
+                      >
                         <strong>Role:</strong> {emp.role}
                       </Typography>
-                      <Typography variant="body2">
+                      <Typography
+                        variant="body2"
+                        sx={{ color: colors.text.primary }}
+                      >
                         <strong>Joined:</strong>{" "}
                         {emp.joinDate
                           ? new Date(emp.joinDate).toLocaleDateString()
@@ -528,12 +543,12 @@ const AllEmployees = () => {
                             <Box
                               key={i}
                               sx={{
-                                fontSize: 12,
-                                px: 1,
-                                py: "2px",
-                                bgcolor: "#906aff",
-                                color: "#fff",
+                                fontSize: "12px",
+                                padding: "4px 8px",
+                                backgroundColor: colors.ui.chip.background,
+                                color: colors.ui.chip.text,
                                 borderRadius: "6px",
+                                border: `1px solid ${colors.ui.chip.border}`,
                               }}
                             >
                               {s}
@@ -561,11 +576,59 @@ const AllEmployees = () => {
                 }}
                 sx={{
                   "& .MuiDataGrid-columnHeaders": {
-                    color: "#906aff !important",
+                    backgroundColor: colors.background.lightGray,
+                    color: colors.text.primary,
                     fontSize: 17,
+                    borderBottom: `1px solid ${colors.border.light}`,
+                  },
+                  "& .MuiDataGrid-columnHeader": {
+                    backgroundColor: colors.background.lightGray,
+                    "&:focus, &:focus-within": {
+                      outline: "none",
+                    },
                   },
                   "& .MuiDataGrid-columnHeaderTitle": {
                     fontWeight: 600,
+                    color: colors.text.primary,
+                  },
+                  "& .MuiDataGrid-cell": {
+                    color: colors.text.primary,
+                    borderBottom: `1px solid ${colors.border.light}`,
+                    backgroundColor: colors.background.card,
+                  },
+                  "& .MuiDataGrid-row": {
+                    backgroundColor: colors.background.card,
+                    "&:hover": {
+                      backgroundColor: colors.state.hoverLight,
+                    },
+                  },
+                  "& .MuiTablePagination-root": {
+                    color: colors.text.primary,
+                    backgroundColor: colors.background.card,
+                  },
+                  "& .MuiDataGrid-menuIcon": {
+                    color: colors.text.primary,
+                  },
+                  "& .MuiDataGrid-sortIcon": {
+                    color: colors.text.primary,
+                  },
+                  "& .MuiDataGrid-footerContainer": {
+                    backgroundColor: colors.background.lightGray,
+                    borderTop: `1px solid ${colors.border.light}`,
+                    color: colors.text.primary,
+                  },
+                  "& .MuiDataGrid-toolbarContainer": {
+                    backgroundColor: colors.background.lightGray,
+                    color: colors.text.primary,
+                  },
+                  // Main DataGrid background
+                  backgroundColor: colors.background.card,
+                  border: `1px solid ${colors.border.light}`,
+                  "& .MuiDataGrid-virtualScroller": {
+                    backgroundColor: colors.background.card,
+                  },
+                  "& .MuiDataGrid-main": {
+                    backgroundColor: colors.background.card,
                   },
                 }}
               />
@@ -579,34 +642,33 @@ const AllEmployees = () => {
         onClose={handleCloseDialog}
         maxWidth="md"
         fullWidth
+        PaperProps={{
+          sx: {
+            backgroundColor: colors.background.card,
+            color: colors.text.primary,
+          },
+        }}
       >
         <Box
+          className="dialog-header"
           sx={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            padding: "20px",
+            backgroundColor: colors.background.card,
+            color: colors.text.primary,
           }}
         >
-          <DialogTitle sx={{ p: 0, fontSize: "25px" }}>
-            {dialogTitle}
-          </DialogTitle>
-          <Box
+          <DialogTitle
             sx={{
-              display: "flex",
-              justifyContent: "flex-end",
-              gap: 2,
-              mt: 0,
-              mb: 1,
+              color: colors.text.primary,
+              padding: 0,
+              fontSize: "25px",
             }}
           >
+            {dialogTitle}
+          </DialogTitle>
+          <Box className="dialog-actions">
             <Button
               variant="outlined"
-              sx={{
-                color: "#d81b60",
-                borderColor: "#d81b60",
-                textTransform: "uppercase",
-              }}
+              className="cancel-button"
               onClick={handleCloseDialog}
             >
               Cancel
@@ -616,7 +678,7 @@ const AllEmployees = () => {
               color="primary"
               onClick={handleSaveEmployee}
               disabled={isSaveDisabled}
-              sx={{ backgroundColor: "#906aff", textTransform: "uppercase" }}
+              className="save-button"
             >
               {saveButtonLabel}
             </Button>
@@ -628,7 +690,11 @@ const AllEmployees = () => {
         <DialogContent sx={{ mt: 2, pt: 0 }}>
           <Grid container spacing={2} sx={{ pr: 1 }}>
             <Grid item size={{ xs: 2, sm: 4, md: 4 }}>
-              <Typography sx={{ fontSize: "15px", mb: 0.5 }}>Name</Typography>
+              <Typography
+                sx={{ fontSize: "15px", mb: 0.5, color: colors.text.primary }}
+              >
+                Name
+              </Typography>
               <TextField
                 placeholder="Enter name"
                 value={newEmployee.name}
@@ -637,14 +703,24 @@ const AllEmployees = () => {
                 required
                 sx={{
                   "& .MuiOutlinedInput-root": {
-                    borderRadius: "20px",
+                    color: colors.text.primary,
+                    backgroundColor: colors.background.white, // This ensures input background
+                    "& fieldset": {
+                      borderColor: colors.border.light,
+                    },
+                    "&:hover fieldset": {
+                      borderColor: colors.primary.main,
+                    },
+                    "&.Mui-focused fieldset": {
+                      borderColor: colors.primary.main,
+                    },
                   },
                 }}
               />
             </Grid>
 
             <Grid item size={{ xs: 2, sm: 4, md: 4 }}>
-              <Typography sx={{ fontSize: "15px", mb: 0.5 }}>Email</Typography>
+              <Typography className="form-label">Email</Typography>
               <TextField
                 placeholder="Enter email"
                 value={newEmployee.email}
@@ -652,25 +728,47 @@ const AllEmployees = () => {
                 fullWidth
                 required
                 disabled={isEditing}
+                className="form-field"
                 sx={{
                   "& .MuiOutlinedInput-root": {
-                    borderRadius: "20px",
+                    color: colors.text.primary,
+                    "& fieldset": {
+                      borderColor: colors.border.light,
+                    },
+                    "&:hover fieldset": {
+                      borderColor: colors.primary.main,
+                    },
+                    "&.Mui-focused fieldset": {
+                      borderColor: colors.primary.main,
+                    },
                   },
                 }}
               />
             </Grid>
 
             <Grid item size={{ xs: 2, sm: 4, md: 4 }}>
-              <Typography sx={{ fontSize: "15px", mb: 0.5 }}>Role</Typography>
+              <Typography
+                className="form-label"
+                sx={{ color: colors.text.primary }}
+              >
+                Role
+              </Typography>
               <FormControl fullWidth required>
                 <Select
                   value={newEmployee.role}
                   onChange={(e) => handleChange("role", e.target.value)}
                   displayEmpty
+                  className="form-field"
                   sx={{
-                    borderRadius: "20px",
+                    color: colors.text.primary,
                     "& .MuiOutlinedInput-notchedOutline": {
-                      borderRadius: "20px",
+                      borderColor: colors.border.light,
+                    },
+                    "&:hover .MuiOutlinedInput-notchedOutline": {
+                      borderColor: colors.primary.main,
+                    },
+                    "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                      borderColor: colors.primary.main,
                     },
                   }}
                 >
@@ -700,27 +798,32 @@ const AllEmployees = () => {
                 alignItems="center"
                 sx={{ maxWidth: "md", width: "100%" }}
               >
-                {/* Upload box */}
                 <Grid item xs={12} sx={{ width: "50%" }}>
                   <Box
+                    className="upload-container"
                     sx={{
-                      border: "1px dashed #b08cff",
+                      flex: 1,
+                      border: `1px dashed ${colors.border.dashed}`,
                       borderRadius: 2,
-                      backgroundColor: "#f8f5ff",
-                      p: 2,
+                      backgroundColor: colors.background.upload,
+                      padding: 3,
                       textAlign: "center",
                     }}
                   >
-                    <CloudUploadIcon sx={{ fontSize: 40, color: "#7e57c2" }} />
+                    <CloudUploadIcon
+                      sx={{ fontSize: 40, color: colors.special.uploadIcon }}
+                    />
                     <Typography
                       variant="subtitle1"
-                      sx={{ mt: 1, fontWeight: 500 }}
+                      className="upload-title"
+                      sx={{ clor: colors.text.primary }}
                     >
                       Upload Image
                     </Typography>
                     <Typography
                       variant="body2"
-                      sx={{ color: "text.secondary", fontSize: "13px" }}
+                      className="upload-subtitle"
+                      sx={{ clor: colors.text.secondary }}
                     >
                       Image size must be less than 2MB
                     </Typography>
@@ -728,15 +831,17 @@ const AllEmployees = () => {
                     <Button
                       variant="contained"
                       component="label"
+                      className="upload-button"
                       sx={{
-                        mt: 2,
-                        borderRadius: "999px",
+                        backgroundColor: colors.primary.main,
+                        color: colors.text.white,
+                        borderRadius: "20px",
                         textTransform: "none",
-                        backgroundColor: "white",
-                        color: "black",
                         fontWeight: 500,
-                        fontSize: "14px",
                         px: 3,
+                        "&:hover": {
+                          backgroundColor: colors.primary.dark,
+                        },
                       }}
                     >
                       {newEmployee.image ? "Change Image" : "Upload Image"}
@@ -750,7 +855,6 @@ const AllEmployees = () => {
                   </Box>
                 </Grid>
 
-                {/* Preview section beside upload box */}
                 <Grid
                   item
                   xs={12}
@@ -763,42 +867,31 @@ const AllEmployees = () => {
                   }}
                 >
                   {newEmployee.image ? (
-                    <Box
-                      sx={{
-                        display: "flex",
-                        flexDirection: "column",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        border: "1px solid #ddd",
-                        borderRadius: 2,
-                        p: 2,
-                      }}
-                    >
+                    <Box className="preview-container">
                       <img
                         src={
                           typeof newEmployee.image === "string"
                             ? newEmployee.image.startsWith("http")
                               ? newEmployee.image
-                              : `${import.meta.env.VITE_API_BASE_URL}/uploads/${
-                                  newEmployee.image
-                                }`
+                              : newEmployee.image
                             : URL.createObjectURL(newEmployee.image as File)
                         }
                         alt="Preview"
-                        style={{
-                          width: "130px",
-                          height: "130px",
-                          borderRadius: "10px",
-                          objectFit: "cover",
-                        }}
+                        className="preview-image"
                       />
-                      <Typography variant="body2" sx={{ mt: 1 }}>
+                      <Typography
+                        variant="body2"
+                        sx={{ mt: 1, color: colors.text.primary }}
+                      >
                         <strong>Filename:</strong>{" "}
                         {typeof newEmployee.image === "string"
                           ? newEmployee.image
                           : (newEmployee.image as File).name}
                       </Typography>
-                      <Typography variant="body2">
+                      <Typography
+                        variant="body2"
+                        sx={{ color: colors.text.primary }}
+                      >
                         <strong>File Size:</strong>{" "}
                         {typeof newEmployee.image === "string"
                           ? "-"
@@ -810,7 +903,7 @@ const AllEmployees = () => {
                   ) : (
                     <Typography
                       variant="body2"
-                      sx={{ color: "text.secondary", textAlign: "center" }}
+                      sx={{ color: colors.text.secondary, textAlign: "center" }}
                     >
                       No image selected
                     </Typography>
@@ -820,35 +913,25 @@ const AllEmployees = () => {
             </Box>
 
             <Grid item size={{ xs: 2, sm: 4, md: 4 }}>
-              <Box sx={{ display: "flex", alignItems: "center" }}>
+              <Box className="checkbox-container">
                 <Checkbox
                   checked={newEmployee.laptop || false}
                   onChange={(e) =>
                     handleChange("laptop", e.target.checked.toString())
                   }
-                  sx={{
-                    color: "#906aff",
-                    "&.Mui-checked": {
-                      color: "#906aff",
-                    },
-                  }}
+                  className="checkbox-primary"
                 />
                 <Typography>Laptop</Typography>
               </Box>
             </Grid>
             <Grid item size={{ xs: 2, sm: 4, md: 4 }}>
-              <Box sx={{ display: "flex", alignItems: "center" }}>
+              <Box className="checkbox-container">
                 <Checkbox
                   checked={newEmployee.headphones || false}
                   onChange={(e) =>
                     handleChange("headphones", e.target.checked.toString())
                   }
-                  sx={{
-                    color: "#906aff",
-                    "&.Mui-checked": {
-                      color: "#906aff",
-                    },
-                  }}
+                  className="checkbox-primary"
                 />
                 <Typography>Headphones</Typography>
               </Box>
@@ -860,23 +943,14 @@ const AllEmployees = () => {
                   onChange={(e) =>
                     handleChange("monitor", e.target.checked.toString())
                   }
-                  sx={{
-                    color: "#906aff",
-                    "&.Mui-checked": {
-                      color: "#906aff",
-                    },
-                  }}
+                  className="checkbox-primary"
                 />
                 <Typography>Monitor</Typography>
               </Box>
             </Grid>
 
-            {/* Equipment Checkboxes */}
-
             <Grid item size={{ xs: 2, sm: 4, md: 4 }}>
-              <Typography sx={{ fontSize: "15px", mb: 0.5 }}>
-                Join Date
-              </Typography>
+              <Typography className="form-label">Join Date</Typography>
               <TextField
                 type="date"
                 value={newEmployee.joinDate}
@@ -884,16 +958,31 @@ const AllEmployees = () => {
                 fullWidth
                 InputLabelProps={{ shrink: true }}
                 required
+                className="form-field"
                 sx={{
                   "& .MuiOutlinedInput-root": {
-                    borderRadius: "20px",
+                    color: colors.text.primary,
+                    "& fieldset": {
+                      borderColor: colors.border.light,
+                    },
+                    "&:hover fieldset": {
+                      borderColor: colors.primary.main,
+                    },
+                    "&.Mui-focused fieldset": {
+                      borderColor: colors.primary.main,
+                    },
                   },
                 }}
               />
             </Grid>
 
             <Grid item size={{ xs: 2, sm: 4, md: 4 }}>
-              <Typography sx={{ fontSize: "15px", mb: 0.5 }}>ID</Typography>
+              <Typography
+                className="form-label"
+                sx={{ color: colors.text.primary }}
+              >
+                ID
+              </Typography>
               <TextField
                 placeholder="Enter ID"
                 value={newEmployee.id}
@@ -901,25 +990,44 @@ const AllEmployees = () => {
                 fullWidth
                 required
                 InputProps={{ readOnly: true }}
+                className="form-field"
                 sx={{
                   "& .MuiOutlinedInput-root": {
-                    borderRadius: "20px",
+                    color: colors.text.primary,
+                    backgroundColor: colors.background.disabled,
+                    "& fieldset": {
+                      borderColor: colors.border.light,
+                    },
                   },
                 }}
               />
             </Grid>
 
             <Grid item size={{ xs: 2, sm: 4, md: 4 }}>
-              <Typography sx={{ fontSize: "15px", mb: 0.5 }}>Skills</Typography>
+              <Typography
+                sx={{ fontSize: "15px", mb: 0.5, color: colors.text.primary }}
+              >
+                Skills
+              </Typography>
               <TextField
                 placeholder="Type a skill and press Enter"
                 value={skillInput}
                 onChange={(e) => setSkillInput(e.target.value)}
                 onKeyDown={handleSkillKeyDown}
                 fullWidth
+                className="form-field"
                 sx={{
                   "& .MuiOutlinedInput-root": {
-                    borderRadius: "20px",
+                    color: colors.text.primary,
+                    "& fieldset": {
+                      borderColor: colors.border.light,
+                    },
+                    "&:hover fieldset": {
+                      borderColor: colors.primary.main,
+                    },
+                    "&.Mui-focused fieldset": {
+                      borderColor: colors.primary.main,
+                    },
                   },
                 }}
               />
@@ -933,10 +1041,16 @@ const AllEmployees = () => {
                     label={skill}
                     onDelete={() => handleDeleteSkill(skill)}
                     variant="outlined"
+                    className="skill-chip-form"
                     sx={{
-                      backgroundColor: "white",
-                      color: "#906aff",
-                      borderColor: "#906aff",
+                      color: colors.primary.main,
+                      borderColor: colors.primary.main,
+                      "& .MuiChip-deleteIcon": {
+                        color: colors.primary.main,
+                        "&:hover": {
+                          color: colors.primary.dark,
+                        },
+                      },
                     }}
                   />
                 ))}
@@ -945,41 +1059,26 @@ const AllEmployees = () => {
           </Grid>
         </DialogContent>
       </Dialog>
-      {/* Delete Confirmation Dialog */}
+
       <Dialog
         open={deleteConfirmOpen}
         onClose={handleCancelDelete}
         maxWidth="sm"
         fullWidth
       >
-        <DialogTitle
-          sx={{
-            fontSize: "20px",
-            fontWeight: 600,
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-          }}
-        >
+        <DialogTitle className="delete-dialog-title">
           Confirm Delete
           <IconButton
             onClick={handleCancelDelete}
             size="small"
-            sx={{
-              backgroundColor: "#f5f5f5",
-              color: "#d81b1b",
-              "&:hover": { backgroundColor: "#f44336", color: "#fff" },
-              width: 28,
-              height: 28,
-              borderRadius: "50%",
-            }}
+            className="delete-close-button"
           >
             <CloseIcon sx={{ fontSize: "18px" }} />
           </IconButton>
         </DialogTitle>
         <Divider sx={{ mb: 1 }} />
         <DialogContent>
-          <Typography sx={{ mb: 1 }}>
+          <Typography className="delete-confirm-text">
             Are you sure you want to delete the employee -{" "}
             <strong>
               {employees.find((emp) => emp.id === employeeToDelete)?.name || ""}
@@ -1006,14 +1105,16 @@ const AllEmployees = () => {
             </Typography>
           </Box>
         </DialogContent>
-        <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 2, p: 2 }}>
+        <Box className="delete-actions">
           <Button
             variant="outlined"
             onClick={handleCancelDelete}
+            className="delete-cancel-button"
             sx={{
-              color: "#666",
-              borderColor: "#666",
-              textTransform: "uppercase",
+              borderColor: "primary.main",
+              "&:hover": {
+                borderColor: "primary.main",
+              },
             }}
           >
             Cancel
@@ -1023,19 +1124,13 @@ const AllEmployees = () => {
             color="error"
             onClick={handleConfirmDelete}
             disabled={!confirmChecked}
-            sx={{
-              backgroundColor: "#d81b1bff",
-              textTransform: "uppercase",
-              "&:disabled": {
-                backgroundColor: "#f5f5f5",
-                color: "#999",
-              },
-            }}
+            className="delete-confirm-button"
           >
             Delete
           </Button>
         </Box>
       </Dialog>
+
       <Snackbar
         open={snackbarOpen}
         autoHideDuration={2000}

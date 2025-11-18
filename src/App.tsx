@@ -27,6 +27,7 @@ import { CartProvider } from "./context/CartContext";
 import OpeningsEvents from "./components/SideBarComponents/OpeningsEvents";
 import OpeningsAndEvents from "./pages/OpeningsAndEvents";
 import { OrdersProvider } from "./context/OrderContext";
+import { ThemeProvider } from "./context/ThemeContext";
 
 const AppRoutes = () => {
   const { isAuthenticated, isLoading } = useAuth();
@@ -174,11 +175,11 @@ const AppRoutes = () => {
 
 const App = () => {
   return (
+    <ThemeProvider>
     <AuthProvider>
       <CartProvider>
         <OrdersProvider>
           {" "}
-          {/* ✅ Wrap here */}
           <CartDrawerProvider>
             <Box>
               <AppRoutes />
@@ -186,9 +187,9 @@ const App = () => {
             <CartDrawer />
           </CartDrawerProvider>
         </OrdersProvider>{" "}
-        {/* ✅ Close wrapper */}
       </CartProvider>
     </AuthProvider>
+    </ThemeProvider>
   );
 };
 

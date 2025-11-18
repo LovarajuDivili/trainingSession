@@ -18,11 +18,13 @@ import { useCart } from "../../context/CartContext";
 import CloseIcon from "@mui/icons-material/Close";
 import { useOrders } from "../../context/OrderContext";
 import { useState } from "react";
+import { useThemeColors } from "../../hooks/useThemeColors";
 
 const CartDrawer = () => {
   const { isDrawerOpen, closeDrawer } = useCartDrawer();
   const { cart, clearCart } = useCart();
   const { addOrder } = useOrders();
+  const colors = useThemeColors();
 
   const [openSnackbar, setOpenSnackbar] = useState(false);
 
@@ -57,9 +59,12 @@ const CartDrawer = () => {
             height: "100%",
             overflow: "auto",
             gap: 4,
+            backgroundColor: colors.background.white,
+            color: colors.text.primary,
           }}
         >
           <Box sx={{ display: "flex", gap: 6, flex: 1 }}>
+            {/* Left Section - Billing Details */}
             <Box sx={{ flex: 1 }}>
               <Box
                 sx={{
@@ -71,34 +76,48 @@ const CartDrawer = () => {
               >
                 <Typography
                   variant="h5"
-                  sx={{ fontWeight: "bold", fontSize: "1.5rem" }}
+                  sx={{ 
+                    fontWeight: "bold", 
+                    fontSize: "1.5rem",
+                    color: colors.text.primary 
+                  }}
                 >
                   Billing details
                 </Typography>
 
                 {/* Close Icon */}
-
                 <IconButton
                   onClick={closeDrawer}
                   sx={{
-                    bgcolor: "#ff7a59",
-                    "&:hover": { bgcolor: "#ff3b30" },
+                    bgcolor: colors.status.error,
+                    "&:hover": { 
+                      bgcolor: colors.status.error,
+                      opacity: 0.9 
+                    },
                   }}
                 >
-                  <CloseIcon sx={{ color: "white" }} />
+                  <CloseIcon sx={{ color: colors.text.white }} />
                 </IconButton>
               </Box>
 
+              {/* Coupon Section */}
               <Box
                 sx={{
                   mb: 4,
-                  backgroundColor: "#EEE9FF",
+                  backgroundColor: colors.special.couponSection,
                   p: 2,
-                  pb: -2,
                   borderRadius: "20px",
+                  border: `1px solid ${colors.border.light}`,
                 }}
               >
-                <Typography variant="body2" sx={{ mb: 2, color: "black" }}>
+                <Typography
+                  variant="body2"
+                  sx={{ 
+                    mb: 2, 
+                    color: colors.text.primary,
+                    fontWeight: 500 
+                  }}
+                >
                   If you have a coupon code, please apply it below
                 </Typography>
 
@@ -108,6 +127,23 @@ const CartDrawer = () => {
                     sx={{
                       "& .MuiOutlinedInput-root": {
                         borderRadius: "20px",
+                        backgroundColor: colors.background.white,
+                        "& fieldset": {
+                          borderColor: colors.border.light,
+                        },
+                        "&:hover fieldset": {
+                          borderColor: colors.primary.main,
+                        },
+                        "&.Mui-focused fieldset": {
+                          borderColor: colors.primary.main,
+                        },
+                      },
+                      "& .MuiInputBase-input": {
+                        color: colors.text.primary,
+                        "&::placeholder": {
+                          color: colors.text.secondary,
+                          opacity: 1,
+                        },
                       },
                       flex: 1,
                     }}
@@ -116,9 +152,15 @@ const CartDrawer = () => {
                     variant="outlined"
                     sx={{
                       whiteSpace: "nowrap",
-                      bgcolor: "green",
-                      color: "white",
+                      bgcolor: colors.status.success,
+                      color: colors.text.white,
                       borderRadius: "20px",
+                      border: "none",
+                      "&:hover": {
+                        bgcolor: colors.status.success,
+                        opacity: 0.9,
+                        border: "none",
+                      },
                     }}
                   >
                     Apply coupon
@@ -126,11 +168,16 @@ const CartDrawer = () => {
                 </Box>
               </Box>
 
+              {/* Personal Information */}
               <Grid container spacing={2} sx={{ mb: 3 }}>
                 <Grid item xs={6}>
                   <Typography
                     variant="body2"
-                    sx={{ mb: 1, fontWeight: "medium" }}
+                    sx={{ 
+                      mb: 1, 
+                      fontWeight: "medium",
+                      color: colors.text.primary 
+                    }}
                   >
                     First Name *
                   </Typography>
@@ -140,6 +187,23 @@ const CartDrawer = () => {
                     sx={{
                       "& .MuiOutlinedInput-root": {
                         borderRadius: "20px",
+                        backgroundColor: colors.background.white,
+                        "& fieldset": {
+                          borderColor: colors.border.light,
+                        },
+                        "&:hover fieldset": {
+                          borderColor: colors.primary.main,
+                        },
+                        "&.Mui-focused fieldset": {
+                          borderColor: colors.primary.main,
+                        },
+                      },
+                      "& .MuiInputBase-input": {
+                        color: colors.text.primary,
+                        "&::placeholder": {
+                          color: colors.text.secondary,
+                          opacity: 1,
+                        },
                       },
                       width: 285,
                     }}
@@ -148,7 +212,11 @@ const CartDrawer = () => {
                 <Grid item xs={6}>
                   <Typography
                     variant="body2"
-                    sx={{ mb: 1, fontWeight: "medium" }}
+                    sx={{ 
+                      mb: 1, 
+                      fontWeight: "medium",
+                      color: colors.text.primary 
+                    }}
                   >
                     Last Name *
                   </Typography>
@@ -158,6 +226,23 @@ const CartDrawer = () => {
                     sx={{
                       "& .MuiOutlinedInput-root": {
                         borderRadius: "20px",
+                        backgroundColor: colors.background.white,
+                        "& fieldset": {
+                          borderColor: colors.border.light,
+                        },
+                        "&:hover fieldset": {
+                          borderColor: colors.primary.main,
+                        },
+                        "&.Mui-focused fieldset": {
+                          borderColor: colors.primary.main,
+                        },
+                      },
+                      "& .MuiInputBase-input": {
+                        color: colors.text.primary,
+                        "&::placeholder": {
+                          color: colors.text.secondary,
+                          opacity: 1,
+                        },
                       },
                       width: 285,
                     }}
@@ -166,7 +251,11 @@ const CartDrawer = () => {
               </Grid>
 
               {/* Phone */}
-              <Typography variant="body2" sx={{ mb: 1, fontWeight: "medium" }}>
+              <Typography variant="body2" sx={{ 
+                mb: 1, 
+                fontWeight: "medium",
+                color: colors.text.primary 
+              }}>
                 Phone Number *
               </Typography>
               <TextField
@@ -175,12 +264,34 @@ const CartDrawer = () => {
                 sx={{
                   "& .MuiOutlinedInput-root": {
                     borderRadius: "20px",
+                    backgroundColor: colors.background.white,
+                    "& fieldset": {
+                      borderColor: colors.border.light,
+                    },
+                    "&:hover fieldset": {
+                      borderColor: colors.primary.main,
+                    },
+                    "&.Mui-focused fieldset": {
+                      borderColor: colors.primary.main,
+                    },
+                  },
+                  "& .MuiInputBase-input": {
+                    color: colors.text.primary,
+                    "&::placeholder": {
+                      color: colors.text.secondary,
+                      opacity: 1,
+                    },
                   },
                   mb: 3,
                 }}
               />
 
-              <Typography variant="body2" sx={{ mb: 1, fontWeight: "medium" }}>
+              {/* Email */}
+              <Typography variant="body2" sx={{ 
+                mb: 1, 
+                fontWeight: "medium",
+                color: colors.text.primary 
+              }}>
                 Email Address *
               </Typography>
               <TextField
@@ -189,16 +300,43 @@ const CartDrawer = () => {
                 sx={{
                   "& .MuiOutlinedInput-root": {
                     borderRadius: "20px",
+                    backgroundColor: colors.background.white,
+                    "& fieldset": {
+                      borderColor: colors.border.light,
+                    },
+                    "&:hover fieldset": {
+                      borderColor: colors.primary.main,
+                    },
+                    "&.Mui-focused fieldset": {
+                      borderColor: colors.primary.main,
+                    },
+                  },
+                  "& .MuiInputBase-input": {
+                    color: colors.text.primary,
+                    "&::placeholder": {
+                      color: colors.text.secondary,
+                      opacity: 1,
+                    },
                   },
                   mb: 3,
                 }}
               />
 
-              <Typography variant="h5" sx={{ mb: 3, fontSize: "1.3rem" }}>
+              {/* Address Information */}
+              <Typography variant="h5" sx={{ 
+                mb: 3, 
+                fontSize: "1.3rem",
+                color: colors.text.primary,
+                fontWeight: "bold" 
+              }}>
                 Address information
               </Typography>
 
-              <Typography variant="body2" sx={{ mb: 1, fontWeight: "medium" }}>
+              <Typography variant="body2" sx={{ 
+                mb: 1, 
+                fontWeight: "medium",
+                color: colors.text.primary 
+              }}>
                 Address
               </Typography>
               <TextField
@@ -207,12 +345,33 @@ const CartDrawer = () => {
                 sx={{
                   "& .MuiOutlinedInput-root": {
                     borderRadius: "20px",
+                    backgroundColor: colors.background.white,
+                    "& fieldset": {
+                      borderColor: colors.border.light,
+                    },
+                    "&:hover fieldset": {
+                      borderColor: colors.primary.main,
+                    },
+                    "&.Mui-focused fieldset": {
+                      borderColor: colors.primary.main,
+                    },
+                  },
+                  "& .MuiInputBase-input": {
+                    color: colors.text.primary,
+                    "&::placeholder": {
+                      color: colors.text.secondary,
+                      opacity: 1,
+                    },
                   },
                   mb: 3,
                 }}
               />
 
-              <Typography variant="body2" sx={{ mb: 1, fontWeight: "medium" }}>
+              <Typography variant="body2" sx={{ 
+                mb: 1, 
+                fontWeight: "medium",
+                color: colors.text.primary 
+              }}>
                 City
               </Typography>
               <TextField
@@ -221,12 +380,33 @@ const CartDrawer = () => {
                 sx={{
                   "& .MuiOutlinedInput-root": {
                     borderRadius: "20px",
+                    backgroundColor: colors.background.white,
+                    "& fieldset": {
+                      borderColor: colors.border.light,
+                    },
+                    "&:hover fieldset": {
+                      borderColor: colors.primary.main,
+                    },
+                    "&.Mui-focused fieldset": {
+                      borderColor: colors.primary.main,
+                    },
+                  },
+                  "& .MuiInputBase-input": {
+                    color: colors.text.primary,
+                    "&::placeholder": {
+                      color: colors.text.secondary,
+                      opacity: 1,
+                    },
                   },
                   mb: 3,
                 }}
               />
 
-              <Typography variant="body2" sx={{ mb: 1, fontWeight: "medium" }}>
+              <Typography variant="body2" sx={{ 
+                mb: 1, 
+                fontWeight: "medium",
+                color: colors.text.primary 
+              }}>
                 District
               </Typography>
               <TextField
@@ -235,12 +415,33 @@ const CartDrawer = () => {
                 sx={{
                   "& .MuiOutlinedInput-root": {
                     borderRadius: "20px",
+                    backgroundColor: colors.background.white,
+                    "& fieldset": {
+                      borderColor: colors.border.light,
+                    },
+                    "&:hover fieldset": {
+                      borderColor: colors.primary.main,
+                    },
+                    "&.Mui-focused fieldset": {
+                      borderColor: colors.primary.main,
+                    },
+                  },
+                  "& .MuiInputBase-input": {
+                    color: colors.text.primary,
+                    "&::placeholder": {
+                      color: colors.text.secondary,
+                      opacity: 1,
+                    },
                   },
                   mb: 3,
                 }}
               />
 
-              <Typography variant="body2" sx={{ mb: 1, fontWeight: "medium" }}>
+              <Typography variant="body2" sx={{ 
+                mb: 1, 
+                fontWeight: "medium",
+                color: colors.text.primary 
+              }}>
                 Postal Code
               </Typography>
               <TextField
@@ -249,23 +450,53 @@ const CartDrawer = () => {
                 sx={{
                   "& .MuiOutlinedInput-root": {
                     borderRadius: "20px",
+                    backgroundColor: colors.background.white,
+                    "& fieldset": {
+                      borderColor: colors.border.light,
+                    },
+                    "&:hover fieldset": {
+                      borderColor: colors.primary.main,
+                    },
+                    "&.Mui-focused fieldset": {
+                      borderColor: colors.primary.main,
+                    },
+                  },
+                  "& .MuiInputBase-input": {
+                    color: colors.text.primary,
+                    "&::placeholder": {
+                      color: colors.text.secondary,
+                      opacity: 1,
+                    },
                   },
                   mb: 3,
                 }}
               />
             </Box>
 
-            <Box sx={{ flex: 1, bgcolor: "#EEE9FF", p: 4 }}>
+            {/* Right Section - Order Summary & Payment */}
+            <Box sx={{ 
+              flex: 1, 
+              backgroundColor: colors.primary.lighter, 
+              p: 4,
+              borderRadius: 3,
+              border: `1px solid ${colors.border.light}`,
+            }}>
               <Typography
                 variant="h5"
-                sx={{ mb: 3, fontWeight: "bold", fontSize: "1.5rem", p: 0.5 }}
+                sx={{ 
+                  mb: 3, 
+                  fontWeight: "bold", 
+                  fontSize: "1.5rem", 
+                  p: 0.5,
+                  color: colors.text.primary 
+                }}
               >
                 Your order
               </Typography>
 
               <Box
                 sx={{
-                  borderColor: "divider",
+                  borderColor: colors.border.light,
                   borderRadius: 2,
                   p: 1,
                   mb: 4,
@@ -282,20 +513,20 @@ const CartDrawer = () => {
                           mb: 2,
                         }}
                       >
-                        <Typography variant="body1">
+                        <Typography variant="body1" sx={{ color: colors.text.primary }}>
                           {item.brand} {item.category} x {item.quantity}
                         </Typography>
-                        <Typography variant="body1" fontWeight="medium">
+                        <Typography variant="body1" fontWeight="medium" sx={{ color: colors.text.primary }}>
                           ₹{item.price * item.quantity}
                         </Typography>
                       </Box>
                     ))
                   ) : (
-                    <Typography sx={{ color: "gray" }}>
+                    <Typography sx={{ color: colors.text.secondary }}>
                       No items in cart
                     </Typography>
                   )}
-                  <Divider />
+                  <Divider sx={{ borderColor: colors.border.light }} />
                 </Box>
 
                 <Box sx={{ mb: 2 }}>
@@ -306,8 +537,8 @@ const CartDrawer = () => {
                       mb: 1,
                     }}
                   >
-                    <Typography variant="body2">Subtotal</Typography>
-                    <Typography variant="body2">
+                    <Typography variant="body2" sx={{ color: colors.text.primary }}>Subtotal</Typography>
+                    <Typography variant="body2" sx={{ color: colors.text.primary }}>
                       ₹{subtotal.toLocaleString()}
                     </Typography>
                   </Box>
@@ -318,8 +549,8 @@ const CartDrawer = () => {
                       mb: 1,
                     }}
                   >
-                    <Typography variant="body2">Shipping</Typography>
-                    <Typography variant="body2" color="success.main">
+                    <Typography variant="body2" sx={{ color: colors.text.primary }}>Shipping</Typography>
+                    <Typography variant="body2" color={colors.status.success}>
                       Free shipping
                     </Typography>
                   </Box>
@@ -330,19 +561,19 @@ const CartDrawer = () => {
                       mb: 2,
                     }}
                   >
-                    <Typography variant="body2">VAT (18%)</Typography>
-                    <Typography variant="body2">
+                    <Typography variant="body2" sx={{ color: colors.text.primary }}>VAT (18%)</Typography>
+                    <Typography variant="body2" sx={{ color: colors.text.primary }}>
                       ₹{vat.toLocaleString()}
                     </Typography>
                   </Box>
-                  <Divider />
+                  <Divider sx={{ borderColor: colors.border.light }} />
                 </Box>
 
                 <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-                  <Typography variant="h6" sx={{ fontWeight: "bold" }}>
+                  <Typography variant="h6" sx={{ fontWeight: "bold", color: colors.text.primary }}>
                     Total
                   </Typography>
-                  <Typography variant="h6" sx={{ fontWeight: "bold" }}>
+                  <Typography variant="h6" sx={{ fontWeight: "bold", color: colors.text.primary }}>
                     ₹{total.toLocaleString()}
                   </Typography>
                 </Box>
@@ -350,17 +581,22 @@ const CartDrawer = () => {
 
               <Typography
                 variant="h5"
-                sx={{ mb: 3, fontWeight: "bold", fontSize: "1.5rem" }}
+                sx={{ 
+                  mb: 3, 
+                  fontWeight: "bold", 
+                  fontSize: "1.5rem",
+                  color: colors.text.primary 
+                }}
               >
                 Payment method
               </Typography>
 
               <Box
                 sx={{
-                  border: 1,
-                  borderColor: "divider",
+                  border: `1px solid ${colors.border.light}`,
                   borderRadius: 2,
                   p: 3,
+                  backgroundColor: colors.background.white,
                 }}
               >
                 <RadioGroup
@@ -377,45 +613,52 @@ const CartDrawer = () => {
                     control={
                       <Radio
                         sx={{
+                          color: colors.text.secondary,
                           "&.Mui-checked": {
-                            color: "#906aff",
+                            color: colors.primary.main,
                           },
                         }}
                       />
                     }
-                    label="Bank transfer"
+                    label={<Typography sx={{ color: colors.text.primary }}>Bank transfer</Typography>}
                   />
                   <FormControlLabel
                     value="credit-card"
                     control={
                       <Radio
                         sx={{
+                          color: colors.text.secondary,
                           "&.Mui-checked": {
-                            color: "#906aff",
+                            color: colors.primary.main,
                           },
                         }}
                       />
                     }
-                    label="Credit card"
+                    label={<Typography sx={{ color: colors.text.primary }}>Credit card</Typography>}
                   />
                   <FormControlLabel
                     value="barion"
                     control={
                       <Radio
                         sx={{
+                          color: colors.text.secondary,
                           "&.Mui-checked": {
-                            color: "#906aff",
+                            color: colors.primary.main,
                           },
                         }}
                       />
                     }
-                    label="Barion"
+                    label={<Typography sx={{ color: colors.text.primary }}>Barion</Typography>}
                   />
                 </RadioGroup>
 
                 <Typography
                   variant="body2"
-                  sx={{ mb: 1, fontWeight: "medium" }}
+                  sx={{ 
+                    mb: 1, 
+                    fontWeight: "medium",
+                    color: colors.text.primary 
+                  }}
                 >
                   Name on card *
                 </Typography>
@@ -426,16 +669,34 @@ const CartDrawer = () => {
                     mb: 3,
                     "& .MuiOutlinedInput-root": {
                       borderRadius: "20px",
+                      backgroundColor: colors.background.white,
+                      "& fieldset": {
+                        borderColor: colors.border.light,
+                      },
+                      "&:hover fieldset": {
+                        borderColor: colors.primary.main,
+                      },
+                      "&.Mui-focused fieldset": {
+                        borderColor: colors.primary.main,
+                      },
                     },
-                    ".MuiInputBase-root": {
-                      backgroundColor: "white",
+                    "& .MuiInputBase-input": {
+                      color: colors.text.primary,
+                      "&::placeholder": {
+                        color: colors.text.secondary,
+                        opacity: 1,
+                      },
                     },
                   }}
                 />
 
                 <Typography
                   variant="body2"
-                  sx={{ mb: 1, fontWeight: "medium" }}
+                  sx={{ 
+                    mb: 1, 
+                    fontWeight: "medium",
+                    color: colors.text.primary 
+                  }}
                 >
                   Card number *
                 </Typography>
@@ -444,10 +705,25 @@ const CartDrawer = () => {
                   placeholder="xxxx xxxx xxxx"
                   sx={{
                     mb: 3,
-                    ".MuiInputBase-root": {
-                      backgroundColor: "white",
-
+                    "& .MuiOutlinedInput-root": {
                       borderRadius: "20px",
+                      backgroundColor: colors.background.white,
+                      "& fieldset": {
+                        borderColor: colors.border.light,
+                      },
+                      "&:hover fieldset": {
+                        borderColor: colors.primary.main,
+                      },
+                      "&.Mui-focused fieldset": {
+                        borderColor: colors.primary.main,
+                      },
+                    },
+                    "& .MuiInputBase-input": {
+                      color: colors.text.primary,
+                      "&::placeholder": {
+                        color: colors.text.secondary,
+                        opacity: 1,
+                      },
                     },
                   }}
                 />
@@ -456,7 +732,11 @@ const CartDrawer = () => {
                   <Grid item xs={6}>
                     <Typography
                       variant="body2"
-                      sx={{ mb: 1, fontWeight: "medium" }}
+                      sx={{ 
+                        mb: 1, 
+                        fontWeight: "medium",
+                        color: colors.text.primary 
+                      }}
                     >
                       Expiry date *
                     </Typography>
@@ -467,9 +747,23 @@ const CartDrawer = () => {
                         width: 257,
                         "& .MuiOutlinedInput-root": {
                           borderRadius: "20px",
+                          backgroundColor: colors.background.white,
+                          "& fieldset": {
+                            borderColor: colors.border.light,
+                          },
+                          "&:hover fieldset": {
+                            borderColor: colors.primary.main,
+                          },
+                          "&.Mui-focused fieldset": {
+                            borderColor: colors.primary.main,
+                          },
                         },
-                        ".MuiInputBase-root": {
-                          backgroundColor: "white",
+                        "& .MuiInputBase-input": {
+                          color: colors.text.primary,
+                          "&::placeholder": {
+                            color: colors.text.secondary,
+                            opacity: 1,
+                          },
                         },
                       }}
                     />
@@ -477,7 +771,11 @@ const CartDrawer = () => {
                   <Grid item xs={6}>
                     <Typography
                       variant="body2"
-                      sx={{ mb: 1, fontWeight: "medium" }}
+                      sx={{ 
+                        mb: 1, 
+                        fontWeight: "medium",
+                        color: colors.text.primary 
+                      }}
                     >
                       Security code / CVV *
                     </Typography>
@@ -488,9 +786,23 @@ const CartDrawer = () => {
                         width: 257,
                         "& .MuiOutlinedInput-root": {
                           borderRadius: "20px",
+                          backgroundColor: colors.background.white,
+                          "& fieldset": {
+                            borderColor: colors.border.light,
+                          },
+                          "&:hover fieldset": {
+                            borderColor: colors.primary.main,
+                          },
+                          "&.Mui-focused fieldset": {
+                            borderColor: colors.primary.main,
+                          },
                         },
-                        ".MuiInputBase-root": {
-                          backgroundColor: "white",
+                        "& .MuiInputBase-input": {
+                          color: colors.text.primary,
+                          "&::placeholder": {
+                            color: colors.text.secondary,
+                            opacity: 1,
+                          },
                         },
                       }}
                     />
@@ -499,7 +811,11 @@ const CartDrawer = () => {
 
                 <Typography
                   variant="body2"
-                  sx={{ mb: 1, fontWeight: "medium" }}
+                  sx={{ 
+                    mb: 1, 
+                    fontWeight: "medium",
+                    color: colors.text.primary 
+                  }}
                 >
                   ZIP / Postal code *
                 </Typography>
@@ -507,11 +823,25 @@ const CartDrawer = () => {
                   fullWidth
                   placeholder="Enter your postal code"
                   sx={{
-                    ".MuiInputBase-root": {
-                      backgroundColor: "white",
-                    },
                     "& .MuiOutlinedInput-root": {
                       borderRadius: "20px",
+                      backgroundColor: colors.background.white,
+                      "& fieldset": {
+                        borderColor: colors.border.light,
+                      },
+                      "&:hover fieldset": {
+                        borderColor: colors.primary.main,
+                      },
+                      "&.Mui-focused fieldset": {
+                        borderColor: colors.primary.main,
+                      },
+                    },
+                    "& .MuiInputBase-input": {
+                      color: colors.text.primary,
+                      "&::placeholder": {
+                        color: colors.text.secondary,
+                        opacity: 1,
+                      },
                     },
                   }}
                 />
@@ -525,8 +855,12 @@ const CartDrawer = () => {
                     fontWeight: "bold",
                     mt: 3,
                     fontSize: "1.1rem",
-                    bgcolor: "#906aff",
+                    bgcolor: colors.primary.main,
                     borderRadius: "20px",
+                    color: colors.text.white,
+                    "&:hover": {
+                      bgcolor: colors.primary.dark,
+                    },
                   }}
                   onClick={handlePlaceOrder}
                 >

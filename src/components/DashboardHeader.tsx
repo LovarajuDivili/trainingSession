@@ -8,6 +8,7 @@ import {
 import SearchIcon from "@mui/icons-material/Search";
 import AddIcon from "@mui/icons-material/Add";
 import type { DashboardHeaderProps } from "../common/types";
+import { useThemeColors } from "../hooks/useThemeColors";
 
 const DashboardHeader = ({
   title,
@@ -21,6 +22,8 @@ const DashboardHeader = ({
   addButtonLabel = "Add New",
   gridIcon,
 }: DashboardHeaderProps) => {
+  const colors = useThemeColors();
+
   return (
     <Box
       sx={{
@@ -29,16 +32,16 @@ const DashboardHeader = ({
         justifyContent: "space-between",
         mb: 2,
         p: 1,
-        borderBottom: "1px solid #ddd",
-        backgroundColor: "#fff",
+        borderBottom: `1px solid ${colors.border.light}`,
+        backgroundColor: colors.background.card,
         position: "sticky",
         top: 0,
         zIndex: 100,
       }}
     >
       <Box sx={{ display: "flex", alignItems: "center", gap: 1, mt: "0px" }}>
-        {icon && <Box sx={{ color: "black" }}>{icon}</Box>}
-        <Typography variant="h5">
+        {icon && <Box sx={{ color: colors.text.primary }}>{icon}</Box>}
+        <Typography variant="h5" sx={{ color: colors.text.primary }}>
           {title} {count !== undefined && `(${count})`}
         </Typography>
 
@@ -47,7 +50,7 @@ const DashboardHeader = ({
             sx={{
               display: "flex",
               alignItems: "center",
-              color: "black",
+              color: colors.text.primary,
               fontSize: "m",
             }}
           >
@@ -66,6 +69,20 @@ const DashboardHeader = ({
               width: "300px",
               "& .MuiOutlinedInput-root": {
                 borderRadius: "50px",
+                backgroundColor: colors.background.white,
+                color: colors.text.primary,
+                "& fieldset": {
+                  borderColor: colors.border.light,
+                },
+                "&:hover fieldset": {
+                  borderColor: colors.primary.main,
+                },
+                "&.Mui-focused fieldset": {
+                  borderColor: colors.primary.main,
+                },
+              },
+              "& .MuiInputBase-input::placeholder": {
+                color: colors.text.secondary,
               },
             }}
             value={searchText}
@@ -73,7 +90,7 @@ const DashboardHeader = ({
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
-                  <SearchIcon />
+                  <SearchIcon sx={{ color: colors.text.secondary }} />
                 </InputAdornment>
               ),
             }}
@@ -86,10 +103,10 @@ const DashboardHeader = ({
             sx={{
               borderRadius: "20px",
               textTransform: "none",
-              backgroundColor: "#906aff",
-              color: "white",
+              backgroundColor: colors.primary.main,
+              color: colors.text.white,
               fontWeight: 500,
-              "&:hover": { backgroundColor: "#7a55d8" },
+              "&:hover": { backgroundColor: colors.primary.dark },
             }}
             onClick={onAddClick}
             endIcon={<AddIcon />}

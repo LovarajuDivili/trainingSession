@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Box, Button, Typography } from "@mui/material";
 import Header from "./Header";
-
 import {
   Cerebro_Sasa,
   Proceed,
@@ -11,10 +10,12 @@ import {
 import ArrowRightAltIcon from "@mui/icons-material/ArrowRightAlt";
 import { useNavigate } from "react-router-dom";
 import { roles } from "../common/utility";
+import { useThemeColors } from "../hooks/useThemeColors";
 
 const WelcomeSasa = () => {
   const [dropdownValue, setDropdownValue] = useState<string>("admin");
   const navigate = useNavigate();
+  const colors = useThemeColors();
 
   const handleProceed = () => {
     switch (dropdownValue) {
@@ -43,12 +44,16 @@ const WelcomeSasa = () => {
         alert("Please select a valid role");
     }
     sessionStorage.setItem("role", dropdownValue);
-
     navigate(`/${dropdownValue}`);
   };
 
   return (
-    <Box>
+    <Box
+      sx={{
+        minHeight: "100vh",
+        backgroundColor: colors.background.white, // Add this line
+      }}
+    >
       <Header role={""} />
       <Box
         sx={{
@@ -58,24 +63,39 @@ const WelcomeSasa = () => {
           alignItems: "center",
           justifyContent: "center",
           mt: 25,
+          backgroundColor: colors.background.white, // Add this line
         }}
       >
+        {/* Welcome Message */}
         <Typography
-          sx={{ marginLeft: "-4px", fontSize: "20px" }}
+          sx={{
+            marginLeft: "-4px",
+            fontSize: "20px",
+            color: colors.text.primary, // Add this line
+          }}
           variant="h6"
           gutterBottom
         >
           {Welcome_Msgs.WELCOME_MSG}
-          <span style={{ color: "#906aff" }}>{Cerebro_Sasa.CEREBRO_SASA}</span>
+          <span style={{ color: colors.primary.main }}>
+            {Cerebro_Sasa.CEREBRO_SASA}
+          </span>
         </Typography>
+
+        {/* Select Account Instruction */}
         <Typography
-          sx={{ marginLeft: "-3px", fontSize: "15px" }}
+          sx={{
+            marginLeft: "-3px",
+            fontSize: "15px",
+            color: colors.text.primary, // Add this line
+          }}
           variant="body1"
           gutterBottom
         >
           {Select_Account.SELECT_ACCOUNT}
         </Typography>
 
+        {/* Role Selection Grid */}
         <Box
           sx={{
             display: "grid",
@@ -94,28 +114,61 @@ const WelcomeSasa = () => {
                 cursor: role.active ? "pointer" : "not-allowed",
                 border:
                   dropdownValue === role.value
-                    ? "2px solid #906aff"
-                    : "1px solid #dcdcdc",
-                backgroundColor: role.active ? "#ffffff" : "#f0f0f0",
+                    ? `2px solid ${colors.border.primary}`
+                    : `1px solid ${colors.border.light}`,
+                backgroundColor: role.active
+                  ? colors.background.white
+                  : colors.background.disabled,
                 opacity: role.active ? 1 : 0.6,
                 display: "flex",
                 justifyContent: "space-between",
                 alignItems: "center",
                 padding: "20px",
+                position: "relative",
                 transition: "0.3s",
                 "&:hover": {
                   boxShadow: role.active
-                    ? "0px 0px 10px rgba(144, 106, 255, 0.4)"
+                    ? `0px 0px 10px ${colors.state.hover}`
                     : "none",
                 },
               }}
             >
-              {/* Left Side */}
+              {!role.active && (
+                <Box
+                  sx={{
+                    position: "absolute",
+                    top: "8px",
+                    left: "15px",
+                    backgroundColor: colors.primary.lighter,
+                    color: colors.primary.main,
+                    padding: "2px 10px",
+                    fontSize: "12px",
+                    borderRadius: "12px",
+                    fontWeight: "600",
+                    zIndex: 2,
+                  }}
+                >
+                  Coming Soon
+                </Box>
+              )}
+
+              {/* Left Side - Role Info */}
               <Box>
-                <Typography sx={{ fontWeight: "bold", fontSize: "16px" }}>
+                <Typography
+                  sx={{
+                    fontWeight: "bold",
+                    fontSize: "16px",
+                    color: colors.text.primary, // Add this line
+                  }}
+                >
                   {role.label}
                 </Typography>
-                <Typography sx={{ fontSize: "13px", color: "#555" }}>
+                <Typography
+                  sx={{
+                    fontSize: "13px",
+                    color: colors.text.secondary,
+                  }}
+                >
                   {role.description}
                 </Typography>
               </Box>
@@ -126,7 +179,7 @@ const WelcomeSasa = () => {
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  
+                  color: colors.text.primary, // Add this line for icon color
                 }}
               >
                 {role.icon}
@@ -135,14 +188,23 @@ const WelcomeSasa = () => {
           ))}
         </Box>
 
+        {/* Proceed Button */}
         <Button
           variant="contained"
           sx={{
-            width: "250px",
+            height: "50px",
+            width: "280px",
             mt: 5,
-            backgroundColor: dropdownValue ? "#906aff" : "#d2c7ff",
-            color: "white",
+            backgroundColor: dropdownValue
+              ? colors.primary.main
+              : colors.primary.light,
+            color: colors.text.white,
             borderRadius: "20px",
+            "&:hover": {
+              backgroundColor: dropdownValue
+                ? colors.primary.dark
+                : colors.primary.light,
+            },
           }}
           disabled={!dropdownValue}
           onClick={handleProceed}

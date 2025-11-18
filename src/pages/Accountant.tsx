@@ -17,17 +17,21 @@ import OrderProgress from "../components/ExtraComponents/OrderProgress";
 import { Outlet } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { useThemeColors } from "../hooks/useThemeColors";
 
 const Accountant = () => {
+  const colors = useThemeColors();
+  
   const getCardStyles = () => ({
     width: 260,
     height: 100,
     borderRadius: 3,
     boxShadow: 3,
-    backgroundColor: "#ffffff",
+    backgroundColor: colors.background.card,
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
+    border: `1px solid ${colors.border.light}`,
   });
 
   const [currentTime, setCurrentTime] = useState<string>("");
@@ -41,6 +45,7 @@ const Accountant = () => {
         hour: "2-digit",
         minute: "2-digit",
         second: "2-digit",
+        hour12: true,
       });
       setCurrentTime(formattedTime);
     };
@@ -52,7 +57,11 @@ const Accountant = () => {
   }, []);
 
   return (
-    <Box sx={{ minHeight: "88vh", backgroundColor: "white" }}>
+    <Box sx={{ 
+      minHeight: "88vh", 
+      backgroundColor: colors.background.white,
+      color: colors.text.primary 
+    }}>
       <Header role={""} />
       <Box sx={{ mt: 10, px: 3, display: "flex", gap: 3 }}>
         <Box sx={{ width: "70%" }}>
@@ -67,7 +76,9 @@ const Accountant = () => {
               <CardContent
                 sx={{ display: "flex", alignItems: "center", gap: 2, p: 2 }}
               >
-                <LaptopMacIcon sx={{ fontSize: 35, color: "#ff3b30" }} />
+                <LaptopMacIcon
+                  sx={{ fontSize: 35, color: colors.status.error }}
+                />
                 <Box
                   sx={{
                     display: "flex",
@@ -77,10 +88,14 @@ const Accountant = () => {
                     alignItems: "center",
                   }}
                 >
-                  <Typography variant="h5" fontWeight={700}>
+                  <Typography variant="h5" fontWeight={700} color={colors.text.primary}>
                     120
                   </Typography>
-                  <Typography variant="subtitle2" color="black" sx={{ pt: 1 }}>
+                  <Typography
+                    variant="subtitle2"
+                    color={colors.text.primary} // Changed from secondary to primary
+                    sx={{ pt: 1 }}
+                  >
                     Laptops
                   </Typography>
                 </Box>
@@ -92,19 +107,24 @@ const Accountant = () => {
               <CardContent
                 sx={{ display: "flex", alignItems: "center", gap: 2, p: 2 }}
               >
-                <HeadphonesIcon sx={{ fontSize: 35, color: "#0084ff" }} />
+                <HeadphonesIcon
+                  sx={{ fontSize: 35, color: colors.status.info }}
+                />
                 <Box
                   sx={{
                     display: "flex",
                     flexDirection: "column",
-
                     alignItems: "center",
                   }}
                 >
-                  <Typography variant="h5" fontWeight={700}>
+                  <Typography variant="h5" fontWeight={700} color={colors.text.primary}>
                     100
                   </Typography>
-                  <Typography variant="subtitle2" color="black" sx={{ pt: 1 }}>
+                  <Typography
+                    variant="subtitle2"
+                    color={colors.text.primary} // Changed from secondary to primary
+                    sx={{ pt: 1 }}
+                  >
                     HeadPhones
                   </Typography>
                 </Box>
@@ -116,7 +136,9 @@ const Accountant = () => {
               <CardContent
                 sx={{ display: "flex", alignItems: "center", gap: 2, p: 2 }}
               >
-                <MonitorIcon sx={{ fontSize: 35, color: "#22c55e" }} />
+                <MonitorIcon
+                  sx={{ fontSize: 35, color: colors.status.success }}
+                />
                 <Box
                   sx={{
                     display: "flex",
@@ -126,10 +148,14 @@ const Accountant = () => {
                     pl: 0.5,
                   }}
                 >
-                  <Typography variant="h5" fontWeight={700}>
+                  <Typography variant="h5" fontWeight={700} color={colors.text.primary}>
                     66
                   </Typography>
-                  <Typography variant="subtitle2" color="black" sx={{ pt: 1 }}>
+                  <Typography
+                    variant="subtitle2"
+                    color={colors.text.primary} // Changed from secondary to primary
+                    sx={{ pt: 1 }}
+                  >
                     Monitors
                   </Typography>
                 </Box>
@@ -139,7 +165,7 @@ const Accountant = () => {
           <Box sx={{ mt: 5, alignItems: "center", width: "70%", ml: 15 }}>
             <Calendar />
           </Box>
-          <Divider sx={{ fontsize: 2 }} />
+          <Divider sx={{ borderColor: colors.border.light }} />
           <Box
             sx={{
               display: "flex",
@@ -155,22 +181,29 @@ const Accountant = () => {
                 alignItems: "center",
               }}
             >
-              <Typography>
+              <Typography color={colors.text.primary}>
                 <strong>Today Course</strong>
               </Typography>
-              <MoreHoriz />
+              <MoreHoriz sx={{ color: colors.text.primary }} />
             </Box>
 
+            {/* Employee Card */}
             <Card
               onClick={() => navigate("/accountant/employeedata")}
               sx={{
-                height: 70,
+                height: 60,
                 display: "flex",
                 alignItems: "center",
                 pt: 1,
                 cursor: "pointer",
                 transition: "0.3s",
-                "&:hover": { boxShadow: 6, transform: "scale(1.02)" },
+                backgroundColor: colors.background.card,
+                border: `1px solid ${colors.border.light}`,
+                "&:hover": {
+                  boxShadow: 6,
+                  transform: "scale(1.02)",
+                  backgroundColor: colors.primary.lighter,
+                },
               }}
             >
               <CardContent
@@ -178,12 +211,13 @@ const Accountant = () => {
                   display: "flex",
                   alignItems: "center",
                   gap: 2,
+                  width: "100%",
                 }}
               >
                 <Box
                   sx={{
                     borderRadius: "10px",
-                    backgroundColor: "black",
+                    backgroundColor: colors.primary.main,
                     display: "flex",
                     justifyContent: "center",
                     alignItems: "center",
@@ -192,7 +226,7 @@ const Accountant = () => {
                   }}
                 >
                   <PeopleAltTwoToneIcon
-                    sx={{ color: "white", height: 75, width: 40 }}
+                    sx={{ color: colors.text.white, height: 75, width: 40 }}
                   />
                 </Box>
                 <Box
@@ -201,16 +235,24 @@ const Accountant = () => {
                     alignItems: "flex-start",
                     pr: 3,
                     gap: 1.5,
+                    minWidth: 120,
                   }}
                 >
-                  <Typography sx={{ fontSize: "10px" }}>
+                  <Typography sx={{ fontSize: "10px", color: colors.text.secondary }}>
                     {currentTime}
                   </Typography>
-                  <Typography sx={{ fontsize: "30px", color: "#906aff" }}>
+                  <Typography
+                    sx={{ fontSize: "20px", color: colors.primary.main }}
+                  >
                     Employees
                   </Typography>
                 </Box>
-                <Typography>
+                {/* Description with primary text color */}
+                <Typography sx={{ 
+                  color: colors.text.primary, // Changed from secondary to primary
+                  flex: 1,
+                  fontSize: "14px"
+                }}>
                   Dedicated professionals who perform specific tasks for
                   compensation under the direction of an employer.{" "}
                 </Typography>
@@ -219,14 +261,13 @@ const Accountant = () => {
                     width: 40,
                     height: 40,
                     borderRadius: "50%",
-                    backgroundColor: "#906aff",
-                    color: "white",
+                    backgroundColor: colors.primary.main,
+                    color: colors.text.white,
                     display: "flex",
                     justifyContent: "center",
                     alignItems: "center",
                     fontWeight: "bold",
                     fontSize: "18px",
-                    ml: "auto",
                   }}
                 >
                   20
@@ -234,16 +275,23 @@ const Accountant = () => {
               </CardContent>
             </Card>
 
+            {/* HR Department Card */}
             <Card
               onClick={() => navigate("/accountant/hrData")}
               sx={{
-                height: 70,
+                height: 60,
                 display: "flex",
                 alignItems: "center",
                 pt: 1,
                 cursor: "pointer",
                 transition: "0.3s",
-                "&:hover": { boxShadow: 6, transform: "scale(1.02)" },
+                backgroundColor: colors.background.card,
+                border: `1px solid ${colors.border.light}`,
+                "&:hover": {
+                  boxShadow: 6,
+                  transform: "scale(1.02)",
+                  backgroundColor: colors.primary.lighter,
+                },
               }}
             >
               <CardContent
@@ -251,12 +299,13 @@ const Accountant = () => {
                   display: "flex",
                   alignItems: "center",
                   gap: 2,
+                  width: "100%",
                 }}
               >
                 <Box
                   sx={{
                     borderRadius: "10px",
-                    backgroundColor: "black",
+                    backgroundColor: colors.primary.main,
                     display: "flex",
                     justifyContent: "center",
                     alignItems: "center",
@@ -265,7 +314,7 @@ const Accountant = () => {
                   }}
                 >
                   <AssignmentInd
-                    sx={{ color: "white", height: 75, width: 40 }}
+                    sx={{ color: colors.text.white, height: 75, width: 40 }}
                   />
                 </Box>
                 <Box
@@ -274,16 +323,24 @@ const Accountant = () => {
                     alignItems: "flex-start",
                     pr: 0,
                     gap: 1.5,
+                    minWidth: 120,
                   }}
                 >
-                  <Typography sx={{ fontSize: "10px" }}>
+                  <Typography sx={{ fontSize: "10px", color: colors.text.secondary }}>
                     {currentTime}
                   </Typography>
-                  <Typography sx={{ fontsize: "30px", color: "#906aff" }}>
+                  <Typography
+                    sx={{ fontSize: "20px", color: colors.primary.main }}
+                  >
                     HR Department
                   </Typography>
                 </Box>
-                <Typography>
+                {/* Description with primary text color */}
+                <Typography sx={{ 
+                  color: colors.text.primary, // Changed from secondary to primary
+                  flex: 1,
+                  fontSize: "14px"
+                }}>
                   The HR department is in charge of a company's staff, handling
                   things like hiring, paying, and training.{" "}
                 </Typography>
@@ -292,33 +349,40 @@ const Accountant = () => {
                     width: 40,
                     height: 40,
                     borderRadius: "50%",
-                    backgroundColor: "#906aff",
-                    color: "white",
+                    backgroundColor: colors.primary.main,
+                    color: colors.text.white,
                     display: "flex",
                     justifyContent: "center",
                     alignItems: "center",
                     fontWeight: "bold",
                     fontSize: "18px",
-                    ml: "auto",
                   }}
                 >
                   15
                 </Box>
               </CardContent>
             </Card>
+
+            {/* Share Holders Card */}
             <Card
               onClick={() => {
                 setShowInfo(true);
                 setTimeout(() => setShowInfo(false), 1500);
               }}
               sx={{
-                height: 70,
+                height: 60,
                 display: "flex",
                 alignItems: "center",
                 pt: 1,
                 cursor: "pointer",
                 transition: "0.3s",
-                "&:hover": { boxShadow: 6, transform: "scale(1.02)" },
+                backgroundColor: colors.background.card,
+                border: `1px solid ${colors.border.light}`,
+                "&:hover": {
+                  boxShadow: 6,
+                  transform: "scale(1.02)",
+                  backgroundColor: colors.primary.lighter,
+                },
               }}
             >
               <CardContent
@@ -326,12 +390,13 @@ const Accountant = () => {
                   display: "flex",
                   alignItems: "center",
                   gap: 2,
+                  width: "100%",
                 }}
               >
                 <Box
                   sx={{
                     borderRadius: "10px",
-                    backgroundColor: "black",
+                    backgroundColor: colors.primary.main,
                     display: "flex",
                     justifyContent: "center",
                     alignItems: "center",
@@ -340,7 +405,7 @@ const Accountant = () => {
                   }}
                 >
                   <CorporateFare
-                    sx={{ color: "white", height: 75, width: 40 }}
+                    sx={{ color: colors.text.white, height: 75, width: 40 }}
                   />
                 </Box>
                 <Box
@@ -349,23 +414,31 @@ const Accountant = () => {
                     alignItems: "flex-start",
                     pr: 3,
                     gap: 1.5,
+                    minWidth: 120,
                   }}
                 >
-                  <Typography sx={{ fontSize: "10px" }}>
+                  <Typography sx={{ fontSize: "10px", color: colors.text.secondary }}>
                     {currentTime}
                   </Typography>
-                  <Typography sx={{ fontsize: "30px", color: "#906aff" }}>
+                  <Typography
+                    sx={{ fontSize: "20px", color: colors.primary.main }}
+                  >
                     Share Holders
                   </Typography>
                 </Box>
 
-                <Typography sx={{ pr: 20 }}>
+                {/* Description with primary text color */}
+                <Typography sx={{ 
+                  color: colors.text.primary, // Changed from secondary to primary
+                  flex: 1,
+                  fontSize: "14px"
+                }}>
                   A shareholder is a partial owner of a company who holds shares
                   of its stock.{" "}
                 </Typography>
                 {showInfo && (
                   <Typography
-                    sx={{ color: "#ff6a6fff", fontSize: "12px", ml: 1 }}
+                    sx={{ color: colors.status.error, fontSize: "12px", ml: 1 }}
                   >
                     Info: Under progress...
                   </Typography>
@@ -375,14 +448,13 @@ const Accountant = () => {
                     width: 40,
                     height: 40,
                     borderRadius: "50%",
-                    backgroundColor: "#906aff",
-                    color: "white",
+                    backgroundColor: colors.primary.main,
+                    color: colors.text.white,
                     display: "flex",
                     justifyContent: "center",
                     alignItems: "center",
                     fontWeight: "bold",
                     fontSize: "18px",
-                    ml: "auto",
                   }}
                 >
                   9
@@ -394,10 +466,11 @@ const Accountant = () => {
         <Box
           sx={{
             width: "30%",
-            backgroundColor: "white",
+            backgroundColor: colors.background.card,
             borderRadius: 3,
             boxShadow: 2,
             p: 2,
+            border: `1px solid ${colors.border.light}`,
           }}
         >
           <OrderProgress />
