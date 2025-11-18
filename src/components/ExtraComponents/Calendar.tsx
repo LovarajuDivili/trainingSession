@@ -1,12 +1,14 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useEffect, useState, useRef } from "react";
-import { Box, Typography, IconButton, Paper } from "@mui/material";
+import { Box, Typography, IconButton } from "@mui/material";
 import { ArrowBackIosNew, ArrowForwardIos } from "@mui/icons-material";
+import { useThemeColors } from "../../hooks/useThemeColors";
 
 const Calendar = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const monthScrollRef = useRef<HTMLDivElement | null>(null);
   const datesScrollRef = useRef<HTMLDivElement | null>(null);
+  const colors = useThemeColors();
 
   // Get actual days in the current month
   const getDaysInMonth = (date: Date) => {
@@ -30,18 +32,8 @@ const Calendar = () => {
   }, [currentDate]);
 
   const months = [
-    "January",
-    "February",
-    "March",
-    "April",
-    "May",
-    "June",
-    "July",
-    "August",
-    "September",
-    "October",
-    "November",
-    "December",
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December",
   ];
 
   // Auto-scroll to active month
@@ -126,9 +118,19 @@ const Calendar = () => {
           alignItems: "center",
           justifyContent: "center",
           gap: 2,
+          mb: 2,
         }}
       >
-        <IconButton onClick={handlePrevMonth} size="small">
+        <IconButton 
+          onClick={handlePrevMonth} 
+          size="small"
+          sx={{
+            color: colors.text.primary,
+            '&:hover': {
+              backgroundColor: colors.state.hoverLight,
+            }
+          }}
+        >
           <ArrowBackIosNew fontSize="small" />
         </IconButton>
 
@@ -140,7 +142,6 @@ const Calendar = () => {
             whiteSpace: "nowrap",
             width: "400px",
             justifyContent: "flex-start",
-
             "&::-webkit-scrollbar": { display: "none" },
             scrollbarWidth: "none",
           }}
@@ -153,16 +154,19 @@ const Calendar = () => {
               sx={{
                 color:
                   index === currentDate.getMonth()
-                    ? "#906aff"
-                    : "rgba(0,0,0,0.4)",
-                fontWeight: index === currentDate.getMonth() ? 700 : 400,
+                    ? colors.primary.main
+                    : colors.text.secondary,
+                fontWeight: index === currentDate.getMonth() ? 700 : 500,
                 mx: 2,
                 flexShrink: 0,
-                transition: "color 0.3s ease",
+                transition: "all 0.3s ease",
                 cursor: "pointer",
-                "&:hover": { color: "#906aff" },
+                "&:hover": { 
+                  color: colors.primary.main,
+                },
                 minWidth: "80px",
                 textAlign: "center",
+                fontSize: "1rem",
               }}
               onClick={() => {
                 const newDate = new Date(currentDate);
@@ -175,42 +179,39 @@ const Calendar = () => {
           ))}
         </Box>
 
-        <IconButton onClick={handleNextMonth} size="small">
+        <IconButton 
+          onClick={handleNextMonth} 
+          size="small"
+          sx={{
+            color: colors.text.primary,
+            '&:hover': {
+              backgroundColor: colors.state.hoverLight,
+            }
+          }}
+        >
           <ArrowForwardIos fontSize="small" />
         </IconButton>
       </Box>
 
-      {/* Scrollable Dates Container - Actual month days */}
+      {/* Current Month and Year Display */}
+      
+
+      {/* Scrollable Dates Container - Clean design without borders */}
       <Box
         ref={datesScrollRef}
         onWheel={handleWheel}
         sx={{
           display: "flex",
-
           overflowX: "auto",
           scrollBehavior: "smooth",
-          gap: 2,
+          gap: 3,
           px: 1,
-          py: 2,
+          py: 1,
           cursor: "grab",
           "&:active": { cursor: "grabbing" },
-          // Custom scrollbar
-          "&::-webkit-scrollbar": {
-            height: 6,
-          },
-          "&::-webkit-scrollbar-track": {
-            background: "rgba(0,0,0,0.05)",
-            borderRadius: 3,
-            marginLeft: 50,
-            marginRight: 50,
-          },
-          "&::-webkit-scrollbar-thumb": {
-            background: "rgba(0,0,0,0.2)",
-            borderRadius: 3,
-          },
-          "&::-webkit-scrollbar-thumb:hover": {
-            background: "rgba(0,0,0,0.3)",
-          },
+          // Hide scrollbar
+          "&::-webkit-scrollbar": { display: "none" },
+          scrollbarWidth: "none",
         }}
       >
         {monthDays.map((day) => {
@@ -219,59 +220,73 @@ const Calendar = () => {
             day.getMonth() === today.getMonth() &&
             day.getFullYear() === today.getFullYear();
 
-          const isCurrentMonth = day.getMonth() === currentDate.getMonth();
+          //const isCurrentMonth = day.getMonth() === currentDate.getMonth();
 
           return (
-            <Paper
+            <Box
               key={day.getDate()}
               id={`date-${day.getDate()}`}
-              elevation={0}
               sx={{
-                width: 70,
-                height: 70,
-                borderRadius: 4,
-                backgroundColor: isToday ? "#906aff" : "#fff",
-                color: isToday
-                  ? "#fff"
-                  : isCurrentMonth
-                  ? "#000"
-                  : "rgba(0,0,0,0.4)",
+                width: 60,
+                height: 60,
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "center",
                 justifyContent: "center",
-                
                 flexShrink: 0,
-                transition: "all 0.3s ease",
+                transition: "all 0.2s ease",
                 cursor: "pointer",
+                borderRadius: "50%",
+                backgroundColor: isToday ? colors.primary.main : "transparent",
+                color: isToday ? colors.text.white : colors.text.primary,
                 "&:hover": {
-                  transform: "translateY(-2px)",
-                  boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.15)",
+                  backgroundColor: isToday ? colors.primary.dark : colors.primary.lighter,
+                  transform: "scale(1.1)",
                 },
-                border: isCurrentMonth ? "none" : "1px dashed rgba(0,0,0,0.2)",
               }}
               onClick={() => handleDateClick(day)}
             >
-              <Typography variant="h6" fontWeight={600}>
+              <Typography 
+                variant="h6" 
+                fontWeight={isToday ? 700 : 500}
+                sx={{
+                  fontSize: "1rem",
+                  lineHeight: 1,
+                }}
+              >
                 {day.getDate()}
               </Typography>
               <Typography
-                variant="body2"
-                sx={{ opacity: isCurrentMonth ? 0.8 : 0.5 }}
+                variant="caption"
+                sx={{ 
+                  opacity: 0.8,
+                  fontSize: "0.7rem",
+                  fontWeight: isToday ? 600 : 400,
+                  lineHeight: 1,
+                  mt: 0.5,
+                }}
               >
                 {day.toLocaleString("en-US", { weekday: "short" })}
               </Typography>
-              {!isCurrentMonth && (
-                <Typography variant="caption" sx={{ opacity: 0.6, mt: 0.5 }}>
-                  {day.toLocaleString("en-US", { month: "short" })}
-                </Typography>
-              )}
-            </Paper>
+            </Box>
           );
         })}
       </Box>
-
-      
+      <Box sx={{ textAlign: "center", mb: 2 }}>
+        <Typography 
+          variant="h6" 
+          sx={{ 
+            color: colors.text.primary,
+            fontWeight: 600,
+            fontSize: "1.25rem",
+          }}
+        >
+          {currentDate.toLocaleString("en-US", { 
+            month: "long", 
+            year: "numeric" 
+          })}
+        </Typography>
+      </Box>
     </Box>
   );
 };

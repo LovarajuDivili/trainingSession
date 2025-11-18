@@ -21,9 +21,12 @@ import {
   CartesianGrid,
   ResponsiveContainer,
 } from "recharts";
+//import { colors } from "../../common/colorConstants";
+import { useThemeColors } from "../../hooks/useThemeColors";
 
 const Dashboard = () => {
   const { user } = useAuth();
+  const colors = useThemeColors();
   const dispatch = useAppDispatch();
   const employees = useAppSelector((state) => state.employees.employees);
   const employeesLoading = useAppSelector((state) => state.employees.loading);
@@ -181,7 +184,6 @@ const Dashboard = () => {
           flexDirection: "column",
           p: 0.5,
           gap: 2,
-          //pt: 0.5,
         }}
       >
         <Box
@@ -192,7 +194,10 @@ const Dashboard = () => {
             mr: 6,
           }}
         >
-          <Typography variant="h6" sx={{ fontWeight: 600 }}>
+          <Typography
+            variant="h6"
+            sx={{ fontWeight: 600, color: colors.text.primary }}
+          >
             New Joiners
           </Typography>
 
@@ -202,26 +207,26 @@ const Dashboard = () => {
                 onClick={handlePrevJoiners}
                 size="small"
                 sx={{
-                  backgroundColor: "rgba(0,0,0,0.04)",
-                  "&:hover": { backgroundColor: "rgba(0,0,0,0.08)" },
+                  backgroundColor: colors.overlay.black04,
+                  "&:hover": { backgroundColor: colors.overlay.black08 },
                 }}
               >
                 <ArrowBackIosNewIcon
                   fontSize="small"
-                  sx={{ color: "#ac8fff" }}
+                  sx={{ color: colors.primary.main }}
                 />
               </IconButton>
               <IconButton
                 onClick={handleNextJoiners}
                 size="small"
                 sx={{
-                  backgroundColor: "rgba(0,0,0,0.04)",
-                  "&:hover": { backgroundColor: "rgba(0,0,0,0.08)" },
+                  backgroundColor: colors.overlay.black04,
+                  "&:hover": { backgroundColor: colors.overlay.black08 },
                 }}
               >
                 <ArrowForwardIosIcon
                   fontSize="small"
-                  sx={{ color: "#ac8fff" }}
+                  sx={{ color: colors.primary.main }}
                 />
               </IconButton>
             </Box>
@@ -229,7 +234,6 @@ const Dashboard = () => {
         </Box>
 
         <Box sx={{ flex: 1 }}>
-          {" "}
           {visibleJoinersList.length > 0 ? (
             visibleJoinersList.map((emp, index) => (
               <Card
@@ -237,8 +241,8 @@ const Dashboard = () => {
                 sx={{
                   p: 1.5,
                   borderRadius: 4,
-                  boxShadow: "0 4px 20px rgba(0,0,0,0.15)",
-                  backgroundColor: "#fdfefe",
+                  boxShadow: `0 4px 20px ${colors.shadow.card}`,
+                  backgroundColor: colors.background.card,
                   width: "80%",
                   mb: 1.5,
                   transition: "transform 0.3s ease, opacity 0.3s ease",
@@ -282,14 +286,18 @@ const Dashboard = () => {
                   <Box>
                     <Typography
                       variant="subtitle1"
-                      sx={{ fontWeight: 600, fontSize: "14px" }}
+                      sx={{
+                        fontWeight: 600,
+                        fontSize: "14px",
+                        color: colors.text.primary,
+                      }}
                     >
                       {emp.name}
                     </Typography>
                     <Typography
                       variant="body2"
                       color="text.secondary"
-                      sx={{ fontSize: "12px" }}
+                      sx={{ fontSize: "12px", color: colors.text.secondary }}
                     >
                       {emp.role || "—"}
                     </Typography>
@@ -308,7 +316,7 @@ const Dashboard = () => {
                     <Typography
                       variant="caption"
                       sx={{
-                        color: "#00bcd4",
+                        color: colors.status.info,
                         fontWeight: 600,
                         fontSize: "11px",
                       }}
@@ -317,7 +325,11 @@ const Dashboard = () => {
                     </Typography>
                     <Typography
                       variant="body2"
-                      sx={{ fontWeight: 600, fontSize: "12px" }}
+                      sx={{
+                        fontWeight: 600,
+                        fontSize: "12px",
+                        color: colors.text.primary,
+                      }}
                     >
                       {emp.joinDate
                         ? new Date(emp.joinDate).toLocaleDateString()
@@ -328,7 +340,7 @@ const Dashboard = () => {
                     <Typography
                       variant="caption"
                       sx={{
-                        color: "#00bcd4",
+                        color: colors.status.info,
                         fontWeight: 600,
                         fontSize: "11px",
                       }}
@@ -337,7 +349,11 @@ const Dashboard = () => {
                     </Typography>
                     <Typography
                       variant="body2"
-                      sx={{ fontWeight: 600, fontSize: "12px" }}
+                      sx={{
+                        fontWeight: 600,
+                        fontSize: "12px",
+                        color: colors.text.primary,
+                      }}
                     >
                       9:30 AM
                     </Typography>
@@ -354,7 +370,6 @@ const Dashboard = () => {
 
         {recentJoiners.length > visibleJoiners && (
           <Box sx={{ display: "flex", justifyContent: "center", gap: 1 }}>
-            {" "}
             {Array.from({
               length: Math.ceil(recentJoiners.length / visibleJoiners),
             }).map((_, dotIndex) => (
@@ -366,7 +381,7 @@ const Dashboard = () => {
                   borderRadius: "50%",
                   backgroundColor:
                     Math.floor(currentJoinerIndex / visibleJoiners) === dotIndex
-                      ? "primary.main"
+                      ? colors.primary.main
                       : "grey.300",
                   transition: "background-color 0.3s ease",
                 }}
@@ -375,19 +390,9 @@ const Dashboard = () => {
           </Box>
         )}
 
-        {/* <Typography
-          variant="body1"
-          sx={{ fontWeight: 500, fontSize: "14px" }}
-        >
-          {" "}
-          {new Date().toLocaleDateString("en-US", {
-            year: "numeric",
-            month: "long",
-            day: "numeric",
-          })}
-        </Typography> */}
-
-        <Typography sx={{ fontWeight: 600 }}>Current Openings</Typography>
+        <Typography sx={{ fontWeight: 600, color: colors.text.primary }}>
+          Current Openings
+        </Typography>
 
         <Box
           sx={{
@@ -396,7 +401,7 @@ const Dashboard = () => {
             pr: 1,
             "&::-webkit-scrollbar": { width: "6px" },
             "&::-webkit-scrollbar-thumb": {
-              backgroundColor: "rgba(0,0,0,0.3)",
+              backgroundColor: colors.special.scrollbarThumb,
               borderRadius: "10px",
             },
           }}
@@ -410,19 +415,24 @@ const Dashboard = () => {
                   height: "35px",
                   width: "80%",
                   borderRadius: 3,
-                  boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
-                  backgroundColor: "#f4f0ff",
-                  border: "1px solid #e9ecef",
+                  boxShadow: `0 2px 8px ${colors.shadow.light}`,
+                  backgroundColor: colors.special.currentOpeningsBg,
+                  border: `1px solid ${colors.border.light}`,
                   transition: "all 0.2s ease",
                   "&:hover": {
-                    boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+                    boxShadow: `0 4px 12px ${colors.shadow.hover}`,
                     transform: "translateY(-1px)",
                   },
                 }}
               >
                 <Typography
                   variant="subtitle1"
-                  sx={{ fontWeight: 600, fontSize: "13px", mb: 0.5 }}
+                  sx={{
+                    fontWeight: 600,
+                    fontSize: "13px",
+                    mb: 0.5,
+                    color: colors.text.primary,
+                  }}
                 >
                   {opening.title}
                 </Typography>
@@ -436,7 +446,7 @@ const Dashboard = () => {
                   <Typography
                     variant="body2"
                     color="text.secondary"
-                    sx={{ fontSize: "11px" }}
+                    sx={{ fontSize: "11px", color: colors.text.secondary }}
                   >
                     {opening.department}
                   </Typography>
@@ -445,7 +455,7 @@ const Dashboard = () => {
                     sx={{
                       fontSize: "11px",
                       fontWeight: 600,
-                      color: "#906aff",
+                      color: colors.primary.main,
                     }}
                   >
                     {opening.applicants} applicants
@@ -462,9 +472,9 @@ const Dashboard = () => {
         sx={{
           height: 620,
           flex: 1,
-          backgroundColor: "#fff",
+          backgroundColor: colors.background.white,
           borderRadius: "40px 0 0 40px",
-          boxShadow: "-4px 0 12px rgba(0,0,0,0.05)",
+          boxShadow: `-4px 0 12px ${colors.shadow.medium}`,
           p: 5,
           pt: 2,
           pb: 1,
@@ -476,12 +486,17 @@ const Dashboard = () => {
       >
         <Typography
           variant="h4"
-          sx={{ fontWeight: 600, fontSize: "30px", mb: 1 }}
+          sx={{
+            fontWeight: 600,
+            fontSize: "30px",
+            mb: 1,
+            color: colors.text.primary,
+          }}
         >
-          <Box component="span" sx={{ color: "#906aff" }}>
+          <Box component="span" sx={{ color: colors.primary.main }}>
             {getGreeting()},
           </Box>{" "}
-          <Box component="span" sx={{ color: "#000" }}>
+          <Box component="span" sx={{ color: colors.text.primary }}>
             {user?.name || "User"}!
           </Box>
         </Typography>
@@ -491,7 +506,7 @@ const Dashboard = () => {
             sx={{
               overflow: "hidden",
               borderRadius: 4,
-              boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
+              boxShadow: `0 4px 20px ${colors.shadow.medium}`,
             }}
           >
             <Box
@@ -514,8 +529,8 @@ const Dashboard = () => {
               top: "50%",
               left: 20,
               transform: "translateY(-50%)",
-              backgroundColor: "rgba(255,255,255,0.7)",
-              "&:hover": { backgroundColor: "rgba(255,255,255,0.9)" },
+              backgroundColor: colors.overlay.white70,
+              "&:hover": { backgroundColor: colors.overlay.white90 },
             }}
           >
             <ArrowBackIosNewIcon />
@@ -528,8 +543,8 @@ const Dashboard = () => {
               top: "50%",
               right: 20,
               transform: "translateY(-50%)",
-              backgroundColor: "rgba(255,255,255,0.7)",
-              "&:hover": { backgroundColor: "rgba(255,255,255,0.9)" },
+              backgroundColor: colors.overlay.white70,
+              "&:hover": { backgroundColor: colors.overlay.white90 },
             }}
           >
             <ArrowForwardIosIcon />
@@ -538,33 +553,37 @@ const Dashboard = () => {
 
         <Typography
           variant="h6"
-          sx={{ mt: 2, mb: 1, fontWeight: 600, color: "#333" }}
+          sx={{ mt: 2, mb: 1, fontWeight: 600, color: colors.text.primary }}
         >
           Employee Join Trend (Jan–Dec)
         </Typography>
 
         <ResponsiveContainer width="95%" height="90%">
           <LineChart data={monthlyData}>
-            <CartesianGrid strokeDasharray="3 3" />
+            <CartesianGrid strokeDasharray="3 3" stroke={colors.chart.grid} />
             <XAxis dataKey="month" />
             <YAxis allowDecimals={false} />
             <Tooltip
               contentStyle={{
-                backgroundColor: "#fff",
-                border: "1px solid #ccc",
+                backgroundColor: colors.chart.tooltipBackground,
+                border: `1px solid ${colors.chart.tooltipBorder}`,
                 borderRadius: 8,
               }}
-              labelStyle={{ color: "#ac8fff" }}
-              itemStyle={{ color: "#ac8fff" }}
+              labelStyle={{ color: colors.primary.main }}
+              itemStyle={{ color: colors.primary.main }}
             />
 
             <Line
               type="monotone"
               dataKey="count"
-              stroke="#ff9430"
+              stroke={colors.chart.line}
               strokeWidth={3}
               dot={{ r: 5 }}
-              activeDot={{ r: 8, fill: "#ac8fff", stroke: "#ac8fff" }}
+              activeDot={{
+                r: 8,
+                fill: colors.chart.activeDot,
+                stroke: colors.chart.activeDot,
+              }}
             />
           </LineChart>
         </ResponsiveContainer>

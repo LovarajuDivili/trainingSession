@@ -26,8 +26,11 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import CloseIcon from "@mui/icons-material/Close";
 import NoData from "../../common/noData";
 import type { Project } from "../../common/types";
+//import { colors } from "../../common/colorConstants";
+import { useThemeColors } from "../../hooks/useThemeColors";
 
 const CustomNoRowsOverlay = () => {
+  const colors = useThemeColors();
   return (
     <Box
       sx={{
@@ -38,6 +41,8 @@ const CustomNoRowsOverlay = () => {
         height: "100%",
         gap: 2,
         p: 3,
+        backgroundColor: colors.background.card, // Add theme background
+        color: colors.text.primary,
       }}
     >
       <NoData
@@ -53,6 +58,7 @@ const Projects = () => {
   const [searchText, setSearchText] = useState("");
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
+  const colors = useThemeColors();
   const { projects, loading } = useAppSelector((state) => state.projects);
 
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
@@ -132,13 +138,13 @@ const Projects = () => {
           sx={{
             backgroundColor:
               params.value === "Active"
-                ? "#47be4bff"
+                ? colors.status.success
                 : params.value === "InProgress"
-                ? "#e1aa2aff"
+                ? colors.status.warning
                 : params.value === "InActive"
-                ? "#e12a2aff"
-                : null,
-            color: "white",
+                ? colors.status.error
+                : colors.background.disabled,
+            color: colors.text.white,
             textTransform: "none",
             fontWeight: 600,
             borderRadius: "20px",
@@ -149,7 +155,6 @@ const Projects = () => {
         </Button>
       ),
     },
-
     {
       field: "startDate",
       headerName: "Start Date",
@@ -166,7 +171,7 @@ const Projects = () => {
           >
             <Typography
               sx={{
-                color: isCompleted ? "red" : "inherit",
+                color: isCompleted ? colors.status.error : colors.text.primary,
                 fontWeight: isCompleted ? 400 : 200,
                 lineHeight: 1.5,
                 fontSize: "0.875rem",
@@ -194,7 +199,7 @@ const Projects = () => {
           >
             <Typography
               sx={{
-                color: isCompleted ? "red" : "inherit",
+                color: isCompleted ? colors.status.error : colors.text.primary,
                 fontWeight: isCompleted ? 400 : 200,
                 lineHeight: 1.5,
                 fontSize: "0.875rem",
@@ -250,7 +255,9 @@ const Projects = () => {
       />
 
       {loading ? (
-        <Typography>{Loading.LOADING}</Typography>
+        <Typography sx={{ color: colors.text.primary }}>
+          {Loading.LOADING}
+        </Typography>
       ) : (
         <Box sx={{ height: "calc(97vh - 150px)", width: "100%" }}>
           <DataGrid
@@ -269,22 +276,65 @@ const Projects = () => {
             }
             sx={{
               "& .MuiDataGrid-columnHeaders": {
-                color: "#906aff !important",
+                backgroundColor: colors.background.lightGray,
+                color: colors.text.primary,
                 fontSize: 17,
+                borderBottom: `1px solid ${colors.border.light}`,
+              },
+              "& .MuiDataGrid-columnHeader": {
+                backgroundColor: colors.background.lightGray,
+                "&:focus, &:focus-within": {
+                  outline: "none",
+                },
               },
               "& .MuiDataGrid-columnHeaderTitle": {
                 fontWeight: 600,
+                color: colors.text.primary,
               },
-
-              "& .completed-project": {
-                backgroundColor: "rgba(232, 245, 233, 0.7)",
+              "& .MuiDataGrid-cell": {
+                color: colors.text.primary,
+                borderBottom: `1px solid ${colors.border.light}`,
+                backgroundColor: colors.background.card,
+              },
+              "& .MuiDataGrid-row": {
+                backgroundColor: colors.background.card,
                 "&:hover": {
-                  backgroundColor: "rgba(200, 230, 201, 0.8) !important",
+                  backgroundColor: colors.state.hoverLight,
+                },
+              },
+              "& .MuiTablePagination-root": {
+                color: colors.text.primary,
+                backgroundColor: colors.background.card,
+              },
+              "& .MuiDataGrid-menuIcon": {
+                color: colors.text.primary,
+              },
+              "& .MuiDataGrid-sortIcon": {
+                color: colors.text.primary,
+              },
+              "& .MuiDataGrid-footerContainer": {
+                backgroundColor: colors.background.lightGray,
+                borderTop: `1px solid ${colors.border.light}`,
+                color: colors.text.primary,
+              },
+              "& .completed-project": {
+                backgroundColor: colors.special.completedProjectBg,
+                "&:hover": {
+                  backgroundColor: colors.special.completedProjectHover,
                 },
               },
               "& .completed-project .MuiDataGrid-cell": {
-                color: "#2e7d32",
-                borderBottom: "1px solid #c8e6c9",
+                color: colors.status.success,
+                borderBottom: `1px solid ${colors.primary.light}`,
+              },
+              // Main DataGrid background
+              backgroundColor: colors.background.card,
+              border: `1px solid ${colors.border.light}`,
+              "& .MuiDataGrid-virtualScroller": {
+                backgroundColor: colors.background.card,
+              },
+              "& .MuiDataGrid-main": {
+                backgroundColor: colors.background.card,
               },
             }}
           />
@@ -297,6 +347,12 @@ const Projects = () => {
         onClose={handleCancelDelete}
         maxWidth="sm"
         fullWidth
+        PaperProps={{
+          sx: {
+            backgroundColor: colors.background.card,
+            color: colors.text.primary,
+          },
+        }}
       >
         <DialogTitle
           sx={{
@@ -305,6 +361,8 @@ const Projects = () => {
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
+            color: colors.text.primary,
+            backgroundColor: colors.background.card,
           }}
         >
           Confirm Delete
@@ -312,9 +370,12 @@ const Projects = () => {
             onClick={handleCancelDelete}
             size="small"
             sx={{
-              backgroundColor: "#f5f5f5",
-              color: "#d81b1b",
-              "&:hover": { backgroundColor: "#f44336", color: "#fff" },
+              backgroundColor: colors.background.lightGray,
+              color: colors.ui.button.delete,
+              "&:hover": {
+                backgroundColor: colors.status.error,
+                color: colors.text.white,
+              },
               width: 28,
               height: 28,
               borderRadius: "50%",
@@ -324,8 +385,8 @@ const Projects = () => {
           </IconButton>
         </DialogTitle>
         <Divider sx={{ mb: 1 }} />
-        <DialogContent>
-          <Typography sx={{ mb: 1 }}>
+        <DialogContent sx={{ backgroundColor: colors.background.card }}>
+          <Typography sx={{ mb: 1, color: colors.text.primary }}>
             Are you sure you want to delete project -{" "}
             <strong>
               {projects.find((proj) => proj.id === projectToDelete)
@@ -339,11 +400,17 @@ const Projects = () => {
               checked={confirmChecked}
               onChange={(e) => setConfirmChecked(e.target.checked)}
               size="small"
+              sx={{
+                color: colors.ui.checkbox,
+                "&.Mui-checked": {
+                  color: colors.ui.checkbox,
+                },
+              }}
             />
             <Typography
               component="label"
               htmlFor="confirm-delete-project"
-              sx={{ cursor: "pointer" }}
+              sx={{ cursor: "pointer", color: colors.text.primary }}
             >
               Yes, I want to delete project -{" "}
               <strong>
@@ -353,29 +420,43 @@ const Projects = () => {
             </Typography>
           </Box>
         </DialogContent>
-        <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 2, p: 2 }}>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "flex-end",
+            gap: 2,
+            p: 2,
+            backgroundColor: colors.background.card,
+          }}
+        >
           <Button
             variant="outlined"
             onClick={handleCancelDelete}
             sx={{
-              color: "#666",
-              borderColor: "#666",
+              color: colors.text.gray,
+              borderColor: colors.text.gray,
               textTransform: "uppercase",
+              "&:hover": {
+                borderColor: colors.primary.main,
+                color: colors.primary.main,
+              },
             }}
           >
             Cancel
           </Button>
           <Button
             variant="contained"
-            color="error"
             onClick={handleConfirmDelete}
             disabled={!confirmChecked}
             sx={{
-              backgroundColor: "#d81b1bff",
+              backgroundColor: colors.ui.button.delete,
               textTransform: "uppercase",
+              "&:hover": {
+                backgroundColor: colors.status.error,
+              },
               "&:disabled": {
-                backgroundColor: "#f5f5f5",
-                color: "#999",
+                backgroundColor: colors.background.disabled,
+                color: colors.text.disabled,
               },
             }}
           >

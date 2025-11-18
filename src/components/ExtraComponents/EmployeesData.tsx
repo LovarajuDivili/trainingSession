@@ -15,11 +15,13 @@ import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import Fab from "@mui/material/Fab";
 import { useNavigate } from "react-router-dom";
 import Header from "../../components/Header";
+import { useThemeColors } from "../../hooks/useThemeColors";
 
 const EmployeeData = () => {
   const dispatch = useAppDispatch();
   const employees = useAppSelector((state) => state.employees.employees);
   const [searchText, setSearchText] = useState("");
+  const colors = useThemeColors();
 
   useEffect(() => {
     dispatch(fetchEmployees());
@@ -41,7 +43,11 @@ const EmployeeData = () => {
   };
 
   return (
-    <Box sx={{ minHeight: "70vh", backgroundColor: "white" }}>
+    <Box sx={{ 
+      minHeight: "70vh", 
+      backgroundColor: colors.background.white,
+      color: colors.text.primary 
+    }}>
       <Box sx={{ position: "relative" }}>
         <Fab
           color="error"
@@ -51,11 +57,12 @@ const EmployeeData = () => {
             position: "absolute",
             top: 20,
             right: 20,
-            backgroundColor: "#ff4d4d",
-            color: "#fff",
-            boxShadow: "0 4px 10px rgba(0,0,0,0.2)",
+            backgroundColor: colors.status.error,
+            color: colors.text.white,
+            boxShadow: `0 4px 10px ${colors.shadow.medium}`,
             "&:hover": {
-              backgroundColor: "#e60000",
+              backgroundColor: colors.status.error,
+              opacity: 0.9,
             },
           }}
         >
@@ -70,14 +77,14 @@ const EmployeeData = () => {
           sx={{
             width: "100%",
             height: 300,
-            background: "linear-gradient(135deg, #ac8fff 0%, #6c63ff 100%)",
+            background: `linear-gradient(135deg, ${colors.primary.light} 0%, ${colors.primary.main} 100%)`,
             borderRadius: "0 0 40px 40px",
             position: "relative",
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
             justifyContent: "center",
-            color: "#fff",
+            color: colors.text.white,
             textAlign: "center",
             overflow: "hidden",
             p: 0,
@@ -100,12 +107,8 @@ const EmployeeData = () => {
                     key={index}
                     component="img"
                     src={
-                      typeof emp.image === "string"
-                        ? emp.image.startsWith("http")
-                          ? emp.image
-                          : emp.image
-                        : emp.image
-                        ? URL.createObjectURL(emp.image as File)
+                      emp.image
+                        ? `data:image/jpeg;base64,${emp.image}`
                         : `https://randomuser.me/api/portraits/men/${
                             index + 10
                           }.jpg`
@@ -115,10 +118,10 @@ const EmployeeData = () => {
                       width: 40,
                       height: 40,
                       borderRadius: "50%",
-                      border: "2px solid white",
+                      border: `2px solid ${colors.text.white}`,
                       objectFit: "cover",
                       ml: index === 0 ? 0 : -1.5,
-                      boxShadow: "0 0 4px rgba(0,0,0,0.2)",
+                      boxShadow: `0 0 4px ${colors.shadow.light}`,
                     }}
                   />
                 ))}
@@ -130,13 +133,13 @@ const EmployeeData = () => {
                       width: 40,
                       height: 40,
                       borderRadius: "50%",
-                      backgroundColor: "#ddd",
-                      border: "2px solid white",
+                      backgroundColor: colors.background.lightGray,
+                      border: `2px solid ${colors.text.white}`,
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
                       fontWeight: 600,
-                      color: "#555",
+                      color: colors.text.secondary,
                       ml: -1.5,
                       fontSize: "0.9rem",
                     }}
@@ -161,14 +164,13 @@ const EmployeeData = () => {
             sx={{
               display: "flex",
               alignItems: "center",
-              backgroundColor: "#fff",
+              backgroundColor: colors.background.white,
               borderRadius: "30px",
-              boxShadow: "0 8px 32px rgba(0, 0, 0, 0.2)",
-              border: "1px solid #e0e0e0ff",
+              boxShadow: `0 8px 32px ${colors.shadow.medium}`,
+              border: `1px solid ${colors.border.light}`,
               width: "80%",
               p: 1.5,
               zIndex: 1,
-              //border: "1px solid red",
               position: "fixed",
               marginTop: "290px",
             }}
@@ -183,7 +185,7 @@ const EmployeeData = () => {
                 disableUnderline: true,
                 startAdornment: (
                   <InputAdornment position="start">
-                    <SearchIcon sx={{ color: "#888", mr: 1 }} />
+                    <SearchIcon sx={{ color: colors.text.secondary, mr: 1 }} />
                   </InputAdornment>
                 ),
               }}
@@ -192,6 +194,11 @@ const EmployeeData = () => {
                 "& .MuiInputBase-input": {
                   fontSize: "16px",
                   padding: "8px 0",
+                  color: colors.text.primary,
+                  "&::placeholder": {
+                    color: colors.text.secondary,
+                    opacity: 1,
+                  },
                 },
               }}
             />
@@ -213,16 +220,18 @@ const EmployeeData = () => {
                     onClick={() => handleCardClick(emp.id)}
                     sx={{
                       borderRadius: "16px",
-                      boxShadow:
-                        "2px 3px 1px -2px #ac8fff, 2px 2px 2px 0px rgba(0,0,0,0.14), 0px 1px 5px 0px rgba(0,0,0,0.12)",
+                      boxShadow: `2px 3px 1px -2px ${colors.primary.light}, 2px 2px 2px 0px ${colors.shadow.light}, 0px 1px 5px 0px ${colors.shadow.light}`,
                       width: "245px",
                       textAlign: "center",
                       transition: "transform 0.2s",
+                      backgroundColor: colors.background.card,
+                      border: `1px solid ${colors.border.light}`,
                       "&:hover": {
                         transform: "scale(1.03)",
                         cursor: "pointer",
+                        boxShadow: `0 8px 25px ${colors.shadow.medium}`,
+                        borderColor: colors.primary.light,
                       },
-                      backgroundColor: "#fff",
                     }}
                   >
                     <CardContent>
@@ -231,21 +240,17 @@ const EmployeeData = () => {
                           width: 80,
                           height: 80,
                           borderRadius: "50%",
-                          // overflow: "hidden",
                           mx: "auto",
                           mb: 2,
                           boxShadow: 3,
+                          border: `2px solid ${colors.primary.lighter}`,
                         }}
                       >
                         <Box
                           component="img"
                           src={
-                            typeof emp.image === "string"
-                              ? emp.image.startsWith("http")
-                                ? emp.image
-                                : emp.image
-                              : emp.image
-                              ? URL.createObjectURL(emp.image as File)
+                            emp.image
+                              ? `data:image/jpeg;base64,${emp.image}`
                               : "/placeholder.jpg"
                           }
                           onError={(e) => {
@@ -256,21 +261,22 @@ const EmployeeData = () => {
                             width: "100%",
                             height: "100%",
                             objectFit: "cover",
+                            borderRadius: "50%",
                           }}
                         />
                       </Box>
 
-                      <Typography variant="h6" fontWeight={600}>
+                      <Typography variant="h6" fontWeight={600} sx={{ color: colors.text.primary }}>
                         {emp.name}
                       </Typography>
-                      <Typography color="text.secondary">{emp.role}</Typography>
-                      <Typography sx={{ mt: 1, fontSize: 14 }}>
+                      <Typography sx={{ color: colors.text.secondary }}>{emp.role}</Typography>
+                      <Typography sx={{ mt: 1, fontSize: 14, color: colors.text.primary }}>
                         <strong>ID:</strong> {emp.id}
                       </Typography>
-                      <Typography sx={{ fontSize: 14 }}>
+                      <Typography sx={{ fontSize: 14, color: colors.text.primary }}>
                         <strong>Email:</strong> {emp.email}
                       </Typography>
-                      <Typography sx={{ fontSize: 14 }}>
+                      <Typography sx={{ fontSize: 14, color: colors.text.primary }}>
                         <strong>Join Date:</strong>{" "}
                         {emp.joinDate
                           ? new Date(emp.joinDate).toLocaleDateString()
@@ -292,10 +298,11 @@ const EmployeeData = () => {
                             sx={{
                               px: 1.5,
                               py: 0.5,
-                              bgcolor: "#906aff",
-                              color: "#fff",
+                              bgcolor: colors.primary.main,
+                              color: colors.text.white,
                               borderRadius: "6px",
                               fontSize: 12,
+                              fontWeight: 500,
                             }}
                           >
                             {skill}
@@ -307,7 +314,7 @@ const EmployeeData = () => {
                 </Grid>
               ))
             ) : (
-              <Typography variant="h6" sx={{ mt: 4 }}>
+              <Typography variant="h6" sx={{ mt: 4, color: colors.text.secondary }}>
                 No employees found.
               </Typography>
             )}
