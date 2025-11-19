@@ -9,6 +9,7 @@ import SearchIcon from "@mui/icons-material/Search";
 import AddIcon from "@mui/icons-material/Add";
 import type { DashboardHeaderProps } from "../common/types";
 import { useThemeColors } from "../hooks/useThemeColors";
+import { useTheme } from "../context/ThemeContext";
 
 const DashboardHeader = ({
   title,
@@ -23,6 +24,7 @@ const DashboardHeader = ({
   gridIcon,
 }: DashboardHeaderProps) => {
   const colors = useThemeColors();
+  const { themeMode } = useTheme(); // Add this import: import { useTheme } from "../context/ThemeContext";
 
   return (
     <Box
@@ -33,7 +35,7 @@ const DashboardHeader = ({
         mb: 2,
         p: 1,
         borderBottom: `1px solid ${colors.border.light}`,
-        backgroundColor: colors.background.card,
+        backgroundColor: colors.background.white,
         position: "sticky",
         top: 0,
         zIndex: 100,
@@ -62,39 +64,39 @@ const DashboardHeader = ({
       <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
         {showSearch && (
           <TextField
-            placeholder="Search"
-            variant="outlined"
-            size="small"
-            sx={{
-              width: "300px",
-              "& .MuiOutlinedInput-root": {
-                borderRadius: "50px",
-                backgroundColor: colors.background.white,
-                color: colors.text.primary,
-                "& fieldset": {
-                  borderColor: colors.border.light,
-                },
-                "&:hover fieldset": {
-                  borderColor: colors.primary.main,
-                },
-                "&.Mui-focused fieldset": {
-                  borderColor: colors.primary.main,
-                },
-              },
-              "& .MuiInputBase-input::placeholder": {
-                color: colors.text.secondary,
-              },
-            }}
-            value={searchText}
-            onChange={(e) => onSearchChange?.(e.target.value)}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <SearchIcon sx={{ color: colors.text.secondary }} />
-                </InputAdornment>
-              ),
-            }}
-          />
+  placeholder="Search"
+  variant="outlined"
+  size="small"
+  sx={{
+    width: "300px",
+    "& .MuiOutlinedInput-root": {
+      borderRadius: "50px",
+      backgroundColor: colors.background.white,
+      color: colors.text.primary,
+      "& fieldset": {
+        borderColor: themeMode === "dark" ? "#555555" : colors.border.light,
+      },
+      "&:hover fieldset": {
+        borderColor: colors.primary.main,
+      },
+      "&.Mui-focused fieldset": {
+        borderColor: colors.primary.main,
+      },
+    },
+    "& .MuiInputBase-input::placeholder": {
+      color: colors.text.secondary,
+    },
+  }}
+  value={searchText}
+  onChange={(e) => onSearchChange?.(e.target.value)}
+  InputProps={{
+    startAdornment: (
+      <InputAdornment position="start">
+        <SearchIcon sx={{ color: colors.text.secondary }} />
+      </InputAdornment>
+    ),
+  }}
+/>
         )}
 
         {showAddButton && (
@@ -103,10 +105,17 @@ const DashboardHeader = ({
             sx={{
               borderRadius: "20px",
               textTransform: "none",
-              backgroundColor: colors.primary.main,
-              color: colors.text.white,
+              backgroundColor:
+                themeMode === "dark" ? colors.text.white : colors.primary.main,
+              color:
+                themeMode === "dark" ? colors.primary.main : colors.text.white,
               fontWeight: 500,
-              "&:hover": { backgroundColor: colors.primary.dark },
+              // "&:hover": {
+              //   backgroundColor:
+              //     themeMode === "dark"
+              //       ? colors.state.hoverLight
+              //       : colors.primary.dark,
+              // },
             }}
             onClick={onAddClick}
             endIcon={<AddIcon />}

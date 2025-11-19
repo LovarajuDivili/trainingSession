@@ -8,14 +8,14 @@ import {
 } from "@mui/material";
 import { useNavigate, useLocation } from "react-router-dom";
 import { sidebarItems } from "../common/sidebarItems";
-//import { colors } from "../common/colorConstants";
 import { useThemeColors } from "../hooks/useThemeColors";
-
+import { useTheme } from "../context/ThemeContext";
 
 const SideBar = () => {
   const navigate = useNavigate();
   const location = useLocation();
-   const colors = useThemeColors();
+  const colors = useThemeColors();
+  const { themeMode } = useTheme();
 
   return (
     <Box
@@ -32,16 +32,27 @@ const SideBar = () => {
       <List>
         {sidebarItems.map((item) => {
           const isSelected = location.pathname.startsWith(item.route);
+          
+          // For dark mode, reverse the colors when selected
+          const bgColor = isSelected 
+            ? (themeMode === "dark" ? colors.text.white : colors.primary.main)
+            : "transparent";
+          
+          const textColor = isSelected
+            ? (themeMode === "dark" ? colors.primary.main : colors.text.white)
+            : colors.text.primary;
 
           return (
             <ListItem key={item.label} disablePadding>
               <ListItemButton
                 onClick={() => navigate(item.route)}
                 sx={{
-                  bgcolor: isSelected ? colors.primary.main : "transparent",
-                  color: isSelected ? colors.text.white : colors.text.primary,
+                  bgcolor: bgColor,
+                  color: textColor,
                   "&:hover": {
-                    bgcolor: isSelected ? colors.primary.main : colors.state.hoverLight,
+                    bgcolor: isSelected 
+                      ? bgColor 
+                      : colors.state.hoverLight,
                   },
                   borderRadius: 10,
                   mx: 1,
@@ -49,7 +60,7 @@ const SideBar = () => {
                 }}
               >
                 <ListItemIcon sx={{ 
-                  color: isSelected ? colors.text.white : colors.text.primary,
+                  color: textColor,
                   minWidth: 40 
                 }}>
                   {item.icon}

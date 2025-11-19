@@ -275,68 +275,62 @@ const Projects = () => {
               isProjectCompleted(params.row.endDate) ? "completed-project" : ""
             }
             sx={{
-              "& .MuiDataGrid-columnHeaders": {
-                backgroundColor: colors.background.lightGray,
-                color: colors.text.primary,
-                fontSize: 17,
-                borderBottom: `1px solid ${colors.border.light}`,
-              },
-              "& .MuiDataGrid-columnHeader": {
-                backgroundColor: colors.background.lightGray,
-                "&:focus, &:focus-within": {
-                  outline: "none",
-                },
-              },
-              "& .MuiDataGrid-columnHeaderTitle": {
-                fontWeight: 600,
-                color: colors.text.primary,
-              },
-              "& .MuiDataGrid-cell": {
-                color: colors.text.primary,
-                borderBottom: `1px solid ${colors.border.light}`,
-                backgroundColor: colors.background.card,
-              },
-              "& .MuiDataGrid-row": {
-                backgroundColor: colors.background.card,
-                "&:hover": {
-                  backgroundColor: colors.state.hoverLight,
-                },
-              },
-              "& .MuiTablePagination-root": {
-                color: colors.text.primary,
-                backgroundColor: colors.background.card,
-              },
-              "& .MuiDataGrid-menuIcon": {
-                color: colors.text.primary,
-              },
-              "& .MuiDataGrid-sortIcon": {
-                color: colors.text.primary,
-              },
-              "& .MuiDataGrid-footerContainer": {
-                backgroundColor: colors.background.lightGray,
-                borderTop: `1px solid ${colors.border.light}`,
-                color: colors.text.primary,
-              },
-              "& .completed-project": {
-                backgroundColor: colors.special.completedProjectBg,
-                "&:hover": {
-                  backgroundColor: colors.special.completedProjectHover,
-                },
-              },
-              "& .completed-project .MuiDataGrid-cell": {
-                color: colors.status.success,
-                borderBottom: `1px solid ${colors.primary.light}`,
-              },
-              // Main DataGrid background
-              backgroundColor: colors.background.card,
-              border: `1px solid ${colors.border.light}`,
-              "& .MuiDataGrid-virtualScroller": {
-                backgroundColor: colors.background.card,
-              },
-              "& .MuiDataGrid-main": {
-                backgroundColor: colors.background.card,
-              },
-            }}
+                  "& .MuiDataGrid-columnHeaders": {
+                    backgroundColor: colors.background.white, // Use white background
+                    color: colors.text.primary,
+                    fontSize: 17,
+                    borderBottom: `1px solid ${colors.border.light}`,
+                  },
+                  "& .MuiDataGrid-columnHeader": {
+                    backgroundColor: colors.background.white, // Use white background
+                    "&:focus, &:focus-within": {
+                      outline: "none",
+                    },
+                  },
+                  "& .MuiDataGrid-columnHeaderTitle": {
+                    fontWeight: 600,
+                    color: colors.text.primary,
+                  },
+                  "& .MuiDataGrid-cell": {
+                    color: colors.text.primary,
+                    borderBottom: `1px solid ${colors.border.light}`,
+                    backgroundColor: colors.background.white, // Use white background
+                  },
+                  "& .MuiDataGrid-row": {
+                    backgroundColor: colors.background.white, // Use white background
+                    "&:hover": {
+                      backgroundColor: colors.state.hoverLight,
+                    },
+                  },
+                  "& .MuiTablePagination-root": {
+                    color: colors.text.primary,
+                    backgroundColor: colors.background.white, // Use white background
+                  },
+                  "& .MuiDataGrid-menuIcon": {
+                    color: colors.text.primary,
+                  },
+                  "& .MuiDataGrid-sortIcon": {
+                    color: colors.text.primary,
+                  },
+                  "& .MuiDataGrid-footerContainer": {
+                    backgroundColor: colors.background.white, // Use white background
+                    borderTop: `1px solid ${colors.border.light}`,
+                    color: colors.text.primary,
+                  },
+                  "& .MuiDataGrid-toolbarContainer": {
+                    backgroundColor: colors.background.white, // Use white background
+                    color: colors.text.primary,
+                  },
+                  // Main DataGrid background
+                  backgroundColor: colors.background.white, // Use white background
+                  border: `1px solid ${colors.border.light}`,
+                  "& .MuiDataGrid-virtualScroller": {
+                    backgroundColor: colors.background.white, // Use white background
+                  },
+                  "& .MuiDataGrid-main": {
+                    backgroundColor: colors.background.white, // Use white background
+                  },
+                }}
           />
         </Box>
       )}

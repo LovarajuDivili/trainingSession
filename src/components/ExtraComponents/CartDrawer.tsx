@@ -13,6 +13,7 @@ import {
   Snackbar,
   Alert,
 } from "@mui/material";
+import DeleteIcon from "@mui/icons-material/Delete";
 import { useCartDrawer } from "../../context/CartDrawerContext";
 import { useCart } from "../../context/CartContext";
 import CloseIcon from "@mui/icons-material/Close";
@@ -22,7 +23,7 @@ import { useThemeColors } from "../../hooks/useThemeColors";
 
 const CartDrawer = () => {
   const { isDrawerOpen, closeDrawer } = useCartDrawer();
-  const { cart, clearCart } = useCart();
+   const { cart, clearCart, removeFromCart } = useCart();
   const { addOrder } = useOrders();
   const colors = useThemeColors();
 
@@ -42,6 +43,10 @@ const CartDrawer = () => {
     clearCart(); // Clear cart
     setOpenSnackbar(true); // Show message
     closeDrawer(); // Close Drawer
+  };
+
+  const handleRemoveItem = (itemId: string) => {
+    removeFromCart(itemId);
   };
 
   return (
@@ -127,7 +132,7 @@ const CartDrawer = () => {
                     sx={{
                       "& .MuiOutlinedInput-root": {
                         borderRadius: "20px",
-                        backgroundColor: colors.background.white,
+                        backgroundColor: colors.background.card,
                         "& fieldset": {
                           borderColor: colors.border.light,
                         },
@@ -139,7 +144,7 @@ const CartDrawer = () => {
                         },
                       },
                       "& .MuiInputBase-input": {
-                        color: colors.text.primary,
+                        color: colors.text.primary1,
                         "&::placeholder": {
                           color: colors.text.secondary,
                           opacity: 1,
@@ -187,7 +192,7 @@ const CartDrawer = () => {
                     sx={{
                       "& .MuiOutlinedInput-root": {
                         borderRadius: "20px",
-                        backgroundColor: colors.background.white,
+                        backgroundColor: colors.background.card,
                         "& fieldset": {
                           borderColor: colors.border.light,
                         },
@@ -199,7 +204,7 @@ const CartDrawer = () => {
                         },
                       },
                       "& .MuiInputBase-input": {
-                        color: colors.text.primary,
+                        color: colors.text.primary1,
                         "&::placeholder": {
                           color: colors.text.secondary,
                           opacity: 1,
@@ -226,7 +231,7 @@ const CartDrawer = () => {
                     sx={{
                       "& .MuiOutlinedInput-root": {
                         borderRadius: "20px",
-                        backgroundColor: colors.background.white,
+                        backgroundColor: colors.background.card,
                         "& fieldset": {
                           borderColor: colors.border.light,
                         },
@@ -238,7 +243,7 @@ const CartDrawer = () => {
                         },
                       },
                       "& .MuiInputBase-input": {
-                        color: colors.text.primary,
+                        color: colors.text.primary1,
                         "&::placeholder": {
                           color: colors.text.secondary,
                           opacity: 1,
@@ -264,7 +269,7 @@ const CartDrawer = () => {
                 sx={{
                   "& .MuiOutlinedInput-root": {
                     borderRadius: "20px",
-                    backgroundColor: colors.background.white,
+                    backgroundColor: colors.background.card,
                     "& fieldset": {
                       borderColor: colors.border.light,
                     },
@@ -276,7 +281,7 @@ const CartDrawer = () => {
                     },
                   },
                   "& .MuiInputBase-input": {
-                    color: colors.text.primary,
+                    color: colors.text.primary1,
                     "&::placeholder": {
                       color: colors.text.secondary,
                       opacity: 1,
@@ -300,7 +305,7 @@ const CartDrawer = () => {
                 sx={{
                   "& .MuiOutlinedInput-root": {
                     borderRadius: "20px",
-                    backgroundColor: colors.background.white,
+                    backgroundColor: colors.background.card,
                     "& fieldset": {
                       borderColor: colors.border.light,
                     },
@@ -312,7 +317,7 @@ const CartDrawer = () => {
                     },
                   },
                   "& .MuiInputBase-input": {
-                    color: colors.text.primary,
+                    color: colors.text.primary1,
                     "&::placeholder": {
                       color: colors.text.secondary,
                       opacity: 1,
@@ -345,7 +350,7 @@ const CartDrawer = () => {
                 sx={{
                   "& .MuiOutlinedInput-root": {
                     borderRadius: "20px",
-                    backgroundColor: colors.background.white,
+                    backgroundColor: colors.background.card,
                     "& fieldset": {
                       borderColor: colors.border.light,
                     },
@@ -357,7 +362,7 @@ const CartDrawer = () => {
                     },
                   },
                   "& .MuiInputBase-input": {
-                    color: colors.text.primary,
+                    color: colors.text.primary1,
                     "&::placeholder": {
                       color: colors.text.secondary,
                       opacity: 1,
@@ -380,7 +385,7 @@ const CartDrawer = () => {
                 sx={{
                   "& .MuiOutlinedInput-root": {
                     borderRadius: "20px",
-                    backgroundColor: colors.background.white,
+                    backgroundColor: colors.background.card,
                     "& fieldset": {
                       borderColor: colors.border.light,
                     },
@@ -392,7 +397,7 @@ const CartDrawer = () => {
                     },
                   },
                   "& .MuiInputBase-input": {
-                    color: colors.text.primary,
+                    color: colors.text.primary1,
                     "&::placeholder": {
                       color: colors.text.secondary,
                       opacity: 1,
@@ -415,7 +420,7 @@ const CartDrawer = () => {
                 sx={{
                   "& .MuiOutlinedInput-root": {
                     borderRadius: "20px",
-                    backgroundColor: colors.background.white,
+                    backgroundColor: colors.background.card,
                     "& fieldset": {
                       borderColor: colors.border.light,
                     },
@@ -427,7 +432,7 @@ const CartDrawer = () => {
                     },
                   },
                   "& .MuiInputBase-input": {
-                    color: colors.text.primary,
+                    color: colors.text.primary1,
                     "&::placeholder": {
                       color: colors.text.secondary,
                       opacity: 1,
@@ -450,7 +455,7 @@ const CartDrawer = () => {
                 sx={{
                   "& .MuiOutlinedInput-root": {
                     borderRadius: "20px",
-                    backgroundColor: colors.background.white,
+                    backgroundColor: colors.background.card,
                     "& fieldset": {
                       borderColor: colors.border.light,
                     },
@@ -462,7 +467,7 @@ const CartDrawer = () => {
                     },
                   },
                   "& .MuiInputBase-input": {
-                    color: colors.text.primary,
+                    color: colors.text.primary1,
                     "&::placeholder": {
                       color: colors.text.secondary,
                       opacity: 1,
@@ -506,20 +511,43 @@ const CartDrawer = () => {
                   {cart.length > 0 ? (
                     cart.map((item) => (
                       <Box
-                        key={item._id}
-                        sx={{
-                          display: "flex",
-                          justifyContent: "space-between",
-                          mb: 2,
-                        }}
-                      >
-                        <Typography variant="body1" sx={{ color: colors.text.primary }}>
-                          {item.brand} {item.category} x {item.quantity}
-                        </Typography>
-                        <Typography variant="body1" fontWeight="medium" sx={{ color: colors.text.primary }}>
-                          ₹{item.price * item.quantity}
-                        </Typography>
-                      </Box>
+  key={item._id}
+  sx={{
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    mb: 2,
+    p: 1,
+    borderRadius: 1,
+    border: `1px solid ${colors.border.light}`,
+  }}
+>
+  {/* Item name and quantity on the left */}
+  <Typography variant="body1" sx={{ color: colors.text.primary, flex: 1 }}>
+    {item.brand} {item.category} x {item.quantity}
+  </Typography>
+  
+  {/* Price and delete button on the right */}
+  <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+    <Typography variant="body1" fontWeight="medium" sx={{ color: colors.text.primary }}>
+      ₹{item.price * item.quantity}
+    </Typography>
+    
+    {/* Remove Item Button */}
+    <IconButton
+      onClick={() => handleRemoveItem(item._id)}
+      sx={{
+        color: colors.status.error,
+        "&:hover": {
+          backgroundColor: colors.status.error + '20',
+        },
+      }}
+      size="small"
+    >
+      <DeleteIcon fontSize="small" />
+    </IconButton>
+  </Box>
+</Box>
                     ))
                   ) : (
                     <Typography sx={{ color: colors.text.secondary }}>
@@ -669,7 +697,7 @@ const CartDrawer = () => {
                     mb: 3,
                     "& .MuiOutlinedInput-root": {
                       borderRadius: "20px",
-                      backgroundColor: colors.background.white,
+                      backgroundColor: colors.background.card,
                       "& fieldset": {
                         borderColor: colors.border.light,
                       },
@@ -681,7 +709,7 @@ const CartDrawer = () => {
                       },
                     },
                     "& .MuiInputBase-input": {
-                      color: colors.text.primary,
+                      color: colors.text.primary1,
                       "&::placeholder": {
                         color: colors.text.secondary,
                         opacity: 1,
@@ -707,7 +735,7 @@ const CartDrawer = () => {
                     mb: 3,
                     "& .MuiOutlinedInput-root": {
                       borderRadius: "20px",
-                      backgroundColor: colors.background.white,
+                      backgroundColor: colors.background.card,
                       "& fieldset": {
                         borderColor: colors.border.light,
                       },
@@ -719,7 +747,7 @@ const CartDrawer = () => {
                       },
                     },
                     "& .MuiInputBase-input": {
-                      color: colors.text.primary,
+                      color: colors.text.primary1,
                       "&::placeholder": {
                         color: colors.text.secondary,
                         opacity: 1,
@@ -747,7 +775,7 @@ const CartDrawer = () => {
                         width: 257,
                         "& .MuiOutlinedInput-root": {
                           borderRadius: "20px",
-                          backgroundColor: colors.background.white,
+                          backgroundColor: colors.background.card,
                           "& fieldset": {
                             borderColor: colors.border.light,
                           },
@@ -759,7 +787,7 @@ const CartDrawer = () => {
                           },
                         },
                         "& .MuiInputBase-input": {
-                          color: colors.text.primary,
+                          color: colors.text.primary1,
                           "&::placeholder": {
                             color: colors.text.secondary,
                             opacity: 1,
@@ -786,7 +814,7 @@ const CartDrawer = () => {
                         width: 257,
                         "& .MuiOutlinedInput-root": {
                           borderRadius: "20px",
-                          backgroundColor: colors.background.white,
+                          backgroundColor: colors.background.card,
                           "& fieldset": {
                             borderColor: colors.border.light,
                           },
@@ -798,7 +826,7 @@ const CartDrawer = () => {
                           },
                         },
                         "& .MuiInputBase-input": {
-                          color: colors.text.primary,
+                          color: colors.text.primary1,
                           "&::placeholder": {
                             color: colors.text.secondary,
                             opacity: 1,
@@ -825,7 +853,7 @@ const CartDrawer = () => {
                   sx={{
                     "& .MuiOutlinedInput-root": {
                       borderRadius: "20px",
-                      backgroundColor: colors.background.white,
+                      backgroundColor: colors.background.card,
                       "& fieldset": {
                         borderColor: colors.border.light,
                       },
@@ -837,7 +865,7 @@ const CartDrawer = () => {
                       },
                     },
                     "& .MuiInputBase-input": {
-                      color: colors.text.primary,
+                      color: colors.text.primary1,
                       "&::placeholder": {
                         color: colors.text.secondary,
                         opacity: 1,
