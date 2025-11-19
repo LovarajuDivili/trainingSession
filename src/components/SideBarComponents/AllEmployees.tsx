@@ -45,6 +45,7 @@ import "./AllEmployees.css";
 import axios from "axios";
 //import { colors } from "../../common/colorConstants";
 import { useThemeColors } from "../../hooks/useThemeColors";
+import { useTheme } from "../../context/ThemeContext";
 
 const CustomNoRowsOverlay = () => {
   const colors = useThemeColors();
@@ -96,6 +97,7 @@ const AllEmployees = () => {
   const employees = useAppSelector((state) => state.employees.employees);
   const navigate = useNavigate();
   const colors = useThemeColors();
+  const { themeMode } = useTheme();
 
   const handleCardClick = (employeeId: string) => {
     navigate(`/admin/all-employees/employeedetails/${employeeId}`, {
@@ -307,7 +309,7 @@ const AllEmployees = () => {
       renderCell: (params) => {
         const { image, name } = params.row;
         return (
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1, pt: 1.5 }}>
             <img
               src={`data:image/jpeg;base64,${image}`}
               alt={name || "Employee"}
@@ -342,8 +344,31 @@ const AllEmployees = () => {
       renderCell: (params: GridRenderCellParams<Employee>) => (
         <>
           {params?.row?.skills?.map((each, index) => (
-            <button key={index} className="skill-button">
-              {each}
+            <button
+              key={index}
+              className="skill-button"
+              style={{
+                backgroundColor:
+                  themeMode === "dark"
+                    ? colors.text.white
+                    : colors.ui.chip.background,
+                color:
+                  themeMode === "dark"
+                    ? colors.primary.main
+                    : colors.ui.chip.text,
+                border:
+                  themeMode === "dark"
+                    ? `1px solid ${colors.primary.main}`
+                    : "none",
+                margin: "4px",
+                padding: "6px",
+                borderRadius: "6px",
+                fontSize: "12px",
+                //border: "none",
+                cursor: "default",
+              }}
+            >
+              <strong>{each}</strong>
             </button>
           ))}
         </>
@@ -367,7 +392,7 @@ const AllEmployees = () => {
       renderCell: (params: GridRenderCellParams<Employee>) => (
         <Box>
           <IconButton
-            color="primary"
+            sx={{ color: "#906aff" }}
             onClick={() => handleEditEmployee(params.row)}
           >
             <EditIcon />
@@ -423,7 +448,7 @@ const AllEmployees = () => {
           sx={{
             height: cardView ? "auto" : 500,
             width: "100%",
-            backgroundColor: colors.background.white,
+            backgroundColor: colors.background.white, // This should now be black in dark mode
           }}
         >
           {cardView ? (
@@ -576,13 +601,13 @@ const AllEmployees = () => {
                 }}
                 sx={{
                   "& .MuiDataGrid-columnHeaders": {
-                    backgroundColor: colors.background.lightGray,
+                    backgroundColor: colors.background.white, // Use white background
                     color: colors.text.primary,
                     fontSize: 17,
                     borderBottom: `1px solid ${colors.border.light}`,
                   },
                   "& .MuiDataGrid-columnHeader": {
-                    backgroundColor: colors.background.lightGray,
+                    backgroundColor: colors.background.white, // Use white background
                     "&:focus, &:focus-within": {
                       outline: "none",
                     },
@@ -594,17 +619,17 @@ const AllEmployees = () => {
                   "& .MuiDataGrid-cell": {
                     color: colors.text.primary,
                     borderBottom: `1px solid ${colors.border.light}`,
-                    backgroundColor: colors.background.card,
+                    backgroundColor: colors.background.white, // Use white background
                   },
                   "& .MuiDataGrid-row": {
-                    backgroundColor: colors.background.card,
+                    backgroundColor: colors.background.white, // Use white background
                     "&:hover": {
                       backgroundColor: colors.state.hoverLight,
                     },
                   },
                   "& .MuiTablePagination-root": {
                     color: colors.text.primary,
-                    backgroundColor: colors.background.card,
+                    backgroundColor: colors.background.white, // Use white background
                   },
                   "& .MuiDataGrid-menuIcon": {
                     color: colors.text.primary,
@@ -613,22 +638,22 @@ const AllEmployees = () => {
                     color: colors.text.primary,
                   },
                   "& .MuiDataGrid-footerContainer": {
-                    backgroundColor: colors.background.lightGray,
+                    backgroundColor: colors.background.white, // Use white background
                     borderTop: `1px solid ${colors.border.light}`,
                     color: colors.text.primary,
                   },
                   "& .MuiDataGrid-toolbarContainer": {
-                    backgroundColor: colors.background.lightGray,
+                    backgroundColor: colors.background.white, // Use white background
                     color: colors.text.primary,
                   },
                   // Main DataGrid background
-                  backgroundColor: colors.background.card,
+                  backgroundColor: colors.background.white, // Use white background
                   border: `1px solid ${colors.border.light}`,
                   "& .MuiDataGrid-virtualScroller": {
-                    backgroundColor: colors.background.card,
+                    backgroundColor: colors.background.white, // Use white background
                   },
                   "& .MuiDataGrid-main": {
-                    backgroundColor: colors.background.card,
+                    backgroundColor: colors.background.white, // Use white background
                   },
                 }}
               />
@@ -678,7 +703,38 @@ const AllEmployees = () => {
               color="primary"
               onClick={handleSaveEmployee}
               disabled={isSaveDisabled}
-              className="save-button"
+              sx={{
+                backgroundColor:
+                  themeMode === "dark"
+                    ? colors.text.white
+                    : colors.primary.main,
+                color:
+                  themeMode === "dark"
+                    ? colors.primary.main
+                    : colors.text.white,
+                textTransform: "uppercase",
+                "&:hover": {
+                  backgroundColor:
+                    themeMode === "dark"
+                      ? colors.state.hoverLight
+                      : colors.primary.dark,
+                },
+                "&:disabled": {
+                  backgroundColor: colors.ui.button.disabled,
+                  color: colors.text.disabled,
+                },
+                // Add !important to override CSS
+                "&&": {
+                  backgroundColor:
+                    themeMode === "dark"
+                      ? `${colors.text.white} !important`
+                      : colors.primary.main,
+                  color:
+                    themeMode === "dark"
+                      ? `${colors.primary.main} !important`
+                      : colors.text.white,
+                },
+              }}
             >
               {saveButtonLabel}
             </Button>
@@ -1125,6 +1181,20 @@ const AllEmployees = () => {
             onClick={handleConfirmDelete}
             disabled={!confirmChecked}
             className="delete-confirm-button"
+            sx={{
+              backgroundColor:
+                themeMode === "dark" ? colors.text.white : colors.status.error,
+              color:
+                themeMode === "dark" ? colors.status.error : colors.text.white,
+              "&:hover": {
+                backgroundColor:
+                  themeMode === "dark" ? colors.state.hoverLight : "#c62828",
+              },
+              "&:disabled": {
+                backgroundColor: colors.ui.button.disabled,
+                color: colors.text.disabled,
+              },
+            }}
           >
             Delete
           </Button>

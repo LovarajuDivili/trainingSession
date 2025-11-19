@@ -4,7 +4,7 @@ import {
   List,
   ListItem,
   ListItemIcon,
-  ListItemText,
+  //ListItemText,
   CircularProgress,
   LinearProgress,
   Button,
@@ -22,14 +22,14 @@ import MoreVertIcon from "@mui/icons-material/MoreVert";
 
 import { useNavigate } from "react-router-dom";
 import { useOrders } from "../../context/OrderContext";
-//import { colors } from "../../common/colorConstants";
 import { useThemeColors } from "../../hooks/useThemeColors";
-
+import { useTheme } from "../../context/ThemeContext";
 
 const OrderProgress = () => {
   const { orders } = useOrders();
   const navigate = useNavigate();
   const colors = useThemeColors();
+  const { themeMode } = useTheme();
 
   const getIconForCategory = (category: string) => {
     switch (category.toLowerCase()) {
@@ -64,7 +64,11 @@ const OrderProgress = () => {
         <Typography
           variant="h6"
           fontWeight={800}
-          sx={{ fontSize: "25px", height: "40px" }}
+          sx={{
+            fontSize: "25px",
+            height: "40px",
+            color: colors.text.primary,
+          }}
         >
           My Orders
         </Typography>
@@ -73,6 +77,7 @@ const OrderProgress = () => {
           variant="contained"
           sx={{
             backgroundColor: colors.primary.main,
+            color: colors.text.white,
             textTransform: "none",
             fontWeight: 600,
             "&:hover": {
@@ -91,7 +96,7 @@ const OrderProgress = () => {
           sx={{
             textAlign: "center",
             fontWeight: 600,
-            color: colors.text.gray,
+            color: colors.text.secondary,
             mt: 4,
             fontSize: "18px",
           }}
@@ -114,7 +119,7 @@ const OrderProgress = () => {
               <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
                 <ListItemIcon
                   sx={{
-                    bgcolor: colors.background.white,
+                    bgcolor: themeMode === "dark" ? colors.background.card : colors.background.white,
                     borderRadius: "50%",
                     width: 45,
                     height: 45,
@@ -129,15 +134,29 @@ const OrderProgress = () => {
                   {getIconForCategory(item.category)}
                 </ListItemIcon>
 
-                <ListItemText
-                  primary={`${item.brand} ${item.category}`}
-                  secondary={item.hours}
-                  primaryTypographyProps={{ fontWeight: 500 }}
-                />
+                <Box>
+                  <Typography
+                    sx={{ 
+                      color: colors.text.primary, 
+                      fontWeight: 500,
+                      fontSize: "16px"
+                    }}
+                  >
+                    {`${item.brand} ${item.category}`}
+                  </Typography>
+                  <Typography 
+                    sx={{ 
+                      color: colors.text.secondary,
+                      fontSize: "14px"
+                    }}
+                  >
+                    {item.hours}
+                  </Typography>
+                </Box>
               </Box>
 
               <IconButton>
-                <MoreVertIcon sx={{ color: colors.text.gray }} />
+                <MoreVertIcon sx={{ color: colors.text.primary }} />
               </IconButton>
             </ListItem>
           ))}
@@ -146,7 +165,11 @@ const OrderProgress = () => {
 
       {/* ----- Progress Section ----- */}
       <Box mt={4} textAlign="center">
-        <Typography variant="subtitle1" fontWeight={600}>
+        <Typography
+          variant="subtitle1"
+          fontWeight={600}
+          sx={{ color: colors.text.primary, mb: 2 }}
+        >
           Order Progress
         </Typography>
 
@@ -171,7 +194,11 @@ const OrderProgress = () => {
               justifyContent: "center",
             }}
           >
-            <Typography variant="h6" fontWeight={700}>
+            <Typography
+              variant="h6"
+              fontWeight={700}
+              sx={{ color: colors.text.primary }}
+            >
               {orders.length > 0 ? "70%" : "0%"}
             </Typography>
           </Box>
@@ -180,7 +207,12 @@ const OrderProgress = () => {
         <Typography
           variant="body2"
           fontWeight={500}
-          sx={{ mb: 1, textAlign: "left" }}
+          sx={{
+            mb: 1,
+            mt: 2,
+            textAlign: "left",
+            color: colors.text.primary,
+          }}
         >
           Progress
         </Typography>
@@ -191,8 +223,10 @@ const OrderProgress = () => {
           sx={{
             height: 8,
             borderRadius: 5,
-            backgroundColor: colors.border.light,
-            "& .MuiLinearProgress-bar": { backgroundColor: colors.primary.main },
+            backgroundColor: themeMode === "dark" ? colors.background.lightGray : colors.border.light,
+            "& .MuiLinearProgress-bar": {
+              backgroundColor: colors.primary.main,
+            },
           }}
         />
       </Box>

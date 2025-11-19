@@ -37,13 +37,15 @@ const HrData = () => {
   );
 
   const navigate = useNavigate();
-  
+
   return (
-    <Box sx={{ 
-      minHeight: "70vh", 
-      backgroundColor: colors.background.white,
-      color: colors.text.primary 
-    }}>
+    <Box
+      sx={{
+        minHeight: "70vh",
+        backgroundColor: colors.background.white,
+        color: colors.text.primary,
+      }}
+    >
       <Box sx={{ position: "relative" }}>
         {/* Back FAB */}
         <Fab
@@ -262,17 +264,33 @@ const HrData = () => {
                         />
                       </Box>
 
-                      <Typography variant="h6" fontWeight={600} sx={{ color: colors.text.primary }}>
+                      <Typography
+                        variant="h6"
+                        fontWeight={600}
+                        sx={{ color: colors.text.primary1 }}
+                      >
                         {emp.name}
                       </Typography>
-                      <Typography sx={{ color: colors.text.secondary }}>{emp.role}</Typography>
-                      <Typography sx={{ mt: 1, fontSize: 14, color: colors.text.primary }}>
+                      <Typography sx={{ color: colors.text.secondary }}>
+                        {emp.role}
+                      </Typography>
+                      <Typography
+                        sx={{
+                          mt: 1,
+                          fontSize: 14,
+                          color: colors.text.primary1,
+                        }}
+                      >
                         <strong>ID:</strong> {emp.id}
                       </Typography>
-                      <Typography sx={{ fontSize: 14, color: colors.text.primary }}>
+                      <Typography
+                        sx={{ fontSize: 14, color: colors.text.primary1 }}
+                      >
                         <strong>Email:</strong> {emp.email}
                       </Typography>
-                      <Typography sx={{ fontSize: 14, color: colors.text.primary }}>
+                      <Typography
+                        sx={{ fontSize: 14, color: colors.text.primary1 }}
+                      >
                         <strong>Join Date:</strong>{" "}
                         {emp.joinDate
                           ? new Date(emp.joinDate).toLocaleDateString()
@@ -312,11 +330,11 @@ const HrData = () => {
             ) : (
               <Typography
                 variant="h6"
-                sx={{ 
-                  mt: 4, 
-                  display: "flex", 
+                sx={{
+                  mt: 4,
+                  display: "flex",
                   alignItems: "center",
-                  color: colors.text.secondary 
+                  color: colors.text.secondary,
                 }}
               >
                 No HR team members found.

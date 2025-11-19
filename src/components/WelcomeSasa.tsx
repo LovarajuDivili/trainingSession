@@ -18,31 +18,6 @@ const WelcomeSasa = () => {
   const colors = useThemeColors();
 
   const handleProceed = () => {
-    switch (dropdownValue) {
-      case "admin":
-        navigate("/admin");
-        break;
-      case "accountant":
-        navigate("/accountant");
-        break;
-      case "developer":
-        navigate("/developer");
-        break;
-      case "functional":
-        navigate("/functional");
-        break;
-      case "migrator":
-        navigate("/migrator");
-        break;
-      case "tester":
-        navigate("/tester");
-        break;
-      case "hrteam":
-        navigate("/hrteam");
-        break;
-      default:
-        alert("Please select a valid role");
-    }
     sessionStorage.setItem("role", dropdownValue);
     navigate(`/${dropdownValue}`);
   };
@@ -51,7 +26,7 @@ const WelcomeSasa = () => {
     <Box
       sx={{
         minHeight: "100vh",
-        backgroundColor: colors.background.white, // Add this line
+        backgroundColor: colors.background.white,
       }}
     >
       <Header role={""} />
@@ -63,7 +38,7 @@ const WelcomeSasa = () => {
           alignItems: "center",
           justifyContent: "center",
           mt: 25,
-          backgroundColor: colors.background.white, // Add this line
+          backgroundColor: colors.background.white,
         }}
       >
         {/* Welcome Message */}
@@ -71,7 +46,7 @@ const WelcomeSasa = () => {
           sx={{
             marginLeft: "-4px",
             fontSize: "20px",
-            color: colors.text.primary, // Add this line
+            color: colors.text.primary,
           }}
           variant="h6"
           gutterBottom
@@ -87,7 +62,7 @@ const WelcomeSasa = () => {
           sx={{
             marginLeft: "-3px",
             fontSize: "15px",
-            color: colors.text.primary, // Add this line
+            color: colors.text.primary,
           }}
           variant="body1"
           gutterBottom
@@ -158,7 +133,7 @@ const WelcomeSasa = () => {
                   sx={{
                     fontWeight: "bold",
                     fontSize: "16px",
-                    color: colors.text.primary, // Add this line
+                    color: colors.text.primary, 
                   }}
                 >
                   {role.label}
@@ -179,7 +154,7 @@ const WelcomeSasa = () => {
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  color: colors.text.primary, // Add this line for icon color
+                  color: colors.text.primary, 
                 }}
               >
                 {role.icon}

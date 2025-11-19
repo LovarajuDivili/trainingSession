@@ -125,7 +125,7 @@ const Calendar = () => {
           onClick={handlePrevMonth} 
           size="small"
           sx={{
-            color: colors.text.primary,
+            color: colors.text.secondary,
             '&:hover': {
               backgroundColor: colors.state.hoverLight,
             }
@@ -183,7 +183,7 @@ const Calendar = () => {
           onClick={handleNextMonth} 
           size="small"
           sx={{
-            color: colors.text.primary,
+            color: colors.text.secondary,
             '&:hover': {
               backgroundColor: colors.state.hoverLight,
             }
@@ -238,7 +238,7 @@ const Calendar = () => {
                 cursor: "pointer",
                 borderRadius: "50%",
                 backgroundColor: isToday ? colors.primary.main : "transparent",
-                color: isToday ? colors.text.white : colors.text.primary,
+                color: isToday ? colors.text.white : colors.text.secondary,
                 "&:hover": {
                   backgroundColor: isToday ? colors.primary.dark : colors.primary.lighter,
                   transform: "scale(1.1)",

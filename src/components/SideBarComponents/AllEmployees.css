@@ -118,7 +118,7 @@
   border-color: var(--primary-main) !important;
 }
 
-.save-button {
+/* .save-button {
   background-color: var(--primary-main) !important;
   text-transform: uppercase;
 }
@@ -129,7 +129,7 @@
 
 .save-button:disabled {
   background-color: var(--button-disabled);
-}
+} */
 
 /* Form styles */
 .form-label {

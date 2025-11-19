@@ -12,18 +12,28 @@ import HeadphonesIcon from "@mui/icons-material/Headphones";
 import MonitorIcon from "@mui/icons-material/Monitor";
 import Calendar from "../components/ExtraComponents/Calendar";
 import PeopleAltTwoToneIcon from "@mui/icons-material/PeopleAltTwoTone";
+import CategoryIcon from "@mui/icons-material/Category";
 import { AssignmentInd, CorporateFare, MoreHoriz } from "@mui/icons-material";
 import OrderProgress from "../components/ExtraComponents/OrderProgress";
 import { Outlet } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useThemeColors } from "../hooks/useThemeColors";
+import axios from "axios";
 
 const Accountant = () => {
   const colors = useThemeColors();
-  
+  const [inventoryCounts, setInventoryCounts] = useState({
+    laptops: 0,
+    headphones: 0,
+    monitors: 0,
+    others: 0,
+    total: 0,
+  });
+  const [loading, setLoading] = useState(true);
+
   const getCardStyles = () => ({
-    width: 260,
+    width: 210,
     height: 100,
     borderRadius: 3,
     boxShadow: 3,
@@ -37,6 +47,64 @@ const Accountant = () => {
   const [currentTime, setCurrentTime] = useState<string>("");
   const [showInfo, setShowInfo] = useState(false);
   const navigate = useNavigate();
+
+  // Fetch inventory counts
+  const fetchInventoryCounts = async () => {
+    try {
+      setLoading(true);
+
+      // Fetch all inventory items
+      const response = await axios.get("/api/inventory");
+      const allItems = response.data;
+
+      // Count items by category
+      const laptops = allItems.filter((item: { category: string }) =>
+        item.category?.toLowerCase().includes("laptop")
+      ).length;
+
+      const headphones = allItems.filter((item: { category: string }) =>
+        item.category?.toLowerCase().includes("headphone")
+      ).length;
+
+      const monitors = allItems.filter((item: { category: string }) =>
+        item.category?.toLowerCase().includes("monitor")
+      ).length;
+
+      // Count others (items that don't fit the above categories)
+      const others = allItems.filter((item: { category: string }) => {
+        const category = item.category?.toLowerCase();
+        return (
+          !category?.includes("laptop") &&
+          !category?.includes("headphone") &&
+          !category?.includes("monitor")
+        );
+      }).length;
+
+      setInventoryCounts({
+        laptops,
+        headphones,
+        monitors,
+        others,
+        total: allItems.length,
+      });
+    } catch (error) {
+      console.error("Error fetching inventory counts:", error);
+      // Set fallback values in case of error
+      setInventoryCounts({
+        laptops: 0,
+        headphones: 0,
+        monitors: 0,
+        others: 0,
+        total: 0,
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchInventoryCounts();
+  }, []);
 
   useEffect(() => {
     const updateTime = () => {
@@ -57,11 +125,13 @@ const Accountant = () => {
   }, []);
 
   return (
-    <Box sx={{ 
-      minHeight: "88vh", 
-      backgroundColor: colors.background.white,
-      color: colors.text.primary 
-    }}>
+    <Box
+      sx={{
+        minHeight: "88vh",
+        backgroundColor: colors.background.white,
+        color: colors.text.primary,
+      }}
+    >
       <Header role={""} />
       <Box sx={{ mt: 10, px: 3, display: "flex", gap: 3 }}>
         <Box sx={{ width: "70%" }}>
@@ -71,7 +141,7 @@ const Accountant = () => {
             alignItems="flex-start"
             justifyContent="flex-start"
           >
-            {/* Card 1 */}
+            {/* Card 1 - Laptops */}
             <Card sx={getCardStyles}>
               <CardContent
                 sx={{ display: "flex", alignItems: "center", gap: 2, p: 2 }}
@@ -88,12 +158,16 @@ const Accountant = () => {
                     alignItems: "center",
                   }}
                 >
-                  <Typography variant="h5" fontWeight={700} color={colors.text.primary}>
-                    120
+                  <Typography
+                    variant="h5"
+                    fontWeight={700}
+                    color={colors.text.primary1}
+                  >
+                    {loading ? "..." : inventoryCounts.laptops}
                   </Typography>
                   <Typography
                     variant="subtitle2"
-                    color={colors.text.primary} // Changed from secondary to primary
+                    color={colors.text.primary1}
                     sx={{ pt: 1 }}
                   >
                     Laptops
@@ -102,7 +176,7 @@ const Accountant = () => {
               </CardContent>
             </Card>
 
-            {/* Card 2 */}
+            {/* Card 2 - Headphones */}
             <Card sx={getCardStyles}>
               <CardContent
                 sx={{ display: "flex", alignItems: "center", gap: 2, p: 2 }}
@@ -117,12 +191,16 @@ const Accountant = () => {
                     alignItems: "center",
                   }}
                 >
-                  <Typography variant="h5" fontWeight={700} color={colors.text.primary}>
-                    100
+                  <Typography
+                    variant="h5"
+                    fontWeight={700}
+                    color={colors.text.primary1}
+                  >
+                    {loading ? "..." : inventoryCounts.headphones}
                   </Typography>
                   <Typography
                     variant="subtitle2"
-                    color={colors.text.primary} // Changed from secondary to primary
+                    color={colors.text.primary1}
                     sx={{ pt: 1 }}
                   >
                     HeadPhones
@@ -131,7 +209,7 @@ const Accountant = () => {
               </CardContent>
             </Card>
 
-            {/* Card 3 */}
+            {/* Card 3 - Monitors */}
             <Card sx={getCardStyles}>
               <CardContent
                 sx={{ display: "flex", alignItems: "center", gap: 2, p: 2 }}
@@ -148,12 +226,16 @@ const Accountant = () => {
                     pl: 0.5,
                   }}
                 >
-                  <Typography variant="h5" fontWeight={700} color={colors.text.primary}>
-                    66
+                  <Typography
+                    variant="h5"
+                    fontWeight={700}
+                    color={colors.text.primary1}
+                  >
+                    {loading ? "..." : inventoryCounts.monitors}
                   </Typography>
                   <Typography
                     variant="subtitle2"
-                    color={colors.text.primary} // Changed from secondary to primary
+                    color={colors.text.primary1}
                     sx={{ pt: 1 }}
                   >
                     Monitors
@@ -161,7 +243,46 @@ const Accountant = () => {
                 </Box>
               </CardContent>
             </Card>
+
+            {/* Card 4 - Others */}
+            <Card
+              sx={getCardStyles}
+              onClick={() => navigate("/accountant/requestOrder")}
+            >
+              <CardContent
+                sx={{ display: "flex", alignItems: "center", gap: 2, p: 2 }}
+              >
+                <CategoryIcon sx={{ fontSize: 35, color: "grey" }} />
+                <Box
+                  sx={{
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    pr: 0.5,
+                    pl: 0.5,
+                  }}
+                >
+                  <Typography
+                    variant="h5"
+                    fontWeight={700}
+                    color={colors.text.primary1}
+                  >
+                    {loading ? "..." : inventoryCounts.total}
+                  </Typography>
+                  <Typography
+                    variant="subtitle2"
+                    color={colors.text.primary1}
+                    sx={{ pt: 1 }}
+                  >
+                    Others
+                  </Typography>
+                </Box>
+              </CardContent>
+            </Card>
+
+            {/* Optional: Total Inventory Card - You can add this if you want */}
           </Grid>
+
           <Box sx={{ mt: 5, alignItems: "center", width: "70%", ml: 15 }}>
             <Calendar />
           </Box>
@@ -181,10 +302,10 @@ const Accountant = () => {
                 alignItems: "center",
               }}
             >
-              <Typography color={colors.text.primary}>
+              <Typography color={colors.text.primary1}>
                 <strong>Today Course</strong>
               </Typography>
-              <MoreHoriz sx={{ color: colors.text.primary }} />
+              <MoreHoriz sx={{ color: colors.text.primary1 }} />
             </Box>
 
             {/* Employee Card */}
@@ -238,7 +359,9 @@ const Accountant = () => {
                     minWidth: 120,
                   }}
                 >
-                  <Typography sx={{ fontSize: "10px", color: colors.text.secondary }}>
+                  <Typography
+                    sx={{ fontSize: "10px", color: colors.text.secondary }}
+                  >
                     {currentTime}
                   </Typography>
                   <Typography
@@ -248,11 +371,13 @@ const Accountant = () => {
                   </Typography>
                 </Box>
                 {/* Description with primary text color */}
-                <Typography sx={{ 
-                  color: colors.text.primary, // Changed from secondary to primary
-                  flex: 1,
-                  fontSize: "14px"
-                }}>
+                <Typography
+                  sx={{
+                    color: colors.text.primary1,
+                    flex: 1,
+                    fontSize: "14px",
+                  }}
+                >
                   Dedicated professionals who perform specific tasks for
                   compensation under the direction of an employer.{" "}
                 </Typography>
@@ -326,7 +451,9 @@ const Accountant = () => {
                     minWidth: 120,
                   }}
                 >
-                  <Typography sx={{ fontSize: "10px", color: colors.text.secondary }}>
+                  <Typography
+                    sx={{ fontSize: "10px", color: colors.text.secondary }}
+                  >
                     {currentTime}
                   </Typography>
                   <Typography
@@ -336,11 +463,13 @@ const Accountant = () => {
                   </Typography>
                 </Box>
                 {/* Description with primary text color */}
-                <Typography sx={{ 
-                  color: colors.text.primary, // Changed from secondary to primary
-                  flex: 1,
-                  fontSize: "14px"
-                }}>
+                <Typography
+                  sx={{
+                    color: colors.text.primary1,
+                    flex: 1,
+                    fontSize: "14px",
+                  }}
+                >
                   The HR department is in charge of a company's staff, handling
                   things like hiring, paying, and training.{" "}
                 </Typography>
@@ -417,7 +546,9 @@ const Accountant = () => {
                     minWidth: 120,
                   }}
                 >
-                  <Typography sx={{ fontSize: "10px", color: colors.text.secondary }}>
+                  <Typography
+                    sx={{ fontSize: "10px", color: colors.text.secondary }}
+                  >
                     {currentTime}
                   </Typography>
                   <Typography
@@ -428,11 +559,13 @@ const Accountant = () => {
                 </Box>
 
                 {/* Description with primary text color */}
-                <Typography sx={{ 
-                  color: colors.text.primary, // Changed from secondary to primary
-                  flex: 1,
-                  fontSize: "14px"
-                }}>
+                <Typography
+                  sx={{
+                    color: colors.text.primary1,
+                    flex: 1,
+                    fontSize: "14px",
+                  }}
+                >
                   A shareholder is a partial owner of a company who holds shares
                   of its stock.{" "}
                 </Typography>
@@ -466,7 +599,7 @@ const Accountant = () => {
         <Box
           sx={{
             width: "30%",
-            backgroundColor: colors.background.card,
+            backgroundColor: colors.background.white,
             borderRadius: 3,
             boxShadow: 2,
             p: 2,

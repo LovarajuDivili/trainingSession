@@ -8,6 +8,7 @@ export const colors = {
     },
 
     text: {
+      primary1: "#121212",
       primary: "#333333",
       secondary: "#757575",
       disabled: "#888888",
@@ -105,7 +106,8 @@ export const colors = {
     },
 
     text: {
-      primary: "#e0e0e0",
+      primary1: "#121212",
+      primary: "#ffffff",
       secondary: "#a0a0a0",
       disabled: "#666666",
       white: "#ffffff",
@@ -116,7 +118,7 @@ export const colors = {
       white: "#121212",
       lightGray: "#1e1e1e",
       disabled: "#2a2a2a",
-      card: "#1e1e1e",
+      card: "#e0e0e0",
       upload: "#2a2438",
       header: "#906aff",
     },
