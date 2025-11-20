@@ -90,7 +90,7 @@ const AllEmployees = () => {
     laptop: false,
     headphones: false,
     monitor: false,
-    image: null as File | null,
+    image: null as string | null,
   });
   const [skillInput, setSkillInput] = useState("");
   const dispatch = useAppDispatch();
@@ -294,7 +294,31 @@ const AllEmployees = () => {
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      setNewEmployee((prev) => ({ ...prev, image: file }));
+      // Check file size (max 2MB)
+      if (file.size > 2 * 1024 * 1024) {
+        setSnackbarMessage("Image size must be less than 2MB");
+        setSnackbarSeverity("error");
+        setSnackbarOpen(true);
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const base64String = event.target?.result as string;
+        // Remove the data URL prefix if present
+        const base64Data = base64String.split(",")[1] || base64String;
+
+        setNewEmployee((prev) => ({
+          ...prev,
+          image: base64Data, // Store only the base64 data
+        }));
+      };
+      reader.onerror = () => {
+        setSnackbarMessage("Failed to read image file");
+        setSnackbarSeverity("error");
+        setSnackbarOpen(true);
+      };
+      reader.readAsDataURL(file);
     }
   };
 
@@ -311,7 +335,9 @@ const AllEmployees = () => {
         return (
           <Box sx={{ display: "flex", alignItems: "center", gap: 1, pt: 1.5 }}>
             <img
-              src={`data:image/jpeg;base64,${image}`}
+              src={
+                image ? `data:image/jpeg;base64,${image}` : "/placeholder.jpg"
+              }
               alt={name || "Employee"}
               style={{
                 width: 30,
@@ -491,13 +517,7 @@ const AllEmployees = () => {
                         {emp.image ? (
                           <Box>
                             <img
-                              src={
-                                typeof emp.image === "string"
-                                  ? emp.image.startsWith("http")
-                                    ? emp.image
-                                    : `data:image/jpeg;base64,${emp.image}`
-                                  : URL.createObjectURL(emp.image as File)
-                              }
+                              src={`data:image/jpeg;base64,${emp.image}`}
                               alt={emp.name}
                               style={{
                                 width: 60,
@@ -669,15 +689,17 @@ const AllEmployees = () => {
         fullWidth
         PaperProps={{
           sx: {
-            backgroundColor: colors.background.card,
+            backgroundColor: colors.background.white,
             color: colors.text.primary,
+            border: "0.1px solid #ffffff", // <-- White border
+            borderRadius: "12px", // Optional: makes it look cleaner
           },
         }}
       >
         <Box
           className="dialog-header"
           sx={{
-            backgroundColor: colors.background.card,
+            backgroundColor: colors.background.white,
             color: colors.text.primary,
           }}
         >
@@ -872,7 +894,7 @@ const AllEmployees = () => {
                     <Typography
                       variant="subtitle1"
                       className="upload-title"
-                      sx={{ clor: colors.text.primary }}
+                      sx={{ clor: colors.text.secondary }}
                     >
                       Upload Image
                     </Typography>
@@ -925,13 +947,7 @@ const AllEmployees = () => {
                   {newEmployee.image ? (
                     <Box className="preview-container">
                       <img
-                        src={
-                          typeof newEmployee.image === "string"
-                            ? newEmployee.image.startsWith("http")
-                              ? newEmployee.image
-                              : newEmployee.image
-                            : URL.createObjectURL(newEmployee.image as File)
-                        }
+                        src={`data:image/jpeg;base64,${newEmployee.image}`}
                         alt="Preview"
                         className="preview-image"
                       />
@@ -941,8 +957,8 @@ const AllEmployees = () => {
                       >
                         <strong>Filename:</strong>{" "}
                         {typeof newEmployee.image === "string"
-                          ? newEmployee.image
-                          : (newEmployee.image as File).name}
+                          ? "Uploaded Image"
+                          : "Image"}
                       </Typography>
                       <Typography
                         variant="body2"

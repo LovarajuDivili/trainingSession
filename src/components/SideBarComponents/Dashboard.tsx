@@ -23,6 +23,8 @@ import {
 } from "recharts";
 //import { colors } from "../../common/colorConstants";
 import { useThemeColors } from "../../hooks/useThemeColors";
+import { fetchCarouselImages } from "../../store/CarouselSlice";
+import { fetchCurrentOpenings } from "../../store/CurrentOpeningsSlice";
 
 const Dashboard = () => {
   const { user } = useAuth();
@@ -31,9 +33,13 @@ const Dashboard = () => {
   const employees = useAppSelector((state) => state.employees.employees);
   const employeesLoading = useAppSelector((state) => state.employees.loading);
   const employeesError = useAppSelector((state) => state.employees.error);
+  const { openings: currentOpenings } = useAppSelector(
+    (state) => state.currentOpenings
+  );
 
   useEffect(() => {
     dispatch(fetchEmployees());
+    dispatch(fetchCurrentOpenings(true));
   }, [dispatch]);
 
   const getGreeting = () => {
@@ -44,11 +50,19 @@ const Dashboard = () => {
   };
 
   // Carousel
-  const images = [
-    "https://picsum.photos/900/300?random=1",
-    "https://picsum.photos/900/300?random=2",
-    "https://picsum.photos/900/300?random=3",
-  ];
+  const { images: carouselImages } = useAppSelector((state) => state.carousel);
+
+  // Replace the images array usage with:
+  const images = carouselImages
+    .filter((img) => img.is_active)
+    .sort((a, b) => a.order - b.order)
+    .map((img) => img.image_data);
+
+  // Add this to your useEffect dependencies:
+  useEffect(() => {
+    dispatch(fetchCarouselImages(true)); // Fetch only active images
+  }, [dispatch]);
+
   const [imageIndex, setImageIndex] = useState(0);
   const handleNextImage = () =>
     setImageIndex((prev) => (prev + 1) % images.length);
@@ -136,11 +150,11 @@ const Dashboard = () => {
     ];
   }, [employees]);
 
-  const currentOpenings = [
-    { title: "Frontend Developer", department: "Engineering", applicants: 12 },
-    { title: "UX Designer", department: "Design", applicants: 8 },
-    { title: "UI Designer", department: "Design", applicants: 8 },
-  ];
+  // const currentOpenings = [
+  //   { title: "Frontend Developer", department: "Engineering", applicants: 12 },
+  //   { title: "UX Designer", department: "Design", applicants: 8 },
+  //   { title: "UI Designer", department: "Design", applicants: 8 },
+  // ];
 
   if (employeesLoading) {
     return (
@@ -263,12 +277,8 @@ const Dashboard = () => {
                   >
                     <img
                       src={
-                        typeof emp.image === "string"
-                          ? emp.image.startsWith("data:image")
-                            ? emp.image
-                            : `data:image/jpeg;base64,${emp.image}`
-                          : emp.image instanceof File
-                          ? URL.createObjectURL(emp.image)
+                        emp.image
+                          ? `data:image/jpeg;base64,${emp.image}`
                           : "/placeholder.jpg"
                       }
                       alt={emp.name}
@@ -289,7 +299,7 @@ const Dashboard = () => {
                       sx={{
                         fontWeight: 600,
                         fontSize: "14px",
-                        color: colors.text.primary,
+                        color: colors.text.primary1,
                       }}
                     >
                       {emp.name}
@@ -328,7 +338,7 @@ const Dashboard = () => {
                       sx={{
                         fontWeight: 600,
                         fontSize: "12px",
-                        color: colors.text.primary,
+                        color: colors.text.primary1,
                       }}
                     >
                       {emp.joinDate
@@ -352,7 +362,7 @@ const Dashboard = () => {
                       sx={{
                         fontWeight: 600,
                         fontSize: "12px",
-                        color: colors.text.primary,
+                        color: colors.text.primary1,
                       }}
                     >
                       9:30 AM

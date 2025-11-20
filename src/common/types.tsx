@@ -8,7 +8,7 @@ export interface DropdownItem {
 }
 
 export interface Employee {
-  image?: File | string | null;
+  image?: string | null;
   photo?: string;
   name: string;
   email: string;

@@ -62,3 +62,55 @@ class ProjectResponse(ProjectBase):
     
     class Config:
         from_attributes = True
+
+class CarouselImageBase(BaseModel):
+    title: str
+    description: Optional[str] = None
+    image_url: Optional[str] = None
+    image_data: Optional[str] = None  # base64 encoded image
+    is_active: bool = True
+    order: int = 0
+
+class CarouselImageCreate(CarouselImageBase):
+    pass
+
+class CarouselImageUpdate(BaseModel):
+    title: Optional[str] = None
+    description: Optional[str] = None
+    image_url: Optional[str] = None
+    image_data: Optional[str] = None
+    is_active: Optional[bool] = None
+    order: Optional[int] = None
+
+class CarouselImageResponse(CarouselImageBase):
+    id: str
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
+    
+    class Config:
+        from_attributes = True
+
+class CurrentOpeningBase(BaseModel):
+    title: str
+    department: str
+    applicants: int
+    is_active: bool = True
+    order: int = 0
+
+class CurrentOpeningCreate(CurrentOpeningBase):
+    pass
+
+class CurrentOpeningUpdate(BaseModel):
+    title: Optional[str] = None
+    department: Optional[str] = None
+    applicants: Optional[int] = None
+    is_active: Optional[bool] = None
+    order: Optional[int] = None
+
+class CurrentOpeningResponse(CurrentOpeningBase):
+    id: str
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
+    
+    class Config:
+        from_attributes = True
