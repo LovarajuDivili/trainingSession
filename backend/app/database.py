@@ -7,7 +7,7 @@ load_dotenv()
 MONGO_URL = os.getenv("MONGO_URL")
 DB_NAME = os.getenv("DB_NAME")
 
-collections_to_create = ["users", "projects", "employees","inventory"]
+collections_to_create = ["users", "projects", "employees","inventory","carousel_images","current_openings"]
 
 
 try:
