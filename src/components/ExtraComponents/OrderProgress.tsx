@@ -4,7 +4,7 @@ import {
   List,
   ListItem,
   ListItemIcon,
-  ListItemText,
+  //ListItemText,
   CircularProgress,
   LinearProgress,
   Button,
@@ -22,27 +22,31 @@ import MoreVertIcon from "@mui/icons-material/MoreVert";
 
 import { useNavigate } from "react-router-dom";
 import { useOrders } from "../../context/OrderContext";
+import { useThemeColors } from "../../hooks/useThemeColors";
+import { useTheme } from "../../context/ThemeContext";
 
 const OrderProgress = () => {
   const { orders } = useOrders();
   const navigate = useNavigate();
+  const colors = useThemeColors();
+  const { themeMode } = useTheme();
 
   const getIconForCategory = (category: string) => {
     switch (category.toLowerCase()) {
       case "laptop":
-        return <LaptopIcon sx={{ color: "#ff3b30" }} />;
+        return <LaptopIcon sx={{ color: colors.status.error }} />;
       case "mouse":
-        return <MouseIcon sx={{ color: "#ff9800" }} />;
+        return <MouseIcon sx={{ color: colors.status.warning }} />;
       case "keyboard":
-        return <KeyboardIcon sx={{ color: "#0084ff" }} />;
+        return <KeyboardIcon sx={{ color: colors.status.info }} />;
       case "monitor":
-        return <MonitorIcon sx={{ color: "#22c55e" }} />;
+        return <MonitorIcon sx={{ color: colors.status.success }} />;
       case "headphones":
-        return <HeadphonesIcon sx={{ color: "#9c27b0" }} />;
+        return <HeadphonesIcon sx={{ color: colors.special.uploadIcon }} />;
       case "webcam":
-        return <CameraAltIcon sx={{ color: "#f44336" }} />;
+        return <CameraAltIcon sx={{ color: colors.status.error }} />;
       default:
-        return <CategoryIcon sx={{ color: "gray" }} />;
+        return <CategoryIcon sx={{ color: colors.text.gray }} />;
     }
   };
 
@@ -60,7 +64,11 @@ const OrderProgress = () => {
         <Typography
           variant="h6"
           fontWeight={800}
-          sx={{ fontSize: "25px", height: "40px" }}
+          sx={{
+            fontSize: "25px",
+            height: "40px",
+            color: colors.text.primary,
+          }}
         >
           My Orders
         </Typography>
@@ -68,9 +76,13 @@ const OrderProgress = () => {
         <Button
           variant="contained"
           sx={{
-            backgroundColor: "#906aff",
+            backgroundColor: colors.primary.main,
+            color: colors.text.white,
             textTransform: "none",
             fontWeight: 600,
+            "&:hover": {
+              backgroundColor: colors.primary.dark,
+            },
           }}
           onClick={() => navigate("/accountant/requestorder")}
         >
@@ -84,7 +96,7 @@ const OrderProgress = () => {
           sx={{
             textAlign: "center",
             fontWeight: 600,
-            color: "gray",
+            color: colors.text.secondary,
             mt: 4,
             fontSize: "18px",
           }}
@@ -107,7 +119,7 @@ const OrderProgress = () => {
               <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
                 <ListItemIcon
                   sx={{
-                    bgcolor: "white",
+                    bgcolor: themeMode === "dark" ? colors.background.card : colors.background.white,
                     borderRadius: "50%",
                     width: 45,
                     height: 45,
@@ -115,22 +127,36 @@ const OrderProgress = () => {
                     display: "flex",
                     justifyContent: "center",
                     alignItems: "center",
-                    border: "1px solid #e0e0e0",
-                    boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+                    border: `1px solid ${colors.border.light}`,
+                    boxShadow: colors.shadow.light,
                   }}
                 >
                   {getIconForCategory(item.category)}
                 </ListItemIcon>
 
-                <ListItemText
-                  primary={`${item.brand} ${item.category}`}
-                  secondary={item.hours}
-                  primaryTypographyProps={{ fontWeight: 500 }}
-                />
+                <Box>
+                  <Typography
+                    sx={{ 
+                      color: colors.text.primary, 
+                      fontWeight: 500,
+                      fontSize: "16px"
+                    }}
+                  >
+                    {`${item.brand} ${item.category}`}
+                  </Typography>
+                  <Typography 
+                    sx={{ 
+                      color: colors.text.secondary,
+                      fontSize: "14px"
+                    }}
+                  >
+                    {item.hours}
+                  </Typography>
+                </Box>
               </Box>
 
               <IconButton>
-                <MoreVertIcon sx={{ color: "gray" }} />
+                <MoreVertIcon sx={{ color: colors.text.primary }} />
               </IconButton>
             </ListItem>
           ))}
@@ -139,7 +165,11 @@ const OrderProgress = () => {
 
       {/* ----- Progress Section ----- */}
       <Box mt={4} textAlign="center">
-        <Typography variant="subtitle1" fontWeight={600}>
+        <Typography
+          variant="subtitle1"
+          fontWeight={600}
+          sx={{ color: colors.text.primary, mb: 2 }}
+        >
           Order Progress
         </Typography>
 
@@ -149,7 +179,7 @@ const OrderProgress = () => {
             value={orders.length > 0 ? 70 : 0}
             size={120}
             thickness={4}
-            sx={{ color: "#906aff" }}
+            sx={{ color: colors.primary.main }}
           />
 
           <Box
@@ -164,7 +194,11 @@ const OrderProgress = () => {
               justifyContent: "center",
             }}
           >
-            <Typography variant="h6" fontWeight={700}>
+            <Typography
+              variant="h6"
+              fontWeight={700}
+              sx={{ color: colors.text.primary }}
+            >
               {orders.length > 0 ? "70%" : "0%"}
             </Typography>
           </Box>
@@ -173,7 +207,12 @@ const OrderProgress = () => {
         <Typography
           variant="body2"
           fontWeight={500}
-          sx={{ mb: 1, textAlign: "left" }}
+          sx={{
+            mb: 1,
+            mt: 2,
+            textAlign: "left",
+            color: colors.text.primary,
+          }}
         >
           Progress
         </Typography>
@@ -184,8 +223,10 @@ const OrderProgress = () => {
           sx={{
             height: 8,
             borderRadius: 5,
-            backgroundColor: "#e0e0e0",
-            "& .MuiLinearProgress-bar": { backgroundColor: "#906aff" },
+            backgroundColor: themeMode === "dark" ? colors.background.lightGray : colors.border.light,
+            "& .MuiLinearProgress-bar": {
+              backgroundColor: colors.primary.main,
+            },
           }}
         />
       </Box>

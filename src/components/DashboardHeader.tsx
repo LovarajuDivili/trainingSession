@@ -8,6 +8,8 @@ import {
 import SearchIcon from "@mui/icons-material/Search";
 import AddIcon from "@mui/icons-material/Add";
 import type { DashboardHeaderProps } from "../common/types";
+import { useThemeColors } from "../hooks/useThemeColors";
+import { useTheme } from "../context/ThemeContext";
 
 const DashboardHeader = ({
   title,
@@ -21,6 +23,9 @@ const DashboardHeader = ({
   addButtonLabel = "Add New",
   gridIcon,
 }: DashboardHeaderProps) => {
+  const colors = useThemeColors();
+  const { themeMode } = useTheme(); // Add this import: import { useTheme } from "../context/ThemeContext";
+
   return (
     <Box
       sx={{
@@ -29,16 +34,16 @@ const DashboardHeader = ({
         justifyContent: "space-between",
         mb: 2,
         p: 1,
-        borderBottom: "1px solid #ddd",
-        backgroundColor: "#fff",
+        borderBottom: `1px solid ${colors.border.light}`,
+        backgroundColor: colors.background.white,
         position: "sticky",
         top: 0,
         zIndex: 100,
       }}
     >
       <Box sx={{ display: "flex", alignItems: "center", gap: 1, mt: "0px" }}>
-        {icon && <Box sx={{ color: "black" }}>{icon}</Box>}
-        <Typography variant="h5">
+        {icon && <Box sx={{ color: colors.text.primary }}>{icon}</Box>}
+        <Typography variant="h5" sx={{ color: colors.text.primary }}>
           {title} {count !== undefined && `(${count})`}
         </Typography>
 
@@ -47,7 +52,7 @@ const DashboardHeader = ({
             sx={{
               display: "flex",
               alignItems: "center",
-              color: "black",
+              color: colors.text.primary,
               fontSize: "m",
             }}
           >
@@ -59,25 +64,39 @@ const DashboardHeader = ({
       <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
         {showSearch && (
           <TextField
-            placeholder="Search"
-            variant="outlined"
-            size="small"
-            sx={{
-              width: "300px",
-              "& .MuiOutlinedInput-root": {
-                borderRadius: "50px",
-              },
-            }}
-            value={searchText}
-            onChange={(e) => onSearchChange?.(e.target.value)}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <SearchIcon />
-                </InputAdornment>
-              ),
-            }}
-          />
+  placeholder="Search"
+  variant="outlined"
+  size="small"
+  sx={{
+    width: "300px",
+    "& .MuiOutlinedInput-root": {
+      borderRadius: "50px",
+      backgroundColor: colors.background.white,
+      color: colors.text.primary,
+      "& fieldset": {
+        borderColor: themeMode === "dark" ? "#555555" : colors.border.light,
+      },
+      "&:hover fieldset": {
+        borderColor: colors.primary.main,
+      },
+      "&.Mui-focused fieldset": {
+        borderColor: colors.primary.main,
+      },
+    },
+    "& .MuiInputBase-input::placeholder": {
+      color: colors.text.secondary,
+    },
+  }}
+  value={searchText}
+  onChange={(e) => onSearchChange?.(e.target.value)}
+  InputProps={{
+    startAdornment: (
+      <InputAdornment position="start">
+        <SearchIcon sx={{ color: colors.text.secondary }} />
+      </InputAdornment>
+    ),
+  }}
+/>
         )}
 
         {showAddButton && (
@@ -86,10 +105,17 @@ const DashboardHeader = ({
             sx={{
               borderRadius: "20px",
               textTransform: "none",
-              backgroundColor: "#906aff",
-              color: "white",
+              backgroundColor:
+                themeMode === "dark" ? colors.text.white : colors.primary.main,
+              color:
+                themeMode === "dark" ? colors.primary.main : colors.text.white,
               fontWeight: 500,
-              "&:hover": { backgroundColor: "#7a55d8" },
+              // "&:hover": {
+              //   backgroundColor:
+              //     themeMode === "dark"
+              //       ? colors.state.hoverLight
+              //       : colors.primary.dark,
+              // },
             }}
             onClick={onAddClick}
             endIcon={<AddIcon />}

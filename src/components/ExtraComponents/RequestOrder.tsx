@@ -23,54 +23,66 @@ import axios from "axios";
 import { useState, type JSX } from "react";
 import { useCart } from "../../context/CartContext";
 import FavoriteIcon from "@mui/icons-material/FavoriteBorder";
+import CloseIcon from "@mui/icons-material/Close";
 import { useEffect } from "react";
+import { useThemeColors } from "../../hooks/useThemeColors";
 
 const RequestOrder = () => {
   const navigate = useNavigate();
+  const colors = useThemeColors();
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [itemsData, setItemsData] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
-  const { cart, addToCart } = useCart();
+  const { cart, addToCart, removeFromCart } = useCart();
 
   useEffect(() => {
     handleCategoryClick("laptop"); // Load laptops on initial render
   }, []);
+
   const items = [
     {
       name: "Laptop",
-      icon: <LaptopIcon sx={{ fontSize: 35, color: "#ff3b30" }} />,
+      icon: <LaptopIcon sx={{ fontSize: 35, color: colors.status.error }} />,
     },
     {
       name: "Monitor",
-      icon: <MonitorIcon sx={{ fontSize: 35, color: "#22c55e" }} />,
+      icon: <MonitorIcon sx={{ fontSize: 35, color: colors.status.success }} />,
     },
     {
       name: "Keyboard",
-      icon: <KeyboardIcon sx={{ fontSize: 35, color: "#0084ff" }} />,
+      icon: <KeyboardIcon sx={{ fontSize: 35, color: colors.status.info }} />,
     },
     {
       name: "Mouse",
-      icon: <MouseIcon sx={{ fontSize: 35, color: "#ff9800" }} />,
+      icon: <MouseIcon sx={{ fontSize: 35, color: colors.status.warning }} />,
     },
     {
       name: "Headphones",
-      icon: <HeadphonesIcon sx={{ fontSize: 35, color: "#9c27b0" }} />,
+      icon: (
+        <HeadphonesIcon
+          sx={{ fontSize: 35, color: colors.special.uploadIcon }}
+        />
+      ),
     },
     {
       name: "Webcam",
-      icon: <CameraAltIcon sx={{ fontSize: 35, color: "#f44336" }} />,
+      icon: <CameraAltIcon sx={{ fontSize: 35, color: colors.status.error }} />,
     },
   ];
 
   const categoryIcons: Record<string, JSX.Element> = {
-    laptop: <LaptopIcon sx={{ fontSize: 25, color: "#ff3b30" }} />,
-    monitor: <MonitorIcon sx={{ fontSize: 25, color: "#22c55e" }} />,
-    keyboard: <KeyboardIcon sx={{ fontSize: 25, color: "#0084ff" }} />,
-    mouse: <MouseIcon sx={{ fontSize: 25, color: "#ff9800" }} />,
-    headphones: <HeadphonesIcon sx={{ fontSize: 25, color: "#9c27b0" }} />,
-    webcam: <CameraAltIcon sx={{ fontSize: 25, color: "#f44336" }} />,
+    laptop: <LaptopIcon sx={{ fontSize: 25, color: colors.status.error }} />,
+    monitor: (
+      <MonitorIcon sx={{ fontSize: 25, color: colors.status.success }} />
+    ),
+    keyboard: <KeyboardIcon sx={{ fontSize: 25, color: colors.status.info }} />,
+    mouse: <MouseIcon sx={{ fontSize: 25, color: colors.status.warning }} />,
+    headphones: (
+      <HeadphonesIcon sx={{ fontSize: 25, color: colors.special.uploadIcon }} />
+    ),
+    webcam: <CameraAltIcon sx={{ fontSize: 25, color: colors.status.error }} />,
   };
 
   // Fetch specific category
@@ -126,6 +138,11 @@ const RequestOrder = () => {
     return cart.some((cartItem: any) => cartItem._id === id);
   };
 
+  const handleRemoveFromCart = (itemId: string, itemName: string) => {
+    removeFromCart(itemId);
+    setSnackbarMessage(`Removed ${itemName} from cart`);
+    setSnackbarOpen(true);
+  };
   // Save cart to localStorage (optional) and navigate back
   const handleClose = () => {
     // Save cart to localStorage or context for persistence
@@ -138,7 +155,13 @@ const RequestOrder = () => {
   };
 
   return (
-    <Box sx={{ minHeight: "88vh", backgroundColor: "white" }}>
+    <Box
+      sx={{
+        minHeight: "88vh",
+        backgroundColor: colors.background.white,
+        color: colors.text.primary,
+      }}
+    >
       <Header role={""} />
 
       {/* Header Row */}
@@ -151,27 +174,34 @@ const RequestOrder = () => {
           alignItems: "center",
         }}
       >
-        <Typography variant="h5" fontWeight="bold">
+        <Typography
+          variant="h5"
+          fontWeight="bold"
+          sx={{ color: colors.text.primary }}
+        >
           Select the Items
         </Typography>
 
         <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
           <Typography
             variant="body1"
-            sx={{ color: "#906aff", fontWeight: 600 }}
+            sx={{ color: colors.primary.main, fontWeight: 600 }}
           >
             Cart: {cart.length} items
           </Typography>
           <Button
             variant="contained"
-            color="error"
             onClick={handleClose}
             sx={{
               textTransform: "none",
               borderRadius: 2,
               boxShadow: 3,
-              backgroundColor: "#ac8fff",
-              "&:hover": { backgroundColor: "#ac8fff" },
+              backgroundColor: colors.primary.main,
+              color: colors.text.white,
+              "&:hover": {
+                backgroundColor: colors.primary.dark,
+                boxShadow: 4,
+              },
             }}
           >
             Close
@@ -195,14 +225,16 @@ const RequestOrder = () => {
                 boxShadow: 3,
                 backgroundColor:
                   selectedCategory === item.name.toLowerCase()
-                    ? "#e8e8ff"
-                    : "#f9f9f9",
+                    ? colors.primary.lighter
+                    : colors.background.card,
+                border: `1px solid ${colors.border.light}`,
                 transition: "0.3s",
                 cursor: "pointer",
                 "&:hover": {
-                  backgroundColor: "#e8e8ff",
+                  backgroundColor: colors.primary.lighter,
                   transform: "scale(1.03)",
                   boxShadow: 6,
+                  borderColor: colors.primary.main,
                 },
               }}
             >
@@ -218,7 +250,7 @@ const RequestOrder = () => {
                 <Typography
                   variant="h6"
                   fontWeight={600}
-                  sx={{ color: "#333", textAlign: "center" }}
+                  sx={{ color: colors.text.primary1, textAlign: "center" }}
                 >
                   {item.name}
                 </Typography>
@@ -240,13 +272,17 @@ const RequestOrder = () => {
               borderRadius: 2,
               boxShadow: 3,
               backgroundColor:
-                selectedCategory === "others" ? "#e8e8ff" : "#f9f9f9",
+                selectedCategory === "others"
+                  ? colors.primary.lighter
+                  : colors.background.card,
+              border: `1px solid ${colors.border.light}`,
               transition: "0.3s",
               cursor: "pointer",
               "&:hover": {
-                backgroundColor: "#e8e8ff",
+                backgroundColor: colors.primary.lighter,
                 transform: "scale(1.03)",
                 boxShadow: 6,
+                borderColor: colors.primary.main,
               },
             }}
           >
@@ -258,11 +294,13 @@ const RequestOrder = () => {
                 gap: 1.5,
               }}
             >
-              <CategoryIcon sx={{ fontSize: 35, color: "#607d8b" }} />
+              <CategoryIcon
+                sx={{ fontSize: 35, color: colors.text.secondary }}
+              />
               <Typography
                 variant="h6"
                 fontWeight={600}
-                sx={{ color: "#333", textAlign: "center" }}
+                sx={{ color: colors.text.primary1, textAlign: "center" }}
               >
                 Others
               </Typography>
@@ -282,11 +320,11 @@ const RequestOrder = () => {
               mt: 4,
             }}
           >
-            <CircularProgress />
+            <CircularProgress sx={{ color: colors.primary.main }} />
           </Box>
         ) : selectedCategory && itemsData.length > 0 ? (
           <>
-            <Typography variant="h6" sx={{ mb: 2 }}>
+            <Typography variant="h6" sx={{ mb: 2, color: colors.text.primary }}>
               Showing{" "}
               {selectedCategory === "others"
                 ? "all items"
@@ -307,7 +345,13 @@ const RequestOrder = () => {
                       justifyContent: "space-between",
                       height: 160,
                       width: 205,
-                      "&:hover": { boxShadow: 6, transform: "scale(1.02)" },
+                      backgroundColor: colors.background.card,
+                      border: `1px solid ${colors.border.light}`,
+                      "&:hover": {
+                        boxShadow: 6,
+                        transform: "scale(1.02)",
+                        borderColor: colors.primary.light,
+                      },
                     }}
                   >
                     {/* Top Content */}
@@ -320,20 +364,32 @@ const RequestOrder = () => {
                           mb: 1,
                         }}
                       >
-                        <Typography variant="body2" color="text.secondary">
+                        <Typography
+                          variant="body2"
+                          sx={{
+                            color: colors.text.primary1,
+                            fontWeight: 600,
+                          }}
+                        >
                           <strong>{item.category}</strong>
                         </Typography>
                         {categoryIcons[item.category?.toLowerCase()] || (
                           <CategoryIcon
-                            sx={{ fontSize: 15, color: "#757575" }}
+                            sx={{ fontSize: 15, color: colors.text.secondary }}
                           />
                         )}
                       </Box>
 
-                      <Typography variant="body2" color="text.secondary">
+                      <Typography
+                        variant="body2"
+                        sx={{ color: colors.text.primary1 }}
+                      >
                         Brand: {item.brand}
                       </Typography>
-                      <Typography variant="body2" color="text.secondary">
+                      <Typography
+                        variant="body2"
+                        sx={{ color: colors.text.primary1 }}
+                      >
                         Price: ₹{item.price}
                       </Typography>
                     </Box>
@@ -356,40 +412,90 @@ const RequestOrder = () => {
                           height: 40,
                           fontSize: "12px",
                           width: "48%",
-                          borderColor: "#e0e0e0",
+                          borderColor: colors.border.light,
                           gap: 1,
-                        }}
-                      >
-                        <FavoriteIcon sx={{ fontSize: 13, color: "red" }} />
-                        Wishlist
-                      </Button>
-                      <Button
-                        variant={isInCart(item._id) ? "outlined" : "contained"}
-                        size="small"
-                        disabled={isInCart(item._id)}
-                        onClick={() => handleAddToCart(item)}
-                        sx={{
-                          textTransform: "none",
-                          width: "55%",
-                          borderRadius: 2,
-                          backgroundColor: isInCart(item._id)
-                            ? "#c8e6c9"
-                            : "#ff5722",
-                          color: isInCart(item._id) ? "#2e7d32" : "white",
-                          height: 40,
-                          p: 0,
-                          lineHeight: 1.1,
-                          fontSize: "12px",
-                          borderColor: "#2e7d32",
+                          color: colors.text.primary,
+                          backgroundColor: colors.background.white,
                           "&:hover": {
-                            backgroundColor: isInCart(item._id)
-                              ? "#c8e6c9"
-                              : "#e64a19",
+                            borderColor: colors.primary.main,
+                            backgroundColor: colors.primary.lighter,
                           },
                         }}
                       >
-                        {isInCart(item._id) ? "✓ Added" : "Add to Cart"}
+                        <FavoriteIcon
+                          sx={{ fontSize: 13, color: colors.status.error }}
+                        />
+                        Wishlist
                       </Button>
+                      {isInCart(item._id) ? (
+                        <Button
+                          variant="outlined"
+                          size="small"
+                          onClick={() =>
+                            handleRemoveFromCart(
+                              item._id,
+                              `${item.brand} ${item.category}`
+                            )
+                          }
+                          sx={{
+                            textTransform: "none",
+                            width: "55%",
+                            borderRadius: 2,
+                            height: 40,
+                            p: 0,
+                            lineHeight: 1.1,
+                            fontSize: "12px",
+                            borderColor: colors.status.error,
+                            color: colors.status.error,
+                            backgroundColor: colors.background.white,
+                            gap: 0.5,
+                            "&:hover": {
+                              backgroundColor: colors.status.error + "20",
+                              borderColor: colors.status.error,
+                            },
+                          }}
+                        >
+                          <CloseIcon sx={{ fontSize: 16 }} />
+                          Remove
+                        </Button>
+                      ) : (
+                        <Button
+                          variant={
+                            isInCart(item._id) ? "outlined" : "contained"
+                          }
+                          size="small"
+                          disabled={isInCart(item._id)}
+                          onClick={() => handleAddToCart(item)}
+                          sx={{
+                            textTransform: "none",
+                            width: "55%",
+                            borderRadius: 2,
+                            backgroundColor: isInCart(item._id)
+                              ? colors.status.success
+                              : colors.primary.main,
+                            color: colors.text.white,
+                            height: 40,
+                            p: 0,
+                            lineHeight: 1.1,
+                            fontSize: "12px",
+                            borderColor: isInCart(item._id)
+                              ? colors.status.success
+                              : "transparent",
+                            "&:hover": {
+                              backgroundColor: isInCart(item._id)
+                                ? colors.status.success
+                                : colors.primary.dark,
+                            },
+                            "&:disabled": {
+                              backgroundColor: colors.background.disabled,
+                              color: colors.text.disabled,
+                              borderColor: colors.border.light,
+                            },
+                          }}
+                        >
+                          {isInCart(item._id) ? "✓ Added" : "Add to Cart"}
+                        </Button>
+                      )}
                     </Box>
                   </Card>
                 </Grid>
@@ -397,7 +503,13 @@ const RequestOrder = () => {
             </Grid>
           </>
         ) : selectedCategory ? (
-          <Typography sx={{ textAlign: "center", mt: 3 }}>
+          <Typography
+            sx={{
+              textAlign: "center",
+              mt: 3,
+              color: colors.text.secondary,
+            }}
+          >
             No items found for {selectedCategory}.
           </Typography>
         ) : null}
@@ -412,7 +524,14 @@ const RequestOrder = () => {
         <Alert
           onClose={handleSnackbarClose}
           severity="success"
-          sx={{ width: "100%" }}
+          sx={{
+            width: "100%",
+            backgroundColor: colors.status.success,
+            color: colors.text.white,
+            "& .MuiAlert-icon": {
+              color: colors.text.white,
+            },
+          }}
         >
           {snackbarMessage}
         </Alert>

@@ -16,7 +16,7 @@ export const Welcome_Msgs = {
 };
 
 export const Cerebro_Sasa = {
-  CEREBRO_SASA: "Cerebra Sasa",
+  CEREBRO_SASA: "Employee Management Portal",
 };
 
 export const Aifa = {
