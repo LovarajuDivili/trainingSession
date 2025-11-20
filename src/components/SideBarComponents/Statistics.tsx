@@ -18,9 +18,12 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { fetchEmployees } from "../../store/EmployeesSlice";
+//import { colors } from "../../common/colorConstants";
+import { useThemeColors } from "../../hooks/useThemeColors";
 
 const Statistics = () => {
   const dispatch = useAppDispatch();
+  const colors = useThemeColors();
   const currentItem = sidebarItems.find(
     (item) => item.route === "/admin/statistics"
   );
@@ -36,38 +39,39 @@ const Statistics = () => {
 
   useEffect(() => {
     dispatch(fetchStatistics());
-    dispatch(fetchEmployees()); // <-- Add this
+    dispatch(fetchEmployees());
   }, [dispatch]);
+
   const cardData = [
     {
       title: "AllEmployees",
       value: (totalEmployees ?? 0).toString(),
       data: [100, 120, 90, 150, 130],
-      color: "#1976d2",
+      color: colors.status.info,
     },
     {
       title: "Projects",
       value: totalProjects.toString(),
       data: [80, 95, 70, 120, 110],
-      color: "#d32f2f",
+      color: colors.status.error,
     },
     {
       title: "Developers",
       value: (employeeRoleCounts.Developers ?? 0).toString(),
       data: [50, 60, 45, 70, 65],
-      color: "#388e3c",
+      color: colors.status.success,
     },
     {
       title: "AWS Team",
       value: employeeRoleCounts.AWSTeam.toString(),
       data: [120, 140, 110, 160, 150],
-      color: "#f57c00",
+      color: colors.status.warning,
     },
     {
       title: "Testers",
       value: employeeRoleCounts.Testers.toString(),
       data: [30, 40, 25, 50, 45],
-      color: "#7b1fa2",
+      color: colors.special.uploadIcon,
     },
   ];
 
@@ -85,21 +89,22 @@ const Statistics = () => {
       id: "Active",
       value: projectStatusCounts.Active,
       label: "Active",
-      color: "#47be4b",
+      color: colors.status.success,
     },
     {
       id: "Inactive",
       value: projectStatusCounts.Inactive,
       label: "Inactive",
-      color: "#e12a2a",
+      color: colors.status.error,
     },
     {
       id: "InProgress",
       value: projectStatusCounts.InProgress,
       label: "InProgress",
-      color: "orange",
+      color: colors.status.warning,
     },
   ];
+
   const monthlyData = useMemo(() => {
     const data = Array(12).fill(0);
     employees.forEach((emp) => {
@@ -160,7 +165,6 @@ const Statistics = () => {
                     </Typography>
                   </Box>
                   <Box sx={{ width: 70, height: 50 }}>
-                    {/* Use MuiLineChart for the small cards */}
                     <MuiLineChart
                       series={[{ data: card.data, color: card.color }]}
                       xAxis={[{ scaleType: "linear" }]}
@@ -202,7 +206,7 @@ const Statistics = () => {
               {Stats.EMP_ROLE_COUNT}
             </Typography>
             <BarChart
-              series={[{ data: barData, color: "#1976d2" }]}
+              series={[{ data: barData, color: colors.status.info }]}
               xAxis={[{ scaleType: "band", data: barLabels }]}
               height={300}
               sx={{ overflow: "visible" }}
@@ -221,25 +225,32 @@ const Statistics = () => {
             </Typography>
             <ResponsiveContainer width="100%" height={300}>
               <LineChart data={monthlyData}>
-                <CartesianGrid strokeDasharray="3 3" />
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  stroke={colors.chart.grid}
+                />
                 <XAxis dataKey="month" />
                 <YAxis allowDecimals={false} />
                 <Tooltip
                   contentStyle={{
-                    backgroundColor: "#fff",
-                    border: "1px solid #ccc",
+                    backgroundColor: colors.chart.tooltipBackground,
+                    border: `1px solid ${colors.chart.tooltipBorder}`,
                     borderRadius: 8,
                   }}
-                  labelStyle={{ color: "#ac8fff" }}
-                  itemStyle={{ color: "#ac8fff" }}
+                  labelStyle={{ color: colors.primary.light }}
+                  itemStyle={{ color: colors.primary.light }}
                 />
                 <Line
                   type="monotone"
                   dataKey="count"
-                  stroke="#ff9430"
+                  stroke={colors.chart.line}
                   strokeWidth={3}
                   dot={{ r: 5 }}
-                  activeDot={{ r: 8, fill: "#ac8fff", stroke: "#ac8fff" }}
+                  activeDot={{
+                    r: 8,
+                    fill: colors.primary.light,
+                    stroke: colors.primary.light,
+                  }}
                 />
               </LineChart>
             </ResponsiveContainer>

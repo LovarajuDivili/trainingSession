@@ -7,6 +7,7 @@ import {
   MenuItem,
   Select,
   Divider,
+  FormControl,
 } from "@mui/material";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -21,6 +22,8 @@ import type {
   Project,
   ProjectFormFieldsProps,
 } from "../../common/types";
+import { useThemeColors } from "../../hooks/useThemeColors";
+import { useTheme } from "../../context/ThemeContext";
 
 const AddProject = ({
   onClose,
@@ -30,6 +33,8 @@ const AddProject = ({
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const location = useLocation();
+  const colors = useThemeColors();
+  const { themeMode } = useTheme();
 
   const state = location.state as
     | { isEditing?: boolean; projectData?: Project }
@@ -37,7 +42,6 @@ const AddProject = ({
   const projectFromState = state?.projectData || project;
 
   const isEditingMode = Boolean(projectFromState?.id);
-  //const editingId = projectFromState?.id || null;
 
   const [formValues, setFormValues] = useState({
     projectName: "",
@@ -54,7 +58,6 @@ const AddProject = ({
   const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error">(
     "success"
   );
-  //const [dateError, setDateError] = useState("");
   const [startDateError, setStartDateError] = useState("");
   const [endDateError, setEndDateError] = useState("");
 
@@ -207,7 +210,7 @@ const AddProject = ({
   const buttonLabel = isEditingMode ? "Save" : Add_New.ADD_BUTTON;
 
   return (
-    <Box sx={{ width: "100%" }}>
+    <Box sx={{ width: "100%", backgroundColor: colors.background.white }}>
       <Box
         sx={{
           display: "flex",
@@ -217,16 +220,26 @@ const AddProject = ({
           mt: 2,
         }}
       >
-        <Typography variant="h5" sx={{ fontWeight: 600 }}>
+        <Typography
+          variant="h5"
+          sx={{
+            fontWeight: 600,
+            color: colors.text.primary,
+          }}
+        >
           {title}
         </Typography>
         <Box sx={{ display: "flex", gap: 2 }}>
           <Button
             variant="outlined"
             sx={{
-              color: "#d81b60",
-              borderColor: "#d81b60",
+              color: colors.status.delete,
+              borderColor: colors.status.delete,
               textTransform: "uppercase",
+              "&:hover": {
+                borderColor: colors.status.delete,
+                backgroundColor: colors.state.hoverLight,
+              },
             }}
             onClick={handleCancel}
             disabled={loading}
@@ -235,7 +248,23 @@ const AddProject = ({
           </Button>
           <Button
             variant="contained"
-            sx={{ backgroundColor: "#906aff", textTransform: "uppercase" }}
+            sx={{
+              backgroundColor:
+                themeMode === "dark" ? colors.text.white : colors.primary.main,
+              textTransform: "uppercase",
+              color:
+                themeMode === "dark" ? colors.primary.main : colors.text.white,
+              "&:hover": {
+                backgroundColor:
+                  themeMode === "dark"
+                    ? colors.state.hoverLight
+                    : colors.primary.dark,
+              },
+              "&:disabled": {
+                backgroundColor: colors.ui.button.disabled,
+                color: colors.text.disabled,
+              },
+            }}
             onClick={handleSave}
             disabled={isSaveDisabled || loading}
           >
@@ -244,7 +273,7 @@ const AddProject = ({
         </Box>
       </Box>
 
-      <Divider sx={{ mb: 3 }} />
+      <Divider sx={{ mb: 3, borderColor: colors.border.light }} />
 
       <ProjectFormFields
         projects={formValues}
@@ -276,120 +305,239 @@ const ProjectFormFields = ({
   handleChange,
   startDateError,
   endDateError,
-}: ProjectFormFieldsProps) => (
-  <Grid container spacing={{ xs: 2, md: 3 }} columns={{ xs: 4, sm: 8, md: 12 }}>
-    {/* Row 1 */}
-    <Grid item size={{ xs: 2, sm: 4, md: 4 }}>
-      <Typography sx={{ fontSize: "15px", mb: 0.5 }}>
-        {Add_New.PROJECT_NAME}
-      </Typography>
-      <TextField
-        placeholder="Enter project name"
-        value={projects.projectName}
-        onChange={(e) => handleChange("projectName", e.target.value)}
-        fullWidth
-        sx={{
-          "& .MuiOutlinedInput-root": {
-            borderRadius: "20px",
-          },
-        }}
-      />
-    </Grid>
+}: ProjectFormFieldsProps) => {
+  const colors = useThemeColors();
+  const { themeMode } = useTheme();
 
-    <Grid item size={{ xs: 2, sm: 4, md: 4 }}>
-      <Typography sx={{ fontSize: "15px", mb: 0.5 }}>
-        {Add_New.PROJECT_OWNER}
-      </Typography>
-      <TextField
-        placeholder="Enter project owner"
-        value={projects.projectOwner}
-        onChange={(e) => handleChange("projectOwner", e.target.value)}
-        fullWidth
-        sx={{
-          "& .MuiOutlinedInput-root": {
-            borderRadius: "20px",
-          },
-        }}
-      />
-    </Grid>
+  return (
+    <Grid
+      container
+      spacing={{ xs: 2, md: 3 }}
+      columns={{ xs: 4, sm: 8, md: 12 }}
+    >
+      {/* Row 1 */}
+      <Grid item size={{ xs: 2, sm: 4, md: 4 }}>
+        <Typography
+          sx={{ fontSize: "15px", mb: 0.5, color: colors.text.primary }}
+        >
+          {Add_New.PROJECT_NAME}
+        </Typography>
+        <TextField
+          placeholder="Enter project name"
+          value={projects.projectName}
+          onChange={(e) => handleChange("projectName", e.target.value)}
+          fullWidth
+          sx={{
+            "& .MuiOutlinedInput-root": {
+              borderRadius: "20px",
+              color: colors.text.primary,
+              backgroundColor: colors.background.white,
+              "& fieldset": {
+                borderColor: colors.border.light,
+              },
+              "&:hover fieldset": {
+                borderColor: colors.primary.main,
+              },
+              "&.Mui-focused fieldset": {
+                borderColor: colors.primary.main,
+              },
+            },
+            "& .MuiInputBase-input::placeholder": {
+              color: colors.text.secondary,
+            },
+          }}
+        />
+      </Grid>
 
-    <Grid item size={{ xs: 2, sm: 4, md: 4 }}>
-      <Typography sx={{ fontSize: "15px", mb: 0.5 }}>Jira Id</Typography>
-      <TextField
-        placeholder="JIRA-123"
-        value={projects.jiraId}
-        onChange={(e) => handleChange("jiraId", e.target.value)}
-        fullWidth
-        sx={{
-          "& .MuiOutlinedInput-root": {
-            borderRadius: "20px",
-          },
-        }}
-      />
-    </Grid>
+      <Grid item size={{ xs: 2, sm: 4, md: 4 }}>
+        <Typography
+          sx={{ fontSize: "15px", mb: 0.5, color: colors.text.primary }}
+        >
+          {Add_New.PROJECT_OWNER}
+        </Typography>
+        <TextField
+          placeholder="Enter project owner"
+          value={projects.projectOwner}
+          onChange={(e) => handleChange("projectOwner", e.target.value)}
+          fullWidth
+          sx={{
+            "& .MuiOutlinedInput-root": {
+              borderRadius: "20px",
+              color: colors.text.primary,
+              backgroundColor: colors.background.white,
+              "& fieldset": {
+                borderColor: colors.border.light,
+              },
+              "&:hover fieldset": {
+                borderColor: colors.primary.main,
+              },
+              "&.Mui-focused fieldset": {
+                borderColor: colors.primary.main,
+              },
+            },
+            "& .MuiInputBase-input::placeholder": {
+              color: colors.text.secondary,
+            },
+          }}
+        />
+      </Grid>
 
-    {/* Row 2 */}
-    <Grid item size={{ xs: 2, sm: 4, md: 4 }}>
-      <Typography sx={{ fontSize: "15px", mb: 0.5 }}>Status</Typography>
-      <Select
-        value={projects.status}
-        onChange={(e) => handleChange("status", e.target.value)}
-        fullWidth
-        sx={{
-          borderRadius: "20px",
-          "& .MuiOutlinedInput-root": {
-            borderRadius: "20px",
-          },
-          "& .MuiSelect-select": {
-            color: projects.status ? "inherit" : "grey",
-          },
-        }}
-        displayEmpty
-      >
-        <MenuItem value="" disabled>
-          <em>Select Status</em>
-        </MenuItem>
-        <MenuItem value="Active">Active</MenuItem>
-        <MenuItem value="InActive">InActive</MenuItem>
-        <MenuItem value="InProgress">In Progress</MenuItem>
-      </Select>
-    </Grid>
+      <Grid item size={{ xs: 2, sm: 4, md: 4 }}>
+        <Typography
+          sx={{ fontSize: "15px", mb: 0.5, color: colors.text.primary }}
+        >
+          Jira Id
+        </Typography>
+        <TextField
+          placeholder="JIRA-123"
+          value={projects.jiraId}
+          onChange={(e) => handleChange("jiraId", e.target.value)}
+          fullWidth
+          sx={{
+            "& .MuiOutlinedInput-root": {
+              borderRadius: "20px",
+              color: colors.text.primary,
+              backgroundColor: colors.background.white,
+              "& fieldset": {
+                borderColor: colors.border.light,
+              },
+              "&:hover fieldset": {
+                borderColor: colors.primary.main,
+              },
+              "&.Mui-focused fieldset": {
+                borderColor: colors.primary.main,
+              },
+            },
+            "& .MuiInputBase-input::placeholder": {
+              color: colors.text.secondary,
+            },
+          }}
+        />
+      </Grid>
 
-    <Grid item size={{ xs: 2, sm: 4, md: 4 }}>
-      <Typography sx={{ fontSize: "15px", mb: 0.5 }}>Start Date</Typography>
-      <TextField
-        type="date"
-        value={projects.startDate}
-        onChange={(e) => handleChange("startDate", e.target.value)}
-        fullWidth
-        error={Boolean(startDateError)}
-        helperText={startDateError}
-        sx={{
-          "& .MuiOutlinedInput-root": {
-            borderRadius: "20px",
-          },
-        }}
-      />
-    </Grid>
+      {/* Row 2 */}
+      <Grid item size={{ xs: 2, sm: 4, md: 4 }}>
+        <Typography
+          sx={{ fontSize: "15px", mb: 0.5, color: colors.text.primary }}
+        >
+          Status
+        </Typography>
+        <FormControl fullWidth>
+          <Select
+            value={projects.status}
+            onChange={(e) => handleChange("status", e.target.value)}
+            sx={{
+              borderRadius: "20px",
+              color: colors.text.primary,
+              backgroundColor: colors.background.white,
+              "& .MuiOutlinedInput-notchedOutline": {
+                borderColor: colors.border.light,
+              },
+              "&:hover .MuiOutlinedInput-notchedOutline": {
+                borderColor: colors.primary.main,
+              },
+              "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                borderColor: colors.primary.main,
+              },
+            }}
+            displayEmpty
+          >
+            <MenuItem value="" disabled>
+              <em style={{ color: colors.text.secondary }}>Select Status</em>
+            </MenuItem>
+            <MenuItem value="Active">Active</MenuItem>
+            <MenuItem value="InActive">InActive</MenuItem>
+            <MenuItem value="InProgress">In Progress</MenuItem>
+          </Select>
+        </FormControl>
+      </Grid>
 
-    <Grid item size={{ xs: 2, sm: 4, md: 4 }}>
-      <Typography sx={{ fontSize: "15px", mb: 0.5 }}>End Date</Typography>
-      <TextField
-        type="date"
-        value={projects.endDate}
-        onChange={(e) => handleChange("endDate", e.target.value)}
-        fullWidth
-        error={Boolean(endDateError)}
-        helperText={endDateError}
-        sx={{
-          "& .MuiOutlinedInput-root": {
-            borderRadius: "20px",
-          },
-        }}
-      />
+      <Grid item size={{ xs: 2, sm: 4, md: 4 }}>
+        <Typography
+          sx={{ fontSize: "15px", mb: 0.5, color: colors.text.primary }}
+        >
+          Start Date
+        </Typography>
+        <TextField
+          type="date"
+          value={projects.startDate}
+          onChange={(e) => handleChange("startDate", e.target.value)}
+          fullWidth
+          error={Boolean(startDateError)}
+          helperText={startDateError}
+          sx={{
+            "& .MuiOutlinedInput-root": {
+              borderRadius: "20px",
+              color: colors.text.primary,
+              backgroundColor: colors.background.white,
+              "& fieldset": {
+                borderColor: colors.border.light,
+              },
+              "&:hover fieldset": {
+                borderColor: colors.primary.main,
+              },
+              "&.Mui-focused fieldset": {
+                borderColor: colors.primary.main,
+              },
+            },
+            "& .MuiFormHelperText-root": {
+              color: colors.status.error,
+            },
+            // Fix calendar icon color
+            "& input[type='date']::-webkit-calendar-picker-indicator": {
+              filter: themeMode === "dark" ? "invert(1)" : "none",
+            },
+          }}
+          InputLabelProps={{
+            shrink: true,
+          }}
+        />
+      </Grid>
+
+      <Grid item size={{ xs: 2, sm: 4, md: 4 }}>
+        <Typography
+          sx={{ fontSize: "15px", mb: 0.5, color: colors.text.primary }}
+        >
+          End Date
+        </Typography>
+        <TextField
+          type="date"
+          value={projects.endDate}
+          onChange={(e) => handleChange("endDate", e.target.value)}
+          fullWidth
+          error={Boolean(endDateError)}
+          helperText={endDateError}
+          sx={{
+            "& .MuiOutlinedInput-root": {
+              borderRadius: "20px",
+              color: colors.text.primary,
+              backgroundColor: colors.background.white,
+              "& fieldset": {
+                borderColor: colors.border.light,
+              },
+              "&:hover fieldset": {
+                borderColor: colors.primary.main,
+              },
+              "&.Mui-focused fieldset": {
+                borderColor: colors.primary.main,
+              },
+            },
+            "& .MuiFormHelperText-root": {
+              color: colors.status.error,
+            },
+            // Fix calendar icon color
+            "& input[type='date']::-webkit-calendar-picker-indicator": {
+              filter: themeMode === "dark" ? "invert(1)" : "none",
+            },
+          }}
+          InputLabelProps={{
+            shrink: true,
+          }}
+        />
+      </Grid>
     </Grid>
-  </Grid>
-);
+  );
+};
 
 export { ProjectFormFields };
 export default AddProject;
