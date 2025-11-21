@@ -66,12 +66,14 @@ const OpeningsEvents = () => {
   const [newOpening, setNewOpening] = useState<{
     title: string;
     department: string;
+    job_description: string;
     applicants: number;
     is_active: boolean;
     order: number;
   }>({
     title: "",
     department: "",
+    job_description: "",
     applicants: 0,
     is_active: true,
     order: 0,
@@ -134,6 +136,7 @@ const OpeningsEvents = () => {
       setNewOpening({
         title: "",
         department: "",
+        job_description: "",
         applicants: 0,
         is_active: true,
         order: 0,
@@ -367,7 +370,7 @@ const OpeningsEvents = () => {
                 display: "flex",
                 justifyContent: "space-between",
                 alignItems: "flex-start",
-                mb: 2,
+                mb: 1,
               }}
             >
               <Typography
@@ -392,13 +395,27 @@ const OpeningsEvents = () => {
                 <DeleteIcon fontSize="small" />
               </IconButton>
             </Box>
-
+            {opening.job_description && (
+              <Typography
+                variant="body2"
+                sx={{
+                  color: colors.text.secondary,
+                  mb: 1,
+                  fontSize: "0.875rem",
+                  lineHeight: 1.4,
+                }}
+              >
+                {opening.job_description.length > 100
+                  ? `${opening.job_description.substring(0, 100)}...`
+                  : opening.job_description}
+              </Typography>
+            )}
             <Box
               sx={{
                 display: "flex",
                 justifyContent: "space-between",
                 alignItems: "center",
-                mb: 1,
+                mb: 0,
               }}
             >
               <Typography variant="body2" sx={{ color: colors.text.primary1 }}>
@@ -579,6 +596,19 @@ const OpeningsEvents = () => {
             value={newOpening.department}
             onChange={(e) =>
               setNewOpening({ ...newOpening, department: e.target.value })
+            }
+            sx={{ mb: 2 }}
+          />
+          <TextField
+            margin="dense"
+            label="Job Description"
+            fullWidth
+            variant="outlined"
+            multiline
+            rows={4}
+            value={newOpening.job_description}
+            onChange={(e) =>
+              setNewOpening({ ...newOpening, job_description: e.target.value })
             }
             sx={{ mb: 2 }}
           />

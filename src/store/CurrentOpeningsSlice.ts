@@ -4,6 +4,7 @@ export interface CurrentOpening {
   id: string;
   title: string;
   department: string;
+  job_description: string
   applicants: number;
   is_active: boolean;
   order: number;

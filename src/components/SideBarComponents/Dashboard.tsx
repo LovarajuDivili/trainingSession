@@ -38,6 +38,7 @@ const Dashboard = () => {
   );
 
   useEffect(() => {
+    dispatch(fetchCarouselImages(true));
     dispatch(fetchEmployees());
     dispatch(fetchCurrentOpenings(true));
   }, [dispatch]);
@@ -52,16 +53,10 @@ const Dashboard = () => {
   // Carousel
   const { images: carouselImages } = useAppSelector((state) => state.carousel);
 
-  // Replace the images array usage with:
   const images = carouselImages
     .filter((img) => img.is_active)
     .sort((a, b) => a.order - b.order)
     .map((img) => img.image_data);
-
-  // Add this to your useEffect dependencies:
-  useEffect(() => {
-    dispatch(fetchCarouselImages(true)); // Fetch only active images
-  }, [dispatch]);
 
   const [imageIndex, setImageIndex] = useState(0);
   const handleNextImage = () =>
@@ -149,12 +144,6 @@ const Dashboard = () => {
       { month: "Dec", count: data[11] },
     ];
   }, [employees]);
-
-  // const currentOpenings = [
-  //   { title: "Frontend Developer", department: "Engineering", applicants: 12 },
-  //   { title: "UX Designer", department: "Design", applicants: 8 },
-  //   { title: "UI Designer", department: "Design", applicants: 8 },
-  // ];
 
   if (employeesLoading) {
     return (
@@ -416,64 +405,86 @@ const Dashboard = () => {
             },
           }}
         >
-          <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
-            {currentOpenings.map((opening, index) => (
-              <Card
-                key={index}
-                sx={{
-                  p: 1.5,
-                  height: "35px",
-                  width: "80%",
-                  borderRadius: 3,
-                  boxShadow: `0 2px 8px ${colors.shadow.light}`,
-                  backgroundColor: colors.special.currentOpeningsBg,
-                  border: `1px solid ${colors.border.light}`,
-                  transition: "all 0.2s ease",
-                  "&:hover": {
-                    boxShadow: `0 4px 12px ${colors.shadow.hover}`,
-                    transform: "translateY(-1px)",
-                  },
-                }}
-              >
-                <Typography
-                  variant="subtitle1"
+          {currentOpenings.length > 0 ? (
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
+              {currentOpenings.map((opening, index) => (
+                <Card
+                  key={index}
                   sx={{
-                    fontWeight: 600,
-                    fontSize: "13px",
-                    mb: 0.5,
-                    color: colors.text.primary,
-                  }}
-                >
-                  {opening.title}
-                </Typography>
-                <Box
-                  sx={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
+                    p: 1.5,
+                    height: "35px",
+                    width: "80%",
+                    borderRadius: 3,
+                    boxShadow: `0 2px 8px ${colors.shadow.light}`,
+                    backgroundColor: colors.special.currentOpeningsBg,
+                    border: `1px solid ${colors.border.light}`,
+                    transition: "all 0.2s ease",
+                    "&:hover": {
+                      boxShadow: `0 4px 12px ${colors.shadow.hover}`,
+                      transform: "translateY(-1px)",
+                    },
                   }}
                 >
                   <Typography
-                    variant="body2"
-                    color="text.secondary"
-                    sx={{ fontSize: "11px", color: colors.text.secondary }}
-                  >
-                    {opening.department}
-                  </Typography>
-                  <Typography
-                    variant="body2"
+                    variant="subtitle1"
                     sx={{
-                      fontSize: "11px",
                       fontWeight: 600,
-                      color: colors.primary.main,
+                      fontSize: "13px",
+                      mb: 0.5,
+                      color: colors.text.primary,
                     }}
                   >
-                    {opening.applicants} applicants
+                    {opening.title}
                   </Typography>
-                </Box>
-              </Card>
-            ))}
-          </Box>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                    }}
+                  >
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      sx={{ fontSize: "11px", color: colors.text.secondary }}
+                    >
+                      {opening.department}
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        fontSize: "11px",
+                        fontWeight: 600,
+                        color: colors.primary.main,
+                      }}
+                    >
+                      {opening.applicants} applicants
+                    </Typography>
+                  </Box>
+                </Card>
+              ))}
+            </Box>
+          ) : (
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                height: "100px",
+                width: "80%",
+              }}
+            >
+              <Typography
+                sx={{
+                  color: colors.text.secondary,
+                  fontStyle: "italic",
+                  textAlign: "center",
+                }}
+              >
+                No openings
+              </Typography>
+            </Box>
+          )}
         </Box>
       </Box>
 
@@ -511,7 +522,16 @@ const Dashboard = () => {
           </Box>
         </Typography>
 
-        <Box sx={{ position: "relative", width: "100%", mt: 1 }}>
+        <Box
+          sx={{
+            position: "relative",
+            width: "100%",
+            mt: 1,
+            "&:hover .carousel-title-overlay": {
+              opacity: 1,
+            },
+          }}
+        >
           <Card
             sx={{
               overflow: "hidden",
@@ -530,6 +550,42 @@ const Dashboard = () => {
                 transition: "opacity 1s ease-in-out",
               }}
             />
+
+            {/* Hover Title Overlay */}
+            <Box
+              className="carousel-title-overlay"
+              sx={{
+                position: "absolute",
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                backgroundColor: colors.overlay.black08,
+                color: colors.text.white,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                opacity: 0,
+                transition: "opacity 0.3s ease-in-out",
+                pointerEvents: "none",
+              }}
+            >
+              <Typography
+                variant="h5"
+                sx={{
+                  fontWeight: 600,
+                  fontSize: "20px",
+                  textAlign: "center",
+                  margin: 0,
+                  textShadow: `0 2px 4px ${colors.shadow.dark}`,
+                }}
+              >
+                {carouselImages
+                  .filter((img) => img.is_active)
+                  .sort((a, b) => a.order - b.order)[imageIndex]?.title ||
+                  "Carousel Image"}
+              </Typography>
+            </Box>
           </Card>
 
           <IconButton

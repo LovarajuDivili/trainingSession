@@ -93,6 +93,7 @@ class CarouselImageResponse(CarouselImageBase):
 class CurrentOpeningBase(BaseModel):
     title: str
     department: str
+    job_description: Optional[str] = None
     applicants: int
     is_active: bool = True
     order: int = 0
@@ -103,6 +104,7 @@ class CurrentOpeningCreate(CurrentOpeningBase):
 class CurrentOpeningUpdate(BaseModel):
     title: Optional[str] = None
     department: Optional[str] = None
+    job_description: Optional[str] = None
     applicants: Optional[int] = None
     is_active: Optional[bool] = None
     order: Optional[int] = None
