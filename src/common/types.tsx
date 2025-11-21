@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import type { ThemeOptions } from "@mui/material/styles";
 import type { JSX, ReactNode } from "react";
 
@@ -84,6 +85,7 @@ export interface CartContextType {
   addToCart: (item: unknown) => void;
   removeFromCart: (id: string) => void;
   clearCart: () => void;
+  updateCartForUser: (newUser: any) => void; 
 }
 
 export interface CartDrawerContextType {

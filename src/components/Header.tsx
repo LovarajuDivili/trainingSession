@@ -16,8 +16,8 @@ import AccountCircle from "@mui/icons-material/AccountCircle";
 import LogoutIcon from "@mui/icons-material/Logout";
 import SwapHorizIcon from "@mui/icons-material/SwapHoriz";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
-import Brightness4Icon from "@mui/icons-material/Brightness4"; // Moon icon for dark mode
-import Brightness7Icon from "@mui/icons-material/Brightness7"; // Sun icon for light mode
+import Brightness4Icon from "@mui/icons-material/Brightness4";
+import Brightness7Icon from "@mui/icons-material/Brightness7";
 import { useCartDrawer } from "../context/CartDrawerContext";
 import { useNavigate } from "react-router-dom";
 import { useLocation } from "react-router-dom";
@@ -46,8 +46,26 @@ const Header = ({ role: propRole }: { role?: string }) => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const role =
-    propRole || location.state?.role || window.sessionStorage.getItem("role");
+  // Get role from multiple sources with priority
+  const getCurrentRole = () => {
+    // Priority: prop > sessionStorage > path-based detection
+    if (propRole) return propRole;
+    
+    const sessionRole = sessionStorage.getItem("role");
+    if (sessionRole) return sessionRole;
+    
+    // Fallback: detect from path
+    const path = location.pathname;
+    if (path.includes("/admin")) return "admin";
+    if (path.includes("/accountant")) return "accountant";
+    if (path.includes("/functional")) return "functional";
+    if (path.includes("/migrator")) return "migrator";
+    if (path.includes("/tester")) return "tester";
+    
+    return null;
+  };
+
+  const role = getCurrentRole();
 
   const handleIconClick = () => {
     setShowLogout((prev) => !prev);
@@ -71,8 +89,14 @@ const Header = ({ role: propRole }: { role?: string }) => {
 
   const handleSwap = () => {
     clearCart(); // Clear context state
-    localStorage.removeItem("orderCart"); // Clear only cart from storage
-    navigate("/");
+    // Clear user-specific cart from localStorage
+    const user = JSON.parse(sessionStorage.getItem("user") || "{}");
+    if (user?.id) {
+      localStorage.removeItem(`orderCart_${user.id}`);
+    }
+    localStorage.removeItem("orderCart_guest");
+    
+    navigate("/welcome");
   };
 
   const { openDrawer } = useCartDrawer();
@@ -82,6 +106,9 @@ const Header = ({ role: propRole }: { role?: string }) => {
   };
 
   const roleIcon = role ? roleIcons[role.toLowerCase()] : null;
+
+  // Check if we're on welcome page
+  const isWelcomePage = location.pathname === "/welcome";
 
   return (
     <Box
@@ -125,7 +152,8 @@ const Header = ({ role: propRole }: { role?: string }) => {
           <strong>{Aifa.AIFA}</strong>
         </Typography>
 
-        {role && roleIcon && location.pathname !== "/" && (
+        {/* Show role badge only if we have a role AND we're not on welcome page */}
+        {!isWelcomePage && role && roleIcon && (
           <>
             <Divider
               orientation="vertical"
@@ -178,7 +206,8 @@ const Header = ({ role: propRole }: { role?: string }) => {
           {themeMode === 'light' ? <Brightness4Icon /> : <Brightness7Icon />}
         </IconButton>
 
-        {role?.toLowerCase() === "accountant" && (
+        {/* Show cart only for accountant role AND not on welcome page */}
+        {!isWelcomePage && role?.toLowerCase() === "accountant" && (
           <Button
             variant="contained"
             startIcon={
@@ -212,6 +241,7 @@ const Header = ({ role: propRole }: { role?: string }) => {
             Cart
           </Button>
         )}
+        
         <IconButton sx={{ color: "white" }} onClick={handleSwap}>
           <SwapHorizIcon />
         </IconButton>
@@ -297,6 +327,7 @@ const Header = ({ role: propRole }: { role?: string }) => {
           </Box>
         </Box>
       </Box>
+      
       {/* Confirmation Dialog */}
       <Dialog open={openDialog} onClose={cancelLogout}>
         <DialogTitle>{Logout_Confirm.LOGOUT_CONFIRM}</DialogTitle>
