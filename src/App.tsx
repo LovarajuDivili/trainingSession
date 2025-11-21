@@ -29,7 +29,8 @@ import OpeningsAndEvents from "./pages/OpeningsAndEvents";
 import { OrdersProvider } from "./context/OrderContext";
 import { ThemeProvider } from "./context/ThemeContext";
 
-const AppRoutes = () => {
+// Create a separate component that uses useAuth
+const AppContent = () => {
   const { isAuthenticated, isLoading } = useAuth();
 
   if (isLoading) {
@@ -176,19 +177,18 @@ const AppRoutes = () => {
 const App = () => {
   return (
     <ThemeProvider>
-    <AuthProvider>
-      <CartProvider>
-        <OrdersProvider>
-          {" "}
-          <CartDrawerProvider>
-            <Box>
-              <AppRoutes />
-            </Box>
-            <CartDrawer />
-          </CartDrawerProvider>
-        </OrdersProvider>{" "}
-      </CartProvider>
-    </AuthProvider>
+      <AuthProvider> {/* AuthProvider first */}
+        <CartProvider> {/* Then CartProvider */}
+          <OrdersProvider>
+            <CartDrawerProvider>
+              <Box>
+                <AppContent /> {/* Use AppContent instead of AppRoutes */}
+              </Box>
+              <CartDrawer />
+            </CartDrawerProvider>
+          </OrdersProvider>
+        </CartProvider>
+      </AuthProvider>
     </ThemeProvider>
   );
 };

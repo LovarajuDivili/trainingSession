@@ -18,7 +18,9 @@ const WelcomeSasa = () => {
   const colors = useThemeColors();
 
   const handleProceed = () => {
+    // Store role in sessionStorage
     sessionStorage.setItem("role", dropdownValue);
+    // Navigate to the selected role's page
     navigate(`/${dropdownValue}`);
   };
 
@@ -29,7 +31,8 @@ const WelcomeSasa = () => {
         backgroundColor: colors.background.white,
       }}
     >
-      <Header role={""} />
+      {/* Pass empty role to Header to indicate welcome page */}
+      <Header role="" />
       <Box
         sx={{
           flexGrow: 1,
@@ -41,7 +44,7 @@ const WelcomeSasa = () => {
           backgroundColor: colors.background.white,
         }}
       >
-        {/* Welcome Message */}
+        {/* Your existing WelcomeSasa content */}
         <Typography
           sx={{
             marginLeft: "-4px",
@@ -57,7 +60,6 @@ const WelcomeSasa = () => {
           </span>
         </Typography>
 
-        {/* Select Account Instruction */}
         <Typography
           sx={{
             marginLeft: "-3px",
@@ -70,7 +72,6 @@ const WelcomeSasa = () => {
           {Select_Account.SELECT_ACCOUNT}
         </Typography>
 
-        {/* Role Selection Grid */}
         <Box
           sx={{
             display: "grid",
@@ -127,7 +128,6 @@ const WelcomeSasa = () => {
                 </Box>
               )}
 
-              {/* Left Side - Role Info */}
               <Box>
                 <Typography
                   sx={{
@@ -148,7 +148,6 @@ const WelcomeSasa = () => {
                 </Typography>
               </Box>
 
-              {/* Right Icon */}
               <Box
                 sx={{
                   display: "flex",
@@ -163,7 +162,6 @@ const WelcomeSasa = () => {
           ))}
         </Box>
 
-        {/* Proceed Button */}
         <Button
           variant="contained"
           sx={{
