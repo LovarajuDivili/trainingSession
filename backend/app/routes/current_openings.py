@@ -27,6 +27,7 @@ async def create_current_opening(opening_data: CurrentOpeningCreate):
         current_opening = {
             "title": opening_data.title,
             "department": opening_data.department,
+            "job_description": opening_data.job_description, 
             "applicants": opening_data.applicants,
             "is_active": opening_data.is_active,
             "order": opening_data.order,
