@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable react-refresh/only-export-components */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import {
@@ -10,58 +9,140 @@ import {
 } from "react";
 import type { CartContextType, CartItem } from "../common/types";
 import { useAuth } from "../contexts/AuthContext";
+import axios from "axios";
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export const CartProvider = ({ children }: { children: ReactNode }) => {
-  const { user } = useAuth(); // Get current user
+  const { user, isAuthenticated } = useAuth();
   const [cart, setCart] = useState<CartItem[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const getCartKey = () => {
-    return user ? `orderCart_${user.id}` : "orderCart_guest";
-  };
+  const API_BASE = "http://localhost:8000/v-1/application/cart";
 
+  // Get cart from API when user changes or component mounts
   useEffect(() => {
+    const fetchCart = async () => {
+      if (!isAuthenticated || !user) {
+        setCart([]);
+        return;
+      }
+
+      try {
+        setIsLoading(true);
+        const token = sessionStorage.getItem("token");
+        const response = await axios.get(`${API_BASE}/`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        
+        console.log("Fetched cart from API:", response.data);
+        setCart(response.data.items || []);
+      } catch (error) {
+        console.error("Failed to fetch cart:", error);
+        setCart([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchCart();
+  }, [user, isAuthenticated]);
+
+  const syncCartToAPI = async (updatedCart: CartItem[]) => {
+    if (!isAuthenticated || !user) return;
+
     try {
-      const cartKey = getCartKey();
-      const saved = localStorage.getItem(cartKey);
-      setCart(saved ? JSON.parse(saved) : []);
-    } catch {
-      setCart([]);
-    }
-  }, [user]); // Re-run when user changes
+      const token = sessionStorage.getItem("token");
+      const subtotal = updatedCart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+      const vat = subtotal * 0.18;
+      const total = subtotal + vat;
 
-  // Save cart when it changes
-  useEffect(() => {
-    const cartKey = getCartKey();
-    localStorage.setItem(cartKey, JSON.stringify(cart));
-  }, [cart, user]);
+      await axios.put(
+        `${API_BASE}/`,
+        {
+          items: updatedCart,
+          subtotal,
+          vat,
+          total,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      console.log("Cart synced to API successfully");
+    } catch (error) {
+      console.error("Failed to sync cart to API:", error);
+    }
+  };
 
   const addToCart = (item: any) => {
     setCart((prevCart) => {
       const existing = prevCart.find((i) => i._id === item._id);
+      let updatedCart: CartItem[];
+
       if (existing) {
-        return prevCart.map((i) =>
+        updatedCart = prevCart.map((i) =>
           i._id === item._id ? { ...i, quantity: i.quantity + 1 } : i
         );
+      } else {
+        updatedCart = [
+          ...prevCart,
+          {
+            ...item,
+            product_id: item._id,
+            quantity: 1,
+            price: item.price || 0,
+            stock: item.stock || 0,
+          } as CartItem,
+        ];
       }
-      return [
-        ...prevCart,
-        {
-          ...item,
-          quantity: 1,
-          price: item.price || 0,
-          stock: item.stock || 0,
-        },
-      ];
+
+      // Sync to API
+      if (isAuthenticated) {
+        syncCartToAPI(updatedCart);
+      }
+
+      return updatedCart;
     });
   };
 
   const removeFromCart = (id: string) => {
-    setCart((prevCart) => prevCart.filter((item) => item._id !== id));
+    setCart((prevCart) => {
+      const updatedCart = prevCart.filter((item) => item._id !== id);
+      
+      // Sync to API
+      if (isAuthenticated) {
+        syncCartToAPI(updatedCart);
+      }
+      
+      return updatedCart;
+    });
   };
 
-  const clearCart = () => setCart([]);
+  const clearCart = () => {
+    setCart([]);
+    
+    if (isAuthenticated) {
+      const clearCartAPI = async () => {
+        try {
+          const token = sessionStorage.getItem("token");
+          await axios.delete(`${API_BASE}/`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+          console.log("Cart cleared from API");
+        } catch (error) {
+          console.error("Failed to clear cart in API:", error);
+        }
+      };
+      clearCartAPI();
+    }
+  };
 
   const updateCartForUser = (newUser: any) => {
     if (!newUser) {
@@ -71,7 +152,14 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
 
   return (
     <CartContext.Provider
-      value={{ cart, addToCart, removeFromCart, clearCart, updateCartForUser }}
+      value={{ 
+        cart, 
+        addToCart, 
+        removeFromCart, 
+        clearCart, 
+        updateCartForUser,
+        isLoading 
+      }}
     >
       {children}
     </CartContext.Provider>

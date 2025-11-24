@@ -73,6 +73,7 @@ export interface ProjectFormFieldsProps {
 
 export interface CartItem {
   _id: string;
+  product_id: string;
   category: string;
   brand: string;
   price: number;
@@ -82,10 +83,11 @@ export interface CartItem {
 
 export interface CartContextType {
   cart: CartItem[];
-  addToCart: (item: unknown) => void;
+  addToCart: (item: any) => void;
   removeFromCart: (id: string) => void;
   clearCart: () => void;
-  updateCartForUser: (newUser: any) => void; 
+  updateCartForUser: (newUser: any) => void;
+  isLoading?: boolean;
 }
 
 export interface CartDrawerContextType {
@@ -94,22 +96,49 @@ export interface CartDrawerContextType {
   closeDrawer: () => void;
 }
 
+export interface BillingDetails {
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+  city?: string;
+  district?: string;
+  postalCode?: string;
+  cardName?: string;
+  cardNumber?: string;
+  expiryDate?: string;
+  cvv?: string;
+}
+
 export interface OrderItem {
-  name: string;
+  _id: string;
+  product_id: string;
   brand: string;
   category: string;
-  hours: string;
-}
-
-export interface OrdersContextType {
-  orders: OrderItem[];
-  addOrder: (items: CartItem[]) => void;
-}
-
-export interface CartItem {
-  brand: string;
-  category: string;
+  price: number;
   quantity: number;
+  stock: number;
+}
+
+export interface Order {
+  id: string;
+  user_id: string;
+  items: OrderItem[];
+  billing_details: BillingDetails;
+  payment_method: string;
+  subtotal: number;
+  vat: number;
+  total: number;
+  status: string;
+  order_date: string;
+  created_at: string;
+}
+
+export interface OrderContextType {
+  orders: Order[];
+  addOrder: (cartItems: CartItem[], billingDetails?: BillingDetails, paymentMethod?: string) => Promise<Order>;
+  isLoading: boolean;
 }
 
 export interface User {
@@ -117,6 +146,7 @@ export interface User {
   name: string;
   email: string;
   role: string;
+  created_at?: string;
 }
 
 export interface AuthContextType {

@@ -39,7 +39,7 @@ const Header = ({ role: propRole }: { role?: string }) => {
   const [openDialog, setOpenDialog] = useState<boolean>(false);
   const [openSnackbar, setOpenSnackbar] = useState<boolean>(false);
   const { cart } = useCart();
-  const { clearCart } = useCart();
+  //const { clearCart } = useCart();
   const { themeMode, toggleTheme } = useTheme();
   const colors = useThemeColors();
 
@@ -50,10 +50,10 @@ const Header = ({ role: propRole }: { role?: string }) => {
   const getCurrentRole = () => {
     // Priority: prop > sessionStorage > path-based detection
     if (propRole) return propRole;
-    
+
     const sessionRole = sessionStorage.getItem("role");
     if (sessionRole) return sessionRole;
-    
+
     // Fallback: detect from path
     const path = location.pathname;
     if (path.includes("/admin")) return "admin";
@@ -61,7 +61,7 @@ const Header = ({ role: propRole }: { role?: string }) => {
     if (path.includes("/functional")) return "functional";
     if (path.includes("/migrator")) return "migrator";
     if (path.includes("/tester")) return "tester";
-    
+
     return null;
   };
 
@@ -88,14 +88,9 @@ const Header = ({ role: propRole }: { role?: string }) => {
   };
 
   const handleSwap = () => {
-    clearCart(); // Clear context state
+    // Clear context state
     // Clear user-specific cart from localStorage
-    const user = JSON.parse(sessionStorage.getItem("user") || "{}");
-    if (user?.id) {
-      localStorage.removeItem(`orderCart_${user.id}`);
-    }
-    localStorage.removeItem("orderCart_guest");
-    
+
     navigate("/welcome");
   };
 
@@ -198,12 +193,16 @@ const Header = ({ role: propRole }: { role?: string }) => {
         }}
       >
         {/* Theme Toggle Button */}
-        <IconButton 
-          onClick={toggleTheme} 
+        <IconButton
+          onClick={toggleTheme}
           sx={{ color: "white" }}
-          title={themeMode === 'light' ? 'Switch to dark mode' : 'Switch to light mode'}
+          title={
+            themeMode === "light"
+              ? "Switch to dark mode"
+              : "Switch to light mode"
+          }
         >
-          {themeMode === 'light' ? <Brightness4Icon /> : <Brightness7Icon />}
+          {themeMode === "light" ? <Brightness4Icon /> : <Brightness7Icon />}
         </IconButton>
 
         {/* Show cart only for accountant role AND not on welcome page */}
@@ -241,7 +240,7 @@ const Header = ({ role: propRole }: { role?: string }) => {
             Cart
           </Button>
         )}
-        
+
         <IconButton sx={{ color: "white" }} onClick={handleSwap}>
           <SwapHorizIcon />
         </IconButton>
@@ -289,7 +288,10 @@ const Header = ({ role: propRole }: { role?: string }) => {
           </Box>
 
           <Box sx={{ position: "relative" }}>
-            <IconButton onClick={handleIconClick} sx={{ color: colors.primary.main }}>
+            <IconButton
+              onClick={handleIconClick}
+              sx={{ color: colors.primary.main }}
+            >
               <AccountCircle sx={{ fontSize: 43 }} />
             </IconButton>
 
@@ -327,7 +329,7 @@ const Header = ({ role: propRole }: { role?: string }) => {
           </Box>
         </Box>
       </Box>
-      
+
       {/* Confirmation Dialog */}
       <Dialog open={openDialog} onClose={cancelLogout}>
         <DialogTitle>{Logout_Confirm.LOGOUT_CONFIRM}</DialogTitle>

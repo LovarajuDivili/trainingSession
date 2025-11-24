@@ -27,7 +27,7 @@ const WelcomeSasa = () => {
   return (
     <Box
       sx={{
-        minHeight: "100vh",
+        minHeight: "70vh",
         backgroundColor: colors.background.white,
       }}
     >
