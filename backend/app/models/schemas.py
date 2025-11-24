@@ -116,3 +116,56 @@ class CurrentOpeningResponse(CurrentOpeningBase):
     
     class Config:
         from_attributes = True
+
+class CartItem(BaseModel):
+    product_id: str
+    brand: str
+    category: str
+    price: float
+    quantity: int
+    stock: int
+
+class CartBase(BaseModel):
+    user_id: str
+    items: List[CartItem]
+    subtotal: float = 0.0
+    vat: float = 0.0
+    total: float = 0.0
+
+class CartCreate(CartBase):
+    pass
+
+class CartUpdate(BaseModel):
+    items: Optional[List[CartItem]] = None
+    subtotal: Optional[float] = None
+    vat: Optional[float] = None
+    total: Optional[float] = None
+
+class CartResponse(CartBase):
+    id: str
+    created_at: datetime
+    updated_at: datetime
+    
+    class Config:
+        from_attributes = True
+
+class OrderBase(BaseModel):
+    user_id: str
+    items: List[CartItem]
+    billing_details: dict
+    payment_method: str
+    subtotal: float
+    vat: float
+    total: float
+    status: str = "pending"
+
+class OrderCreate(OrderBase):
+    pass
+
+class OrderResponse(OrderBase):
+    id: str
+    order_date: datetime
+    created_at: datetime
+    
+    class Config:
+        from_attributes = True

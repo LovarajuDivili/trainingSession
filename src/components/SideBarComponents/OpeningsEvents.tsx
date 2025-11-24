@@ -13,6 +13,7 @@ import {
   FormControlLabel,
   Checkbox,
   Divider,
+  Grid,
 } from "@mui/material";
 import { useState, useEffect } from "react";
 import { useAppSelector, useAppDispatch } from "../../hooks/reduxHooks";
@@ -166,6 +167,41 @@ const OpeningsEvents = () => {
     }
   };
 
+  // New functions to delete all images and all openings
+  const handleDeleteAllImages = async () => {
+    if (
+      window.confirm(
+        "Are you sure you want to delete ALL carousel images? This action cannot be undone."
+      )
+    ) {
+      try {
+        // Delete all images one by one
+        for (const image of images) {
+          await dispatch(deleteCarouselImage(image.id)).unwrap();
+        }
+      } catch (error) {
+        console.error("Failed to delete all images:", error);
+      }
+    }
+  };
+
+  const handleDeleteAllOpenings = async () => {
+    if (
+      window.confirm(
+        "Are you sure you want to delete ALL current openings? This action cannot be undone."
+      )
+    ) {
+      try {
+        // Delete all openings one by one
+        for (const opening of openings) {
+          await dispatch(deleteCurrentOpening(opening.id)).unwrap();
+        }
+      } catch (error) {
+        console.error("Failed to delete all openings:", error);
+      }
+    }
+  };
+
   const loading = imagesLoading || openingsLoading;
   const error = imagesError || openingsError;
 
@@ -210,19 +246,39 @@ const OpeningsEvents = () => {
           variant="h6"
           sx={{ fontWeight: 400, color: colors.text.primary }}
         >
-          Carousel Images Management
+          Event Management
         </Typography>
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={() => setImageDialogOpen(true)}
-          sx={{
-            backgroundColor: colors.primary.main,
-            "&:hover": { backgroundColor: colors.primary.dark },
-          }}
-        >
-          Add New Image
-        </Button>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={() => setImageDialogOpen(true)}
+            sx={{
+              backgroundColor: colors.primary.main,
+              "&:hover": { backgroundColor: colors.primary.dark },
+            }}
+          >
+            Add Image
+          </Button>
+          <IconButton
+            onClick={handleDeleteAllImages}
+            disabled={images.length === 0}
+            sx={{
+              color: colors.status.error,
+              backgroundColor: colors.background.white,
+              border: `1px solid ${colors.border.light}`,
+              "&:hover": {
+                backgroundColor: colors.status.error + "20",
+              },
+              "&:disabled": {
+                color: colors.text.disabled,
+                backgroundColor: colors.background.disabled,
+              },
+            }}
+          >
+            <DeleteIcon />
+          </IconButton>
+        </Box>
       </Box>
 
       <Box
@@ -333,19 +389,39 @@ const OpeningsEvents = () => {
           variant="h6"
           sx={{ fontWeight: 400, color: colors.text.primary }}
         >
-          Current Openings Management
+          Job Vacancies
         </Typography>
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={() => setOpeningDialogOpen(true)}
-          sx={{
-            backgroundColor: colors.primary.main,
-            "&:hover": { backgroundColor: colors.primary.dark },
-          }}
-        >
-          Add New Opening
-        </Button>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={() => setOpeningDialogOpen(true)}
+            sx={{
+              backgroundColor: colors.primary.main,
+              "&:hover": { backgroundColor: colors.primary.dark },
+            }}
+          >
+            Add Opening
+          </Button>
+          <IconButton
+            onClick={handleDeleteAllOpenings}
+            disabled={openings.length === 0}
+            sx={{
+              color: colors.status.error,
+              backgroundColor: colors.background.white,
+              border: `1px solid ${colors.border.light}`,
+              "&:hover": {
+                backgroundColor: colors.status.error + "20",
+              },
+              "&:disabled": {
+                color: colors.text.disabled,
+                backgroundColor: colors.background.disabled,
+              },
+            }}
+          >
+            <DeleteIcon />
+          </IconButton>
+        </Box>
       </Box>
 
       <Box
@@ -475,72 +551,109 @@ const OpeningsEvents = () => {
         onClose={() => setImageDialogOpen(false)}
         maxWidth="sm"
         fullWidth
+        sx={{
+          "& .MuiDialog-paper": {
+            borderRadius: "15px",
+          },
+        }}
       >
         <DialogTitle>Upload New Carousel Image</DialogTitle>
+        <Divider />
         <DialogContent>
-          <TextField
-            autoFocus
-            margin="dense"
-            label="Title"
-            fullWidth
-            variant="outlined"
-            value={newImage.title}
-            onChange={(e) =>
-              setNewImage({ ...newImage, title: e.target.value })
-            }
-            sx={{ mb: 2, mt: 1 }}
-          />
-          <TextField
-            margin="dense"
-            label="Description"
-            fullWidth
-            variant="outlined"
-            multiline
-            rows={2}
-            value={newImage.description}
-            onChange={(e) =>
-              setNewImage({ ...newImage, description: e.target.value })
-            }
-            sx={{ mb: 2 }}
-          />
-          <TextField
-            margin="dense"
-            label="Order"
-            type="number"
-            fullWidth
-            variant="outlined"
-            value={newImage.order}
-            onChange={(e) =>
-              setNewImage({ ...newImage, order: parseInt(e.target.value) || 0 })
-            }
-            sx={{ mb: 2, borderBlockColor: colors.primary.main }}
-          />
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={newImage.is_active}
+          {/* First Row: Title, Description and Order */}
+          <Grid container spacing={2} sx={{ mb: 2, mt: 1 }}>
+            <Grid item xs={4}>
+              <TextField
+                autoFocus
+                margin="dense"
+                label="Title"
+                fullWidth
+                variant="outlined"
+                value={newImage.title}
                 onChange={(e) =>
-                  setNewImage({ ...newImage, is_active: e.target.checked })
+                  setNewImage({ ...newImage, title: e.target.value })
+                }
+                sx={{ width: "175px" }}
+              />
+            </Grid>
+            <Grid item xs={4}>
+              <TextField
+                margin="dense"
+                label="Description"
+                fullWidth
+                variant="outlined"
+                multiline
+                sx={{ width: "175px" }}
+                value={newImage.description}
+                onChange={(e) =>
+                  setNewImage({ ...newImage, description: e.target.value })
                 }
               />
-            }
-            label="Active"
-            sx={{ mb: 2 }}
-          />
-          <Button
-            variant="outlined"
-            component="label"
-            fullWidth
-            sx={{ color: colors.primary.main }}
-          >
-            Select Image
-            <input
-              type="file"
-              hidden
-              accept="image/*"
-              onChange={handleFileChange}
-            />
-          </Button>
+            </Grid>
+            <Grid item xs={4}>
+              <TextField
+                margin="dense"
+                label="Order"
+                type="number"
+                fullWidth
+                variant="outlined"
+                value={newImage.order}
+                onChange={(e) =>
+                  setNewImage({
+                    ...newImage,
+                    order: parseInt(e.target.value) || 0,
+                  })
+                }
+                sx={{ borderBlockColor: colors.primary.main, width: "170px" }}
+              />
+            </Grid>
+          </Grid>
+
+          {/* Second Row: Select Image and Active Checkbox */}
+          <Grid container spacing={2} sx={{ mb: 2 }} alignItems="center">
+            <Grid item xs={6}>
+              <Button
+                variant="outlined"
+                component="label"
+                fullWidth
+                sx={{
+                  color: colors.primary.main,
+                  height: "56px",
+                  mt: "8px",
+                  width: "175px",
+                }}
+              >
+                Select Image
+                <input
+                  type="file"
+                  hidden
+                  accept="image/*"
+                  onChange={handleFileChange}
+                />
+              </Button>
+            </Grid>
+            <Grid item xs={6}>
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={newImage.is_active}
+                    onChange={(e) =>
+                      setNewImage({ ...newImage, is_active: e.target.checked })
+                    }
+                    sx={{
+                      color: colors.primary.main,
+                      "&.Mui-checked": {
+                        color: colors.primary.main,
+                      },
+                    }}
+                  />
+                }
+                label="Active"
+                sx={{ mb: 0, ml: 0.5 }}
+              />
+            </Grid>
+          </Grid>
+
           {newImage.file && (
             <Typography
               variant="body2"
@@ -550,9 +663,11 @@ const OpeningsEvents = () => {
             </Typography>
           )}
         </DialogContent>
+
+        {/* Buttons aligned to right end */}
         <DialogActions>
           <Button
-            sx={{ color: colors.primary.main }}
+            sx={{ color: colors.primary.main, mt: -2 }}
             onClick={() => setImageDialogOpen(false)}
           >
             Cancel
@@ -560,7 +675,7 @@ const OpeningsEvents = () => {
           <Button
             onClick={handleImageUpload}
             variant="contained"
-            sx={{ backgroundColor: colors.primary.main }}
+            sx={{ backgroundColor: colors.primary.main, mt: -2 }}
           >
             Upload
           </Button>
@@ -575,85 +690,110 @@ const OpeningsEvents = () => {
         fullWidth
       >
         <DialogTitle>Create New Current Opening</DialogTitle>
+        <Divider />
         <DialogContent>
-          <TextField
-            autoFocus
-            margin="dense"
-            label="Job Title"
-            fullWidth
-            variant="outlined"
-            value={newOpening.title}
-            onChange={(e) =>
-              setNewOpening({ ...newOpening, title: e.target.value })
-            }
-            sx={{ mb: 2, mt: 1 }}
-          />
-          <TextField
-            margin="dense"
-            label="Department"
-            fullWidth
-            variant="outlined"
-            value={newOpening.department}
-            onChange={(e) =>
-              setNewOpening({ ...newOpening, department: e.target.value })
-            }
-            sx={{ mb: 2 }}
-          />
-          <TextField
-            margin="dense"
-            label="Job Description"
-            fullWidth
-            variant="outlined"
-            multiline
-            rows={4}
-            value={newOpening.job_description}
-            onChange={(e) =>
-              setNewOpening({ ...newOpening, job_description: e.target.value })
-            }
-            sx={{ mb: 2 }}
-          />
-          <TextField
-            margin="dense"
-            label="Number of Applicants"
-            type="number"
-            fullWidth
-            variant="outlined"
-            value={newOpening.applicants}
-            onChange={(e) =>
-              setNewOpening({
-                ...newOpening,
-                applicants: parseInt(e.target.value) || 0,
-              })
-            }
-            sx={{ mb: 2 }}
-          />
-          <TextField
-            margin="dense"
-            label="Order"
-            type="number"
-            fullWidth
-            variant="outlined"
-            value={newOpening.order}
-            onChange={(e) =>
-              setNewOpening({
-                ...newOpening,
-                order: parseInt(e.target.value) || 0,
-              })
-            }
-            sx={{ mb: 2 }}
-          />
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={newOpening.is_active}
+          {/* First Row: Title, Department and Description */}
+          <Grid container spacing={2} sx={{ mb: 2, mt: 1 }}>
+            <Grid item xs={4}>
+              <TextField
+                autoFocus
+                margin="dense"
+                label="Job Title"
+                fullWidth
+                variant="outlined"
+                value={newOpening.title}
                 onChange={(e) =>
-                  setNewOpening({ ...newOpening, is_active: e.target.checked })
+                  setNewOpening({ ...newOpening, title: e.target.value })
                 }
+                sx={{ width: "170px" }}
               />
-            }
-            label="Active"
-            sx={{ mb: 0 }}
-          />
+            </Grid>
+            <Grid item xs={4}>
+              <TextField
+                margin="dense"
+                label="Department"
+                fullWidth
+                variant="outlined"
+                value={newOpening.department}
+                onChange={(e) =>
+                  setNewOpening({ ...newOpening, department: e.target.value })
+                }
+                sx={{ width: "170px" }}
+              />
+            </Grid>
+            <Grid item xs={4}>
+              <TextField
+                margin="dense"
+                label="Job Description"
+                fullWidth
+                variant="outlined"
+                multiline
+                value={newOpening.job_description}
+                onChange={(e) =>
+                  setNewOpening({
+                    ...newOpening,
+                    job_description: e.target.value,
+                  })
+                }
+                sx={{ width: "170px" }}
+              />
+            </Grid>
+          </Grid>
+
+          {/* Second Row: Number of Applicants, Order and Checkbox */}
+          <Grid container spacing={2} sx={{ mb: 2 }} alignItems="center">
+            <Grid item xs={4}>
+              <TextField
+                margin="dense"
+                label="Number of Applicants"
+                type="number"
+                fullWidth
+                variant="outlined"
+                value={newOpening.applicants}
+                onChange={(e) =>
+                  setNewOpening({
+                    ...newOpening,
+                    applicants: parseInt(e.target.value) || 0,
+                  })
+                }
+                sx={{ width: "170px" }}
+              />
+            </Grid>
+            <Grid item xs={4}>
+              <TextField
+                margin="dense"
+                label="Order"
+                type="number"
+                fullWidth
+                variant="outlined"
+                value={newOpening.order}
+                onChange={(e) =>
+                  setNewOpening({
+                    ...newOpening,
+                    order: parseInt(e.target.value) || 0,
+                  })
+                }
+                sx={{ width: "170px" }}
+              />
+            </Grid>
+            <Grid item xs={4}>
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={newOpening.is_active}
+                    onChange={(e) =>
+                      setNewOpening({
+                        ...newOpening,
+                        is_active: e.target.checked,
+                      })
+                    }
+                  />
+                }
+                label="Active"
+                sx={{ mb: 0, ml: 0.5 }}
+              />
+            </Grid>
+          </Grid>
         </DialogContent>
         <DialogActions>
           <Button
