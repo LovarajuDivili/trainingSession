@@ -604,6 +604,8 @@ const Accountant = () => {
             boxShadow: 2,
             p: 2,
             border: `1px solid ${colors.border.light}`,
+            height: "calc(100vh - 140px)", // Fixed height
+    overflow: "auto",
           }}
         >
           <OrderProgress />
