@@ -26,7 +26,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
     if (token && userData) {
       setUser(JSON.parse(userData));
-
       axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
     }
 
@@ -37,7 +36,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       setIsLoggingIn(true);
 
-      // Replace with your actual API endpoint
       const response = await axios.post(
         "http://localhost:8000/v-1/application/auth/login",
         {
@@ -54,6 +52,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
 
       setUser(userData);
+      // Cart will automatically update due to the useEffect dependency on user
     } catch (error: any) {
       console.error("Login error:", error.response?.data || error.message);
       throw new Error(
@@ -98,6 +97,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     sessionStorage.removeItem("user");
     delete axios.defaults.headers.common["Authorization"];
     setUser(null);
+    // Cart will automatically clear due to the useEffect dependency on user
   };
 
   const value = {

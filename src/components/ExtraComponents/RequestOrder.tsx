@@ -143,16 +143,25 @@ const RequestOrder = () => {
     setSnackbarMessage(`Removed ${itemName} from cart`);
     setSnackbarOpen(true);
   };
-  // Save cart to localStorage (optional) and navigate back
+
   const handleClose = () => {
-    // Save cart to localStorage or context for persistence
-    localStorage.setItem("orderCart", JSON.stringify(cart));
     navigate("/accountant");
   };
 
   const handleSnackbarClose = () => {
     setSnackbarOpen(false);
   };
+
+  const getSortedItems = () => {
+  return [...itemsData].sort((a, b) => {
+    const aInCart = isInCart(a._id);
+    const bInCart = isInCart(b._id);
+    
+    if (aInCart && !bInCart) return -1; // a (in cart) comes first
+    if (!aInCart && bInCart) return 1;  // b (in cart) comes first
+    return 0; // keep original order for both in cart or both not in cart
+  });
+};
 
   return (
     <Box
@@ -332,7 +341,7 @@ const RequestOrder = () => {
               :
             </Typography>
             <Grid container spacing={7}>
-              {itemsData.map((item) => (
+              {getSortedItems().map((item) => (
                 <Grid item xs={3} key={item._id}>
                   <Card
                     sx={{

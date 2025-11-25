@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   Box,
   Drawer,
@@ -23,12 +24,26 @@ import { useThemeColors } from "../../hooks/useThemeColors";
 
 const CartDrawer = () => {
   const { isDrawerOpen, closeDrawer } = useCartDrawer();
-   const { cart, clearCart, removeFromCart } = useCart();
+  const { cart, removeFromCart, clearCart } = useCart();
   const { addOrder } = useOrders();
   const colors = useThemeColors();
 
   const [openSnackbar, setOpenSnackbar] = useState(false);
-
+  const [billingForm, setBillingForm] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    phone: "",
+    address: "",
+    city: "",
+    district: "",
+    postalCode: "",
+    cardName: "",
+    cardNumber: "",
+    expiryDate: "",
+    cvv: "",
+  });
+  const [paymentMethod] = useState("credit-card");
   const subtotal = cart.reduce(
     (sum, item) => sum + item.price * item.quantity,
     0
@@ -36,17 +51,62 @@ const CartDrawer = () => {
   const vat = subtotal * 0.18;
   const total = subtotal + vat;
 
-  const handlePlaceOrder = () => {
-    if (cart.length === 0) return;
-
-    addOrder(cart); // Add to orders context
-    clearCart(); // Clear cart
-    setOpenSnackbar(true); // Show message
-    closeDrawer(); // Close Drawer
-  };
-
   const handleRemoveItem = (itemId: string) => {
     removeFromCart(itemId);
+  };
+
+  const handleInputChange = (field: string, value: string) => {
+    setBillingForm((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
+
+  const handlePlaceOrder = async () => {
+    clearCart();
+    if (cart.length === 0) return;
+
+    try {
+      // Prepare billing details
+      const billingDetails = {
+        firstName: billingForm.firstName,
+        lastName: billingForm.lastName,
+        email: billingForm.email,
+        phone: billingForm.phone,
+        address: billingForm.address,
+        city: billingForm.city,
+        district: billingForm.district,
+        postalCode: billingForm.postalCode,
+        cardName: billingForm.cardName,
+        cardNumber: billingForm.cardNumber,
+        expiryDate: billingForm.expiryDate,
+        cvv: billingForm.cvv,
+      };
+
+      await addOrder(cart, billingDetails, paymentMethod);
+      setOpenSnackbar(true);
+      closeDrawer();
+
+      // Reset form
+      setBillingForm({
+        firstName: "",
+        lastName: "",
+        email: "",
+        phone: "",
+        address: "",
+        city: "",
+        district: "",
+        postalCode: "",
+        cardName: "",
+        cardNumber: "",
+        expiryDate: "",
+        cvv: "",
+      });
+    } catch (error: any) {
+      console.error("Failed to place order:", error);
+      // Show error message to user
+      alert(error.message || "Failed to place order. Please try again.");
+    }
   };
 
   return (
@@ -81,10 +141,10 @@ const CartDrawer = () => {
               >
                 <Typography
                   variant="h5"
-                  sx={{ 
-                    fontWeight: "bold", 
+                  sx={{
+                    fontWeight: "bold",
                     fontSize: "1.5rem",
-                    color: colors.text.primary 
+                    color: colors.text.primary,
                   }}
                 >
                   Billing details
@@ -95,9 +155,9 @@ const CartDrawer = () => {
                   onClick={closeDrawer}
                   sx={{
                     bgcolor: colors.status.error,
-                    "&:hover": { 
+                    "&:hover": {
                       bgcolor: colors.status.error,
-                      opacity: 0.9 
+                      opacity: 0.9,
                     },
                   }}
                 >
@@ -117,10 +177,10 @@ const CartDrawer = () => {
               >
                 <Typography
                   variant="body2"
-                  sx={{ 
-                    mb: 2, 
+                  sx={{
+                    mb: 2,
                     color: colors.text.primary,
-                    fontWeight: 500 
+                    fontWeight: 500,
                   }}
                 >
                   If you have a coupon code, please apply it below
@@ -178,10 +238,10 @@ const CartDrawer = () => {
                 <Grid item xs={6}>
                   <Typography
                     variant="body2"
-                    sx={{ 
-                      mb: 1, 
+                    sx={{
+                      mb: 1,
                       fontWeight: "medium",
-                      color: colors.text.primary 
+                      color: colors.text.primary,
                     }}
                   >
                     First Name *
@@ -189,6 +249,10 @@ const CartDrawer = () => {
                   <TextField
                     fullWidth
                     placeholder="Enter your first name"
+                    value={billingForm.firstName}
+                    onChange={(e) =>
+                      handleInputChange("firstName", e.target.value)
+                    }
                     sx={{
                       "& .MuiOutlinedInput-root": {
                         borderRadius: "20px",
@@ -217,10 +281,10 @@ const CartDrawer = () => {
                 <Grid item xs={6}>
                   <Typography
                     variant="body2"
-                    sx={{ 
-                      mb: 1, 
+                    sx={{
+                      mb: 1,
                       fontWeight: "medium",
-                      color: colors.text.primary 
+                      color: colors.text.primary,
                     }}
                   >
                     Last Name *
@@ -256,11 +320,14 @@ const CartDrawer = () => {
               </Grid>
 
               {/* Phone */}
-              <Typography variant="body2" sx={{ 
-                mb: 1, 
-                fontWeight: "medium",
-                color: colors.text.primary 
-              }}>
+              <Typography
+                variant="body2"
+                sx={{
+                  mb: 1,
+                  fontWeight: "medium",
+                  color: colors.text.primary,
+                }}
+              >
                 Phone Number *
               </Typography>
               <TextField
@@ -292,11 +359,14 @@ const CartDrawer = () => {
               />
 
               {/* Email */}
-              <Typography variant="body2" sx={{ 
-                mb: 1, 
-                fontWeight: "medium",
-                color: colors.text.primary 
-              }}>
+              <Typography
+                variant="body2"
+                sx={{
+                  mb: 1,
+                  fontWeight: "medium",
+                  color: colors.text.primary,
+                }}
+              >
                 Email Address *
               </Typography>
               <TextField
@@ -328,20 +398,26 @@ const CartDrawer = () => {
               />
 
               {/* Address Information */}
-              <Typography variant="h5" sx={{ 
-                mb: 3, 
-                fontSize: "1.3rem",
-                color: colors.text.primary,
-                fontWeight: "bold" 
-              }}>
+              <Typography
+                variant="h5"
+                sx={{
+                  mb: 3,
+                  fontSize: "1.3rem",
+                  color: colors.text.primary,
+                  fontWeight: "bold",
+                }}
+              >
                 Address information
               </Typography>
 
-              <Typography variant="body2" sx={{ 
-                mb: 1, 
-                fontWeight: "medium",
-                color: colors.text.primary 
-              }}>
+              <Typography
+                variant="body2"
+                sx={{
+                  mb: 1,
+                  fontWeight: "medium",
+                  color: colors.text.primary,
+                }}
+              >
                 Address
               </Typography>
               <TextField
@@ -372,11 +448,14 @@ const CartDrawer = () => {
                 }}
               />
 
-              <Typography variant="body2" sx={{ 
-                mb: 1, 
-                fontWeight: "medium",
-                color: colors.text.primary 
-              }}>
+              <Typography
+                variant="body2"
+                sx={{
+                  mb: 1,
+                  fontWeight: "medium",
+                  color: colors.text.primary,
+                }}
+              >
                 City
               </Typography>
               <TextField
@@ -407,11 +486,14 @@ const CartDrawer = () => {
                 }}
               />
 
-              <Typography variant="body2" sx={{ 
-                mb: 1, 
-                fontWeight: "medium",
-                color: colors.text.primary 
-              }}>
+              <Typography
+                variant="body2"
+                sx={{
+                  mb: 1,
+                  fontWeight: "medium",
+                  color: colors.text.primary,
+                }}
+              >
                 District
               </Typography>
               <TextField
@@ -442,11 +524,14 @@ const CartDrawer = () => {
                 }}
               />
 
-              <Typography variant="body2" sx={{ 
-                mb: 1, 
-                fontWeight: "medium",
-                color: colors.text.primary 
-              }}>
+              <Typography
+                variant="body2"
+                sx={{
+                  mb: 1,
+                  fontWeight: "medium",
+                  color: colors.text.primary,
+                }}
+              >
                 Postal Code
               </Typography>
               <TextField
@@ -479,21 +564,23 @@ const CartDrawer = () => {
             </Box>
 
             {/* Right Section - Order Summary & Payment */}
-            <Box sx={{ 
-              flex: 1, 
-              backgroundColor: colors.primary.lighter, 
-              p: 4,
-              borderRadius: 3,
-              border: `1px solid ${colors.border.light}`,
-            }}>
+            <Box
+              sx={{
+                flex: 1,
+                backgroundColor: colors.primary.lighter,
+                p: 4,
+                borderRadius: 3,
+                border: `1px solid ${colors.border.light}`,
+              }}
+            >
               <Typography
                 variant="h5"
-                sx={{ 
-                  mb: 3, 
-                  fontWeight: "bold", 
-                  fontSize: "1.5rem", 
+                sx={{
+                  mb: 3,
+                  fontWeight: "bold",
+                  fontSize: "1.5rem",
                   p: 0.5,
-                  color: colors.text.primary 
+                  color: colors.text.primary,
                 }}
               >
                 Your order
@@ -511,43 +598,52 @@ const CartDrawer = () => {
                   {cart.length > 0 ? (
                     cart.map((item) => (
                       <Box
-  key={item._id}
-  sx={{
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    mb: 2,
-    p: 1,
-    borderRadius: 1,
-    border: `1px solid ${colors.border.light}`,
-  }}
->
-  {/* Item name and quantity on the left */}
-  <Typography variant="body1" sx={{ color: colors.text.primary, flex: 1 }}>
-    {item.brand} {item.category} x {item.quantity}
-  </Typography>
-  
-  {/* Price and delete button on the right */}
-  <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-    <Typography variant="body1" fontWeight="medium" sx={{ color: colors.text.primary }}>
-      ₹{item.price * item.quantity}
-    </Typography>
-    
-    {/* Remove Item Button */}
-    <IconButton
-      onClick={() => handleRemoveItem(item._id)}
-      sx={{
-        color: colors.status.error,
-        "&:hover": {
-          backgroundColor: colors.status.error + '20',
-        },
-      }}
-      size="small"
-    >
-      <DeleteIcon fontSize="small" />
-    </IconButton>
-  </Box>
-</Box>
+                        key={item._id}
+                        sx={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "center",
+                          mb: 2,
+                          p: 1,
+                          borderRadius: 1,
+                          border: `1px solid ${colors.border.light}`,
+                        }}
+                      >
+                        {/* Item name and quantity on the left */}
+                        <Typography
+                          variant="body1"
+                          sx={{ color: colors.text.primary, flex: 1 }}
+                        >
+                          {item.brand} {item.category} x {item.quantity}
+                        </Typography>
+
+                        {/* Price and delete button on the right */}
+                        <Box
+                          sx={{ display: "flex", alignItems: "center", gap: 2 }}
+                        >
+                          <Typography
+                            variant="body1"
+                            fontWeight="medium"
+                            sx={{ color: colors.text.primary }}
+                          >
+                            ₹{item.price * item.quantity}
+                          </Typography>
+
+                          {/* Remove Item Button */}
+                          <IconButton
+                            onClick={() => handleRemoveItem(item._id)}
+                            sx={{
+                              color: colors.status.error,
+                              "&:hover": {
+                                backgroundColor: colors.status.error + "20",
+                              },
+                            }}
+                            size="small"
+                          >
+                            <DeleteIcon fontSize="small" />
+                          </IconButton>
+                        </Box>
+                      </Box>
                     ))
                   ) : (
                     <Typography sx={{ color: colors.text.secondary }}>
@@ -565,8 +661,16 @@ const CartDrawer = () => {
                       mb: 1,
                     }}
                   >
-                    <Typography variant="body2" sx={{ color: colors.text.primary }}>Subtotal</Typography>
-                    <Typography variant="body2" sx={{ color: colors.text.primary }}>
+                    <Typography
+                      variant="body2"
+                      sx={{ color: colors.text.primary }}
+                    >
+                      Subtotal
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      sx={{ color: colors.text.primary }}
+                    >
                       ₹{subtotal.toLocaleString()}
                     </Typography>
                   </Box>
@@ -577,7 +681,12 @@ const CartDrawer = () => {
                       mb: 1,
                     }}
                   >
-                    <Typography variant="body2" sx={{ color: colors.text.primary }}>Shipping</Typography>
+                    <Typography
+                      variant="body2"
+                      sx={{ color: colors.text.primary }}
+                    >
+                      Shipping
+                    </Typography>
                     <Typography variant="body2" color={colors.status.success}>
                       Free shipping
                     </Typography>
@@ -589,8 +698,16 @@ const CartDrawer = () => {
                       mb: 2,
                     }}
                   >
-                    <Typography variant="body2" sx={{ color: colors.text.primary }}>VAT (18%)</Typography>
-                    <Typography variant="body2" sx={{ color: colors.text.primary }}>
+                    <Typography
+                      variant="body2"
+                      sx={{ color: colors.text.primary }}
+                    >
+                      VAT (18%)
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      sx={{ color: colors.text.primary }}
+                    >
                       ₹{vat.toLocaleString()}
                     </Typography>
                   </Box>
@@ -598,10 +715,16 @@ const CartDrawer = () => {
                 </Box>
 
                 <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-                  <Typography variant="h6" sx={{ fontWeight: "bold", color: colors.text.primary }}>
+                  <Typography
+                    variant="h6"
+                    sx={{ fontWeight: "bold", color: colors.text.primary }}
+                  >
                     Total
                   </Typography>
-                  <Typography variant="h6" sx={{ fontWeight: "bold", color: colors.text.primary }}>
+                  <Typography
+                    variant="h6"
+                    sx={{ fontWeight: "bold", color: colors.text.primary }}
+                  >
                     ₹{total.toLocaleString()}
                   </Typography>
                 </Box>
@@ -609,11 +732,11 @@ const CartDrawer = () => {
 
               <Typography
                 variant="h5"
-                sx={{ 
-                  mb: 3, 
-                  fontWeight: "bold", 
+                sx={{
+                  mb: 3,
+                  fontWeight: "bold",
                   fontSize: "1.5rem",
-                  color: colors.text.primary 
+                  color: colors.text.primary,
                 }}
               >
                 Payment method
@@ -648,7 +771,11 @@ const CartDrawer = () => {
                         }}
                       />
                     }
-                    label={<Typography sx={{ color: colors.text.primary }}>Bank transfer</Typography>}
+                    label={
+                      <Typography sx={{ color: colors.text.primary }}>
+                        Bank transfer
+                      </Typography>
+                    }
                   />
                   <FormControlLabel
                     value="credit-card"
@@ -662,7 +789,11 @@ const CartDrawer = () => {
                         }}
                       />
                     }
-                    label={<Typography sx={{ color: colors.text.primary }}>Credit card</Typography>}
+                    label={
+                      <Typography sx={{ color: colors.text.primary }}>
+                        Credit card
+                      </Typography>
+                    }
                   />
                   <FormControlLabel
                     value="barion"
@@ -676,16 +807,20 @@ const CartDrawer = () => {
                         }}
                       />
                     }
-                    label={<Typography sx={{ color: colors.text.primary }}>Barion</Typography>}
+                    label={
+                      <Typography sx={{ color: colors.text.primary }}>
+                        Barion
+                      </Typography>
+                    }
                   />
                 </RadioGroup>
 
                 <Typography
                   variant="body2"
-                  sx={{ 
-                    mb: 1, 
+                  sx={{
+                    mb: 1,
                     fontWeight: "medium",
-                    color: colors.text.primary 
+                    color: colors.text.primary,
                   }}
                 >
                   Name on card *
@@ -720,10 +855,10 @@ const CartDrawer = () => {
 
                 <Typography
                   variant="body2"
-                  sx={{ 
-                    mb: 1, 
+                  sx={{
+                    mb: 1,
                     fontWeight: "medium",
-                    color: colors.text.primary 
+                    color: colors.text.primary,
                   }}
                 >
                   Card number *
@@ -760,10 +895,10 @@ const CartDrawer = () => {
                   <Grid item xs={6}>
                     <Typography
                       variant="body2"
-                      sx={{ 
-                        mb: 1, 
+                      sx={{
+                        mb: 1,
                         fontWeight: "medium",
-                        color: colors.text.primary 
+                        color: colors.text.primary,
                       }}
                     >
                       Expiry date *
@@ -799,10 +934,10 @@ const CartDrawer = () => {
                   <Grid item xs={6}>
                     <Typography
                       variant="body2"
-                      sx={{ 
-                        mb: 1, 
+                      sx={{
+                        mb: 1,
                         fontWeight: "medium",
-                        color: colors.text.primary 
+                        color: colors.text.primary,
                       }}
                     >
                       Security code / CVV *
@@ -839,10 +974,10 @@ const CartDrawer = () => {
 
                 <Typography
                   variant="body2"
-                  sx={{ 
-                    mb: 1, 
+                  sx={{
+                    mb: 1,
                     fontWeight: "medium",
-                    color: colors.text.primary 
+                    color: colors.text.primary,
                   }}
                 >
                   ZIP / Postal code *
