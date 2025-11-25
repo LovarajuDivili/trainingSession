@@ -34,7 +34,7 @@ async def create_employee(
     laptop: str = Form("false"),
     headphones: str = Form("false"),
     monitor: str = Form("false"),
-    image: UploadFile = File(None),
+    image: str = Form(None), 
 ):
     try:
         # Check duplicate email
@@ -73,7 +73,7 @@ async def create_employee(
             "laptop": laptop_bool,
             "headphones": headphones_bool,
             "monitor": monitor_bool,
-            "image": image_base64,  
+            "image": image,
             "created_at": datetime.utcnow(),
         }
 
@@ -106,16 +106,14 @@ async def update_employee(
     laptop: str = Form("false"),
     headphones: str = Form("false"),
     monitor: str = Form("false"),
-    image: UploadFile = File(None)
+   image: str = Form(None) 
 ):
     try:
         update_fields = {}
 
         
         if image:
-            file_bytes = await image.read()
-            image_base64 = base64.b64encode(file_bytes).decode("utf-8")
-            update_fields["image"] = image_base64
+            update_fields["image"] = image
 
        
         if name:

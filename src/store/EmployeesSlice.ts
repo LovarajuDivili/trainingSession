@@ -31,8 +31,8 @@ export const addEmployeeAPI = createAsyncThunk<
       if (value !== undefined && value !== null) {
         if (typedKey === "skills") {
           formData.append("skills", JSON.stringify(value));
-        } else if (typedKey === "image" && value instanceof File) {
-          formData.append("image", value);
+        } else if (typedKey === "image") {
+          formData.append("image", value as string);
         } else {
           formData.append(typedKey, value as string);
         }
@@ -79,8 +79,8 @@ export const updateEmployeeAPI = createAsyncThunk<
       if (value !== undefined && value !== null) {
         if (typedKey === "skills") {
           formData.append("skills", JSON.stringify(value));
-        } else if (typedKey === "image" && value instanceof File) {
-          formData.append("image", value);
+        } else if (typedKey === "image" ) {
+          formData.append("image", value as string);
         } else {
           formData.append(typedKey, String(value));
         }
@@ -165,6 +165,12 @@ const employeesSlice = createSlice({
     },
     clearError: (state) => {
       state.error = null;
+    },
+    clearEmployeeImage: (state, action: PayloadAction<string>) => {
+      const employee = state.employees.find(emp => emp.id === action.payload);
+      if (employee) {
+        employee.image = null;
+      }
     },
   },
   extraReducers: (builder) => {
