@@ -60,7 +60,7 @@ async def signup(user_data: UserCreate):
 
         user_dict = user_data.dict()
 
-        
+        user_dict["profile_image"] = user_data.profile_image  
         if is_bcrypt_hash(user_data.password):
             
             user_dict["password"] = (user_data.password)
@@ -132,6 +132,7 @@ async def login(user_data: UserLogin):
             "name": user["name"],
             "email": user["email"],
             "role": user["role"],
+            "profile_image": user.get("profile_image", ""),
             "created_at": user["created_at"]
         }
 

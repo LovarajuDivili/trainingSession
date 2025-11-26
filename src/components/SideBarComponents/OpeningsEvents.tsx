@@ -14,6 +14,7 @@ import {
   Checkbox,
   Divider,
   Grid,
+  Tooltip,
 } from "@mui/material";
 import { useState, useEffect } from "react";
 import { useAppSelector, useAppDispatch } from "../../hooks/reduxHooks";
@@ -49,6 +50,13 @@ const OpeningsEvents = () => {
 
   const [imageDialogOpen, setImageDialogOpen] = useState(false);
   const [openingDialogOpen, setOpeningDialogOpen] = useState(false);
+  const [deleteImagesDialogOpen, setDeleteImagesDialogOpen] = useState(false);
+  const [confirmDeleteImages, setConfirmDeleteImages] = useState(false);
+
+  // Delete All Openings Dialog
+  const [deleteOpeningsDialogOpen, setDeleteOpeningsDialogOpen] =
+    useState(false);
+  const [confirmDeleteOpenings, setConfirmDeleteOpenings] = useState(false);
 
   const [newImage, setNewImage] = useState<{
     title: string;
@@ -80,6 +88,22 @@ const OpeningsEvents = () => {
     order: 0,
   });
 
+  // Validation states
+  const [imageErrors, setImageErrors] = useState({
+    title: false,
+    description: false,
+    order: false,
+    file: false,
+  });
+
+  const [openingErrors, setOpeningErrors] = useState({
+    title: false,
+    department: false,
+    job_description: false,
+    applicants: false,
+    order: false,
+  });
+
   const currentItem = sidebarItems.find(
     (item) => item.route === "/admin/openingsEvents"
   );
@@ -89,15 +113,66 @@ const OpeningsEvents = () => {
     dispatch(fetchCurrentOpenings(false));
   }, [dispatch]);
 
+  // Validate image form
+  const validateImageForm = () => {
+    const errors = {
+      title: !newImage.title.trim(),
+      description: !newImage.description.trim(),
+      order: newImage.order < 0,
+      file: !newImage.file,
+    };
+    setImageErrors(errors);
+    return !Object.values(errors).some(Boolean);
+  };
+
+  // Validate opening form
+  const validateOpeningForm = () => {
+    const errors = {
+      title: !newOpening.title.trim(),
+      department: !newOpening.department.trim(),
+      job_description: !newOpening.job_description.trim(),
+      applicants: newOpening.applicants < 0,
+      order: newOpening.order < 0,
+    };
+    setOpeningErrors(errors);
+    return !Object.values(errors).some(Boolean);
+  };
+
+  // Check if image form is valid
+  const isImageFormValid = () => {
+    return (
+      newImage.title.trim() &&
+      newImage.description.trim() &&
+      newImage.order >= 0 &&
+      newImage.file !== null
+    );
+  };
+
+  // Check if opening form is valid
+  const isOpeningFormValid = () => {
+    return (
+      newOpening.title.trim() &&
+      newOpening.department.trim() &&
+      newOpening.job_description.trim() &&
+      newOpening.applicants >= 0 &&
+      newOpening.order >= 0
+    );
+  };
+
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files[0]) {
       setNewImage({ ...newImage, file: event.target.files[0] });
+      setImageErrors({ ...imageErrors, file: false });
     }
   };
 
   const handleImageUpload = async () => {
+    if (!validateImageForm()) {
+      return;
+    }
+
     if (!newImage.file) {
-      alert("Please select an image file");
+      setImageErrors({ ...imageErrors, file: true });
       return;
     }
 
@@ -122,6 +197,12 @@ const OpeningsEvents = () => {
           is_active: true,
           file: null,
         });
+        setImageErrors({
+          title: false,
+          description: false,
+          order: false,
+          file: false,
+        });
       } catch (error) {
         console.error("Failed to upload image:", error);
       }
@@ -131,6 +212,10 @@ const OpeningsEvents = () => {
   };
 
   const handleOpeningCreate = async () => {
+    if (!validateOpeningForm()) {
+      return;
+    }
+
     try {
       await dispatch(createCurrentOpening(newOpening)).unwrap();
       setOpeningDialogOpen(false);
@@ -141,6 +226,13 @@ const OpeningsEvents = () => {
         applicants: 0,
         is_active: true,
         order: 0,
+      });
+      setOpeningErrors({
+        title: false,
+        department: false,
+        job_description: false,
+        applicants: false,
+        order: false,
       });
     } catch (error) {
       console.error("Failed to create opening:", error);
@@ -167,39 +259,26 @@ const OpeningsEvents = () => {
     }
   };
 
-  // New functions to delete all images and all openings
-  const handleDeleteAllImages = async () => {
-    if (
-      window.confirm(
-        "Are you sure you want to delete ALL carousel images? This action cannot be undone."
-      )
-    ) {
-      try {
-        // Delete all images one by one
-        for (const image of images) {
-          await dispatch(deleteCarouselImage(image.id)).unwrap();
-        }
-      } catch (error) {
-        console.error("Failed to delete all images:", error);
-      }
-    }
+  // Reset errors when dialog closes
+  const handleImageDialogClose = () => {
+    setImageDialogOpen(false);
+    setImageErrors({
+      title: false,
+      description: false,
+      order: false,
+      file: false,
+    });
   };
 
-  const handleDeleteAllOpenings = async () => {
-    if (
-      window.confirm(
-        "Are you sure you want to delete ALL current openings? This action cannot be undone."
-      )
-    ) {
-      try {
-        // Delete all openings one by one
-        for (const opening of openings) {
-          await dispatch(deleteCurrentOpening(opening.id)).unwrap();
-        }
-      } catch (error) {
-        console.error("Failed to delete all openings:", error);
-      }
-    }
+  const handleOpeningDialogClose = () => {
+    setOpeningDialogOpen(false);
+    setOpeningErrors({
+      title: false,
+      department: false,
+      job_description: false,
+      applicants: false,
+      order: false,
+    });
   };
 
   const loading = imagesLoading || openingsLoading;
@@ -260,24 +339,28 @@ const OpeningsEvents = () => {
           >
             Add Image
           </Button>
-          <IconButton
-            onClick={handleDeleteAllImages}
-            disabled={images.length === 0}
-            sx={{
-              color: colors.status.error,
-              backgroundColor: colors.background.white,
-              border: `1px solid ${colors.border.light}`,
-              "&:hover": {
-                backgroundColor: colors.status.error + "20",
-              },
-              "&:disabled": {
-                color: colors.text.disabled,
-                backgroundColor: colors.background.disabled,
-              },
-            }}
-          >
-            <DeleteIcon />
-          </IconButton>
+          <Tooltip title="Delete All">
+            <span>
+              <IconButton
+                onClick={() => setDeleteImagesDialogOpen(true)}
+                disabled={images.length === 0}
+                sx={{
+                  color: colors.status.error,
+                  backgroundColor: colors.background.white,
+                  border: `1px solid ${colors.border.light}`,
+                  "&:hover": {
+                    backgroundColor: colors.status.error + "20",
+                  },
+                  "&:disabled": {
+                    color: colors.text.disabled,
+                    backgroundColor: colors.background.disabled,
+                  },
+                }}
+              >
+                <DeleteIcon />
+              </IconButton>
+            </span>
+          </Tooltip>
         </Box>
       </Box>
 
@@ -367,14 +450,14 @@ const OpeningsEvents = () => {
 
       {images.length === 0 && (
         <Typography
-          sx={{ textAlign: "center", color: colors.text.secondary, mb: 4 }}
+          sx={{ textAlign: "center", color: colors.status.warning, mb: 4 }}
         >
-          No carousel images found. Upload some images to get started.
+          No images found. Upload some images to get started.
         </Typography>
       )}
 
       {/* Divider */}
-      <Divider sx={{ my: 4, borderColor: colors.border.light }} />
+      <Divider sx={{ my: 2, borderColor: colors.border.light }} />
 
       {/* Current Openings Section */}
       <Box
@@ -403,24 +486,28 @@ const OpeningsEvents = () => {
           >
             Add Opening
           </Button>
-          <IconButton
-            onClick={handleDeleteAllOpenings}
-            disabled={openings.length === 0}
-            sx={{
-              color: colors.status.error,
-              backgroundColor: colors.background.white,
-              border: `1px solid ${colors.border.light}`,
-              "&:hover": {
-                backgroundColor: colors.status.error + "20",
-              },
-              "&:disabled": {
-                color: colors.text.disabled,
-                backgroundColor: colors.background.disabled,
-              },
-            }}
-          >
-            <DeleteIcon />
-          </IconButton>
+          <Tooltip title="Delete All">
+            <span>
+              <IconButton
+                onClick={() => setDeleteOpeningsDialogOpen(true)}
+                disabled={openings.length === 0}
+                sx={{
+                  color: colors.status.error,
+                  backgroundColor: colors.background.white,
+                  border: `1px solid ${colors.border.light}`,
+                  "&:hover": {
+                    backgroundColor: colors.status.error + "20",
+                  },
+                  "&:disabled": {
+                    color: colors.text.disabled,
+                    backgroundColor: colors.background.disabled,
+                  },
+                }}
+              >
+                <DeleteIcon />
+              </IconButton>
+            </span>
+          </Tooltip>
         </Box>
       </Box>
 
@@ -539,7 +626,7 @@ const OpeningsEvents = () => {
 
       {openings.length === 0 && (
         <Typography
-          sx={{ textAlign: "center", color: colors.text.secondary, mt: 4 }}
+          sx={{ textAlign: "center", color: colors.status.warning, mt: 4 }}
         >
           No current openings found. Add some openings to get started.
         </Typography>
@@ -548,7 +635,7 @@ const OpeningsEvents = () => {
       {/* Image Upload Dialog */}
       <Dialog
         open={imageDialogOpen}
-        onClose={() => setImageDialogOpen(false)}
+        onClose={handleImageDialogClose}
         maxWidth="sm"
         fullWidth
         sx={{
@@ -574,6 +661,9 @@ const OpeningsEvents = () => {
                   setNewImage({ ...newImage, title: e.target.value })
                 }
                 sx={{ width: "175px" }}
+                error={imageErrors.title}
+                helperText={imageErrors.title ? "Title is required" : ""}
+                required
               />
             </Grid>
             <Grid item xs={4}>
@@ -588,6 +678,9 @@ const OpeningsEvents = () => {
                 onChange={(e) =>
                   setNewImage({ ...newImage, description: e.target.value })
                 }
+                error={imageErrors.description}
+                helperText={imageErrors.description ? "Description is required" : ""}
+                required
               />
             </Grid>
             <Grid item xs={4}>
@@ -605,6 +698,9 @@ const OpeningsEvents = () => {
                   })
                 }
                 sx={{ borderBlockColor: colors.primary.main, width: "170px" }}
+                error={imageErrors.order}
+                helperText={imageErrors.order ? "Order must be 0 or greater" : ""}
+                required
               />
             </Grid>
           </Grid>
@@ -621,6 +717,7 @@ const OpeningsEvents = () => {
                   height: "56px",
                   mt: "8px",
                   width: "175px",
+                  borderColor: imageErrors.file ? colors.status.error : undefined,
                 }}
               >
                 Select Image
@@ -631,6 +728,11 @@ const OpeningsEvents = () => {
                   onChange={handleFileChange}
                 />
               </Button>
+              {imageErrors.file && (
+                <Typography variant="caption" sx={{ color: colors.status.error, mt: 0.5, display: 'block' }}>
+                  Image is required
+                </Typography>
+              )}
             </Grid>
             <Grid item xs={6}>
               <FormControlLabel
@@ -668,7 +770,7 @@ const OpeningsEvents = () => {
         <DialogActions>
           <Button
             sx={{ color: colors.primary.main, mt: -2 }}
-            onClick={() => setImageDialogOpen(false)}
+            onClick={handleImageDialogClose}
           >
             Cancel
           </Button>
@@ -676,6 +778,7 @@ const OpeningsEvents = () => {
             onClick={handleImageUpload}
             variant="contained"
             sx={{ backgroundColor: colors.primary.main, mt: -2 }}
+            disabled={!isImageFormValid()}
           >
             Upload
           </Button>
@@ -685,9 +788,14 @@ const OpeningsEvents = () => {
       {/* Opening Create Dialog */}
       <Dialog
         open={openingDialogOpen}
-        onClose={() => setOpeningDialogOpen(false)}
+        onClose={handleOpeningDialogClose}
         maxWidth="sm"
         fullWidth
+        sx={{
+          "& .MuiDialog-paper": {
+            borderRadius: "15px",
+          },
+        }}
       >
         <DialogTitle>Create New Current Opening</DialogTitle>
         <Divider />
@@ -706,6 +814,9 @@ const OpeningsEvents = () => {
                   setNewOpening({ ...newOpening, title: e.target.value })
                 }
                 sx={{ width: "170px" }}
+                error={openingErrors.title}
+                helperText={openingErrors.title ? "Job title is required" : ""}
+                required
               />
             </Grid>
             <Grid item xs={4}>
@@ -719,6 +830,9 @@ const OpeningsEvents = () => {
                   setNewOpening({ ...newOpening, department: e.target.value })
                 }
                 sx={{ width: "170px" }}
+                error={openingErrors.department}
+                helperText={openingErrors.department ? "Department is required" : ""}
+                required
               />
             </Grid>
             <Grid item xs={4}>
@@ -736,6 +850,9 @@ const OpeningsEvents = () => {
                   })
                 }
                 sx={{ width: "170px" }}
+                error={openingErrors.job_description}
+                helperText={openingErrors.job_description ? "Job description is required" : ""}
+                required
               />
             </Grid>
           </Grid>
@@ -757,6 +874,9 @@ const OpeningsEvents = () => {
                   })
                 }
                 sx={{ width: "170px" }}
+                error={openingErrors.applicants}
+                helperText={openingErrors.applicants ? "Must be 0 or greater" : ""}
+                required
               />
             </Grid>
             <Grid item xs={4}>
@@ -774,6 +894,9 @@ const OpeningsEvents = () => {
                   })
                 }
                 sx={{ width: "170px" }}
+                error={openingErrors.order}
+                helperText={openingErrors.order ? "Order must be 0 or greater" : ""}
+                required
               />
             </Grid>
             <Grid item xs={4}>
@@ -787,6 +910,12 @@ const OpeningsEvents = () => {
                         is_active: e.target.checked,
                       })
                     }
+                    sx={{
+                      color: colors.primary.main,
+                      "&.Mui-checked": {
+                        color: colors.primary.main,
+                      },
+                    }}
                   />
                 }
                 label="Active"
@@ -798,7 +927,7 @@ const OpeningsEvents = () => {
         <DialogActions>
           <Button
             sx={{ color: colors.primary.main }}
-            onClick={() => setOpeningDialogOpen(false)}
+            onClick={handleOpeningDialogClose}
           >
             Cancel
           </Button>
@@ -806,8 +935,148 @@ const OpeningsEvents = () => {
             onClick={handleOpeningCreate}
             variant="contained"
             sx={{ backgroundColor: colors.primary.main }}
+            disabled={!isOpeningFormValid()}
           >
             Create
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Rest of your dialogs remain the same */}
+      <Dialog
+        open={deleteImagesDialogOpen}
+        onClose={() => {
+          setDeleteImagesDialogOpen(false);
+          setConfirmDeleteImages(false);
+        }}
+        maxWidth="xs"
+        fullWidth
+        sx={{
+          "& .MuiDialog-paper": {
+            borderRadius: "15px",
+            padding: 1,
+          },
+        }}
+      >
+        <DialogTitle>Delete All Images?</DialogTitle>
+        <Divider />
+
+        <DialogContent>
+          <Typography sx={{ color: colors.text.secondary, mb: 1 }}>
+            Are you sure you want to delete <strong>ALL carousel images</strong>
+            ? This action cannot be undone.
+          </Typography>
+
+          <Box sx={{ display: "flex", alignItems: "center" }}>
+            <Checkbox
+              checked={confirmDeleteImages}
+              onChange={(e) => setConfirmDeleteImages(e.target.checked)}
+              sx={{
+                color: colors.ui.checkbox,
+                "&.Mui-checked": {
+                  color: colors.ui.checkbox,
+                },
+              }}
+            />
+            <Typography>I understand and want to proceed</Typography>
+          </Box>
+        </DialogContent>
+
+        <DialogActions>
+          <Button
+            onClick={() => {
+              setDeleteImagesDialogOpen(false);
+              setConfirmDeleteImages(false);
+            }}
+            sx={{ color: colors.primary.main }}
+          >
+            Cancel
+          </Button>
+          <Button
+            disabled={!confirmDeleteImages}
+            variant="contained"
+            sx={{
+              backgroundColor: colors.status.error,
+              "&:disabled": { backgroundColor: colors.status.error + "60" },
+            }}
+            onClick={async () => {
+              for (const img of images) {
+                await dispatch(deleteCarouselImage(img.id));
+              }
+              setDeleteImagesDialogOpen(false);
+              setConfirmDeleteImages(false);
+            }}
+          >
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog
+        open={deleteOpeningsDialogOpen}
+        onClose={() => {
+          setDeleteOpeningsDialogOpen(false);
+          setConfirmDeleteOpenings(false);
+        }}
+        maxWidth="xs"
+        fullWidth
+        sx={{
+          "& .MuiDialog-paper": {
+            borderRadius: "15px",
+            padding: 1,
+          },
+        }}
+      >
+        <DialogTitle>Delete All Openings?</DialogTitle>
+        <Divider />
+
+        <DialogContent>
+          <Typography sx={{ color: colors.text.secondary, mb: 1 }}>
+            Are you sure you want to delete <strong>ALL job openings</strong>?
+            This action cannot be undone.
+          </Typography>
+
+          <Box sx={{ display: "flex", alignItems: "center" }}>
+            <Checkbox
+              checked={confirmDeleteOpenings}
+              onChange={(e) => setConfirmDeleteOpenings(e.target.checked)}
+              sx={{
+                color: colors.ui.checkbox,
+                "&.Mui-checked": {
+                  color: colors.ui.checkbox,
+                },
+              }}
+            />
+            <Typography>I understand and want to proceed</Typography>
+          </Box>
+        </DialogContent>
+
+        <DialogActions>
+          <Button
+            onClick={() => {
+              setDeleteOpeningsDialogOpen(false);
+              setConfirmDeleteOpenings(false);
+            }}
+            sx={{ color: colors.primary.main }}
+          >
+            Cancel
+          </Button>
+          <Button
+            disabled={!confirmDeleteOpenings}
+            variant="contained"
+            sx={{
+              backgroundColor: colors.status.error,
+              "&:disabled": { backgroundColor: colors.status.error + "60" },
+            }}
+            onClick={async () => {
+              for (const opening of openings) {
+                await dispatch(deleteCurrentOpening(opening.id));
+              }
+              setDeleteOpeningsDialogOpen(false);
+              setConfirmDeleteOpenings(false);
+            }}
+          >
+            Delete
           </Button>
         </DialogActions>
       </Dialog>

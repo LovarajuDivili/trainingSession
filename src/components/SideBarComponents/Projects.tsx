@@ -220,7 +220,7 @@ const Projects = () => {
       renderCell: (params: GridRenderCellParams<Project>) => (
         <Box>
           <IconButton
-            color="primary"
+            sx={{color:colors.primary.main}}
             onClick={() => handleEditProject(params.row)}
           >
             <EditIcon />

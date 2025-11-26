@@ -13,6 +13,7 @@ import axios from "axios";
 import sha256 from "crypto-js/sha256";
 import { CircularProgress } from "@mui/material";
 import type { ForgotPasswordProps } from "../common/types";
+import { colors } from "../common/colorConstants";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -72,6 +73,7 @@ export default function ForgotPassword({
   const resetPassword = async () => {
     if (newPassword !== confirmPassword) {
       setMessage("Passwords do not match");
+      
       return;
     }
     setLoadingReset(true);
@@ -120,7 +122,7 @@ export default function ForgotPassword({
             fullWidth
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            sx={{ width: 400, mt: 1 }}
+            sx={{ width: 500, mt: 1,borderBlockColor:colors.light.background.header }}
           />
         )}
 
@@ -130,7 +132,7 @@ export default function ForgotPassword({
             fullWidth
             value={otp}
             onChange={(e) => setOtp(e.target.value)}
-            sx={{ width: 400, mt: 1 }}
+            sx={{ width: 500, mt: 1 }}
           />
         )}
 
@@ -142,7 +144,7 @@ export default function ForgotPassword({
               fullWidth
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
-              sx={{ width: 400, mt: 1 }}
+              sx={{ width: 500, mt: 1 }}
             />
             <TextField
               type="password"
@@ -150,7 +152,7 @@ export default function ForgotPassword({
               fullWidth
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
-              sx={{ width: 400, mt: 1 }}
+              sx={{ width: 500, mt: 1 ,borderBlockColor:colors.light.background.header}}
             />
           </Box>
         )}
@@ -163,21 +165,21 @@ export default function ForgotPassword({
       </DialogContent>
 
       <DialogActions>
-        <Button onClick={onCancel}>Cancel</Button>
+        <Button onClick={onCancel} sx={{color:colors.light.background.header}}>Cancel</Button>
         {step === 1 && (
-          <Button onClick={sendOtp} disabled={loadingSend}>
+          <Button sx={{color:colors.light.background.header}} onClick={sendOtp} disabled={loadingSend}>
             {loadingSend ? <CircularProgress size={20} /> : "Send OTP"}
           </Button>
         )}
 
         {step === 2 && (
-          <Button onClick={verifyOtp} disabled={loadingVerify}>
+          <Button sx={{color:colors.light.background.header}} onClick={verifyOtp} disabled={loadingVerify}>
             {loadingVerify ? <CircularProgress size={20} /> : "Verify OTP"}
           </Button>
         )}
 
         {step === 3 && (
-          <Button onClick={resetPassword} disabled={loadingReset}>
+          <Button sx={{color:colors.light.background.header}} onClick={resetPassword} disabled={loadingReset}>
             {loadingReset ? <CircularProgress size={20} /> : "Reset Password"}
           </Button>
         )}
