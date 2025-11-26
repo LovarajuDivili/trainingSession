@@ -315,7 +315,7 @@ const Dashboard = () => {
                     <Typography
                       variant="caption"
                       sx={{
-                        color: colors.status.info,
+                        color: colors.primary.main,
                         fontWeight: 600,
                         fontSize: "11px",
                       }}
@@ -339,7 +339,7 @@ const Dashboard = () => {
                     <Typography
                       variant="caption"
                       sx={{
-                        color: colors.status.info,
+                        color: colors.primary.main,
                         fontWeight: 600,
                         fontSize: "11px",
                       }}
@@ -471,18 +471,29 @@ const Dashboard = () => {
                 justifyContent: "center",
                 alignItems: "center",
                 height: "100px",
-                width: "80%",
+                width: "100%",
               }}
             >
-              <Typography
+              <Card
                 sx={{
-                  color: colors.text.secondary,
-                  fontStyle: "italic",
-                  textAlign: "center",
+                  width: "80%",
+                  height: "80%",
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  boxShadow: 2,
+                  border: `1px  solid ${colors.border}`, // optional border
                 }}
               >
-                No openings
-              </Typography>
+                <Typography
+                  sx={{
+                    color: colors.status.warning,
+                    textAlign: "center",
+                  }}
+                >
+                  No openings
+                </Typography>
+              </Card>
             </Box>
           )}
         </Box>
@@ -532,89 +543,116 @@ const Dashboard = () => {
             },
           }}
         >
-          <Card
-            sx={{
-              overflow: "hidden",
-              borderRadius: 4,
-              boxShadow: `0 4px 20px ${colors.shadow.medium}`,
-            }}
-          >
-            <Box
-              component="img"
-              src={images[imageIndex]}
-              alt={`Slide ${imageIndex + 1}`}
+          {images.length === 0 ? (
+            <Card
               sx={{
-                width: "100%",
                 height: 250,
-                objectFit: "cover",
-                transition: "opacity 1s ease-in-out",
-              }}
-            />
-
-            {/* Hover Title Overlay */}
-            <Box
-              className="carousel-title-overlay"
-              sx={{
-                position: "absolute",
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                backgroundColor: colors.overlay.black08,
-                color: colors.text.white,
+                borderRadius: 4,
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                opacity: 0,
-                transition: "opacity 0.3s ease-in-out",
-                pointerEvents: "none",
+                boxShadow: `0 4px 20px ${colors.shadow.medium}`,
+                backgroundColor: colors.background.card,
               }}
             >
               <Typography
-                variant="h5"
+                variant="h6"
                 sx={{
+                  color: colors.status.warning,
                   fontWeight: 600,
-                  fontSize: "20px",
-                  textAlign: "center",
-                  margin: 0,
-                  textShadow: `0 2px 4px ${colors.shadow.dark}`,
+                  fontSize: "18px",
                 }}
               >
-                {carouselImages
-                  .filter((img) => img.is_active)
-                  .sort((a, b) => a.order - b.order)[imageIndex]?.title ||
-                  "Carousel Image"}
+                No events
               </Typography>
-            </Box>
-          </Card>
+            </Card>
+          ) : (
+            <>
+              <Card
+                sx={{
+                  overflow: "hidden",
+                  borderRadius: 4,
+                  boxShadow: `0 4px 20px ${colors.shadow.medium}`,
+                }}
+              >
+                <Box
+                  component="img"
+                  src={images[imageIndex]}
+                  alt={`Slide ${imageIndex + 1}`}
+                  sx={{
+                    width: "100%",
+                    height: 250,
+                    objectFit: "cover",
+                    transition: "opacity 1s ease-in-out",
+                  }}
+                />
 
-          <IconButton
-            onClick={handlePrevImage}
-            sx={{
-              position: "absolute",
-              top: "50%",
-              left: 20,
-              transform: "translateY(-50%)",
-              backgroundColor: colors.overlay.white70,
-              "&:hover": { backgroundColor: colors.overlay.white90 },
-            }}
-          >
-            <ArrowBackIosNewIcon />
-          </IconButton>
+                {/* Hover Title Overlay */}
+                <Box
+                  className="carousel-title-overlay"
+                  sx={{
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    backgroundColor: colors.overlay.black08,
+                    color: colors.text.white,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    opacity: 0,
+                    transition: "opacity 0.3s ease-in-out",
+                    pointerEvents: "none",
+                  }}
+                >
+                  <Typography
+                    variant="h5"
+                    sx={{
+                      fontWeight: 600,
+                      fontSize: "20px",
+                      textAlign: "center",
+                      margin: 0,
+                      textShadow: `0 2px 4px ${colors.shadow.dark}`,
+                    }}
+                  >
+                    {carouselImages
+                      .filter((img) => img.is_active)
+                      .sort((a, b) => a.order - b.order)[imageIndex]?.title ||
+                      "Carousel Image"}
+                  </Typography>
+                </Box>
+              </Card>
 
-          <IconButton
-            onClick={handleNextImage}
-            sx={{
-              position: "absolute",
-              top: "50%",
-              right: 20,
-              transform: "translateY(-50%)",
-              backgroundColor: colors.overlay.white70,
-              "&:hover": { backgroundColor: colors.overlay.white90 },
-            }}
-          >
-            <ArrowForwardIosIcon />
-          </IconButton>
+              <IconButton
+                onClick={handlePrevImage}
+                sx={{
+                  position: "absolute",
+                  top: "50%",
+                  left: 20,
+                  transform: "translateY(-50%)",
+                  backgroundColor: colors.background.white,
+                  "&:hover": { backgroundColor: colors.overlay.white90 },
+                }}
+              >
+                <ArrowBackIosNewIcon sx={{ color: colors.background.header }} />
+              </IconButton>
+
+              <IconButton
+                onClick={handleNextImage}
+                sx={{
+                  position: "absolute",
+                  top: "50%",
+                  right: 20,
+                  transform: "translateY(-50%)",
+                  backgroundColor: colors.background.white,
+                  "&:hover": { backgroundColor: colors.overlay.white90 },
+                }}
+              >
+                <ArrowForwardIosIcon sx={{ color: colors.background.header }} />
+              </IconButton>
+            </>
+          )}
         </Box>
 
         <Typography

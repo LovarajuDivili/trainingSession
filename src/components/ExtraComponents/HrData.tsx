@@ -166,7 +166,7 @@ const HrData = () => {
               backgroundColor: colors.background.white,
               borderRadius: "30px",
               boxShadow: `0 8px 32px ${colors.shadow.medium}`,
-              border: `1px solid ${colors.border.light}`,
+              border: `3px solid ${colors.border.light}`,
               width: "80%",
               p: 1.5,
               zIndex: 1,

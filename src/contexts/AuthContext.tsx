@@ -32,6 +32,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setIsLoading(false);
   }, []);
 
+  // In your AuthContext login function
   const login = async (email: string, password: string) => {
     try {
       setIsLoggingIn(true);
@@ -49,10 +50,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       sessionStorage.setItem("token", token);
       sessionStorage.setItem("user", JSON.stringify(userData));
 
+      setUser(userData);
       axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
 
+      // Make sure userData includes profile_image
       setUser(userData);
-      // Cart will automatically update due to the useEffect dependency on user
     } catch (error: any) {
       console.error("Login error:", error.response?.data || error.message);
       throw new Error(
@@ -69,7 +71,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     name: string,
     email: string,
     password: string,
-    role: string
+    role: string,
+    profileImage?: string
   ) => {
     try {
       setIsSigningUp(true);
@@ -81,6 +84,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           email,
           password,
           role,
+          profile_image: profileImage,
         }
       );
 

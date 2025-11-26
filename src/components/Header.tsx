@@ -11,6 +11,7 @@ import {
   Snackbar,
   Alert,
   Badge,
+  Avatar,
 } from "@mui/material";
 import AccountCircle from "@mui/icons-material/AccountCircle";
 import LogoutIcon from "@mui/icons-material/Logout";
@@ -39,20 +40,36 @@ const Header = ({ role: propRole }: { role?: string }) => {
   const [openDialog, setOpenDialog] = useState<boolean>(false);
   const [openSnackbar, setOpenSnackbar] = useState<boolean>(false);
   const { cart } = useCart();
-  //const { clearCart } = useCart();
   const { themeMode, toggleTheme } = useTheme();
   const colors = useThemeColors();
 
   const navigate = useNavigate();
   const location = useLocation();
 
+  // Get user data from sessionStorage
+  const getUserData = () => {
+    try {
+      const userData = sessionStorage.getItem("user");
+      return userData ? JSON.parse(userData) : null;
+    } catch (error) {
+      console.error("Error parsing user data:", error);
+      return null;
+    }
+  };
+
+  const userData = getUserData();
+  const profileImage = userData?.profile_image;
+  const userName = userData?.name;
+
   // Get role from multiple sources with priority
   const getCurrentRole = () => {
-    // Priority: prop > sessionStorage > path-based detection
+    // Priority: prop > sessionStorage > userData > path-based detection
     if (propRole) return propRole;
 
     const sessionRole = sessionStorage.getItem("role");
     if (sessionRole) return sessionRole;
+
+    if (userData?.role) return userData.role;
 
     // Fallback: detect from path
     const path = location.pathname;
@@ -88,16 +105,13 @@ const Header = ({ role: propRole }: { role?: string }) => {
   };
 
   const handleSwap = () => {
-    // Clear context state
-    // Clear user-specific cart from localStorage
-
     navigate("/welcome");
   };
 
   const { openDrawer } = useCartDrawer();
 
   const handleCartClick = () => {
-    openDrawer(); // open the drawer instead of navigation
+    openDrawer();
   };
 
   const roleIcon = role ? roleIcons[role.toLowerCase()] : null;
@@ -290,9 +304,24 @@ const Header = ({ role: propRole }: { role?: string }) => {
           <Box sx={{ position: "relative" }}>
             <IconButton
               onClick={handleIconClick}
-              sx={{ color: colors.primary.main }}
+              sx={{ 
+                color: colors.primary.main,
+                padding: '4px' // Reduce padding for better avatar fit
+              }}
             >
-              <AccountCircle sx={{ fontSize: 43 }} />
+              {profileImage ? (
+                <Avatar
+                  src={profileImage}
+                  alt={userName || "User"}
+                  sx={{
+                    width: 35,
+                    height: 35,
+                    border: `2px solid ${colors.primary.main}`,
+                  }}
+                />
+              ) : (
+                <AccountCircle sx={{ fontSize: 43 }} />
+              )}
             </IconButton>
 
             {showLogout && (

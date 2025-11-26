@@ -83,6 +83,9 @@ export default function SignUp(props: { disableCustomTheme?: boolean }) {
   const [role, setRole] = useState("");
   const [roleError, setRoleError] = useState(false);
   const [roleErrorMessage, setRoleErrorMessage] = useState("");
+  const [profileImage, setProfileImage] = useState<string>("");
+  const [imageError, setImageError] = useState(false);
+  const [imageErrorMessage, setImageErrorMessage] = useState("");
 
   const isSigningUp = contextIsSigningUp || isLoading;
 
@@ -158,6 +161,34 @@ export default function SignUp(props: { disableCustomTheme?: boolean }) {
     return isValid;
   };
 
+  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type and size
+    if (!file.type.startsWith("image/")) {
+      setImageError(true);
+      setImageErrorMessage("Please select a valid image file");
+      return;
+    }
+
+    if (file.size > 2 * 1024 * 1024) {
+      // 2MB limit
+      setImageError(true);
+      setImageErrorMessage("Image size should be less than 2MB");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const base64 = e.target?.result as string;
+      setProfileImage(base64);
+      setImageError(false);
+      setImageErrorMessage("");
+    };
+    reader.readAsDataURL(file);
+  };
+
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
@@ -174,7 +205,7 @@ export default function SignUp(props: { disableCustomTheme?: boolean }) {
 
     try {
       const shaHashedPassword = sha256(password).toString();
-      await signup(name, email, shaHashedPassword, selectedRole);
+      await signup(name, email, shaHashedPassword, selectedRole,profileImage);
 
       setSuccess("Account created! Redirecting to login...");
       setTimeout(() => navigate("/signin"), 2000);
@@ -198,7 +229,7 @@ export default function SignUp(props: { disableCustomTheme?: boolean }) {
         direction="column"
         justifyContent="space-between"
         sx={{
-          height: "91.2vh",
+          height: "96.5vh",
         }}
       >
         <Card
@@ -270,6 +301,20 @@ export default function SignUp(props: { disableCustomTheme?: boolean }) {
             onSubmit={handleSubmit}
             sx={{ display: "flex", flexDirection: "column", gap: 2 }}
           >
+            <FormControl>
+              <FormLabel htmlFor="profileImage">Profile Image</FormLabel>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleImageUpload}
+                disabled={isSigningUp}
+              />
+              {imageError && (
+                <Typography color="error" variant="caption">
+                  {imageErrorMessage}
+                </Typography>
+              )}
+            </FormControl>
             <FormControl>
               <FormLabel htmlFor="name">Full name</FormLabel>
               <TextField
