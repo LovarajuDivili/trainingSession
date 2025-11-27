@@ -9,6 +9,7 @@ from app.helpers import convert_objectid
 from typing import List
 #from app.models.schemas import EmployeeCreate,EmployeeUpdate
 from fastapi.responses import JSONResponse
+from app.helpers import create_system_log
 
 router = APIRouter(prefix="/employees", tags=["employees"])
 
@@ -40,6 +41,12 @@ async def create_employee(
         # Check duplicate email
         existing_employee_email = db["employees"].find_one({"email": email})
         if existing_employee_email:
+            create_system_log(
+                name=name,
+                log_type="employee",
+                action="creation",
+                status="failed"
+            )
             return JSONResponse(
                 status_code=400,
                 content={"detail": "Employee with this email already exists"}
@@ -79,10 +86,24 @@ async def create_employee(
 
         result = db["employees"].insert_one(employee_data)
         new_employee = db["employees"].find_one({"_id": result.inserted_id})
+        
+        create_system_log(
+            name=name,
+            log_type="employee",
+            action="creation",
+            status="success"
+        )
 
         return {"status": "success", "data": convert_objectid(new_employee)}
 
     except Exception as e:
+        if 'name' in locals():
+            create_system_log(
+                name=name,
+                log_type="employee",
+                action="creation",
+                status="failed"
+            )
         return JSONResponse(status_code=500, content={"detail": str(e)})
 
 @router.get("/get_by_id/{employee_id}", response_model=dict)

@@ -32,7 +32,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setIsLoading(false);
   }, []);
 
-  // In your AuthContext login function
   const login = async (email: string, password: string) => {
     try {
       setIsLoggingIn(true);
@@ -53,8 +52,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setUser(userData);
       axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
 
-      // Make sure userData includes profile_image
-      setUser(userData);
+      return userData;
     } catch (error: any) {
       console.error("Login error:", error.response?.data || error.message);
       throw new Error(
@@ -96,12 +94,32 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
-  const logout = () => {
-    sessionStorage.removeItem("token");
-    sessionStorage.removeItem("user");
-    delete axios.defaults.headers.common["Authorization"];
-    setUser(null);
-    // Cart will automatically clear due to the useEffect dependency on user
+  // FIXED: Call the logout endpoint but handle errors gracefully
+  const logout = async () => {
+    try {
+      const token = sessionStorage.getItem("token");
+      if (token) {
+        // Call logout endpoint to record the action
+        await axios.post(
+          "http://localhost:8000/v-1/application/auth/logout",
+          {},
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+      }
+    } catch (error) {
+      // Even if the logout API call fails, we still want to clear local storage
+      console.error("Error calling logout endpoint:", error);
+    } finally {
+      // Always clear local storage and state
+      sessionStorage.removeItem("token");
+      sessionStorage.removeItem("user");
+      delete axios.defaults.headers.common["Authorization"];
+      setUser(null);
+    }
   };
 
   const value = {

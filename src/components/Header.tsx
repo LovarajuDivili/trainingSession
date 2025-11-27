@@ -23,6 +23,7 @@ import { useCartDrawer } from "../context/CartDrawerContext";
 import { useNavigate } from "react-router-dom";
 import { useLocation } from "react-router-dom";
 import { roleIcons } from "../common/utility";
+import { useAuth } from "../contexts/AuthContext";
 import {
   Aifa,
   Cancel,
@@ -41,7 +42,9 @@ const Header = ({ role: propRole }: { role?: string }) => {
   const [openSnackbar, setOpenSnackbar] = useState<boolean>(false);
   const { cart } = useCart();
   const { themeMode, toggleTheme } = useTheme();
+  const [isLoggingOut, setIsLoggingOut] = useState<boolean>(false);
   const colors = useThemeColors();
+  const { logout } = useAuth();
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -92,12 +95,25 @@ const Header = ({ role: propRole }: { role?: string }) => {
     setOpenDialog(true);
   };
 
-  const confirmLogout = () => {
-    setOpenDialog(false);
-    setOpenSnackbar(true);
-    setTimeout(() => {
-      navigate("/logout");
-    }, 100);
+   const confirmLogout = async () => {
+    try {
+      setIsLoggingOut(true);
+      await logout(); // Wait for logout to complete
+      setOpenDialog(false);
+      setOpenSnackbar(true);
+      
+      // Navigate to login page after successful logout
+      setTimeout(() => {
+        navigate("/login");
+      }, 100);
+    } catch (error) {
+      console.error("Logout error:", error);
+      // Even if there's an error, still navigate to login
+      setOpenDialog(false);
+      navigate("/login");
+    } finally {
+      setIsLoggingOut(false);
+    }
   };
 
   const cancelLogout = () => {
@@ -382,7 +398,7 @@ const Header = ({ role: propRole }: { role?: string }) => {
               },
             }}
           >
-            {Confirm.CONFIRM}
+           {isLoggingOut ? "Logging out..." : Confirm.CONFIRM}
           </Button>
         </DialogActions>
       </Dialog>

@@ -6,6 +6,7 @@ from datetime import datetime
 from app.helpers import convert_objectid, validate_project_uniqueness
 #from typing import List
 from app.models.schemas import ProjectBase, ProjectUpdate
+from app.helpers import create_system_log
 
 router = APIRouter(prefix="/projects", tags=["projects"])
 
@@ -28,11 +29,35 @@ async def create_project(project: ProjectBase):
         project_dict["id"] = "PROJ" + str(int(datetime.now().timestamp() * 1000))
         result = db["projects"].insert_one(project_dict)
         project_dict["_id"] = str(result.inserted_id)
+        
+        # Log successful creation
+        create_system_log(
+            name=project.projectName,
+            log_type="project",
+            action="creation",
+            status="success"
+        )
+        
         return {"message": "Project created successfully", "data": convert_objectid(project_dict)}
-    except HTTPException:
+    except HTTPException as he:
+        # Log failed creation
+        create_system_log(
+            name=project.projectName,
+            log_type="project",
+            action="creation",
+            status="failed"
+        )
         raise
     except Exception as e:
+        # Log failed creation
+        create_system_log(
+            name=project.projectName,
+            log_type="project",
+            action="creation",
+            status="failed"
+        )
         raise HTTPException(status_code=500, detail=str(e))
+    
 @router.get("/get_by_id/{project_id}", response_model=dict)
 async def get_project_by_id(project_id: str):
     try:
