@@ -43,6 +43,16 @@ const CartDrawer = () => {
     expiryDate: "",
     cvv: "",
   });
+  const [formErrors, setFormErrors] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    phone: "",
+    address: "",
+    city: "",
+    district: "",
+    postalCode: "",
+  });
   const [paymentMethod] = useState("credit-card");
   const subtotal = cart.reduce(
     (sum, item) => sum + item.price * item.quantity,
@@ -59,6 +69,13 @@ const CartDrawer = () => {
     setBillingForm((prev) => ({
       ...prev,
       [field]: value,
+    }));
+
+    // Validate the field
+    const error = validateField(field, value);
+    setFormErrors((prev) => ({
+      ...prev,
+      [field]: error,
     }));
   };
 
@@ -106,6 +123,61 @@ const CartDrawer = () => {
       console.error("Failed to place order:", error);
       // Show error message to user
       alert(error.message || "Failed to place order. Please try again.");
+    }
+  };
+
+  const isBillingValid =
+    Object.values(formErrors).every((error) => error === "") &&
+    
+    billingForm.firstName.trim() !== "" &&
+    billingForm.lastName.trim() !== "" &&
+    billingForm.email.trim() !== "" &&
+    billingForm.phone.trim() !== "" &&
+    billingForm.address.trim() !== "" &&
+    billingForm.city.trim() !== "" &&
+    billingForm.district.trim() !== "" &&
+    billingForm.postalCode.trim() !== "";
+
+  const validateField = (field: string, value: string): string => {
+    switch (field) {
+      case "firstName":
+      case "lastName":
+        if (!value.trim()) return "This field is required";
+        if (value.length < 2) return "Must be at least 2 characters";
+        if (!/^[a-zA-Z\s]+$/.test(value))
+          return "Only letters and spaces allowed";
+        return "";
+
+      case "email":
+        if (!value.trim()) return "Email is required";
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value))
+          return "Invalid email format";
+        return "";
+
+      case "phone":
+        if (!value.trim()) return "Phone number is required";
+        if (!/^[\d+\-\s()]{10,}$/.test(value)) return "Invalid phone number";
+        return "";
+
+      case "address":
+        if (!value.trim()) return "Address is required";
+        if (value.length < 5) return "Address must be at least 5 characters";
+        return "";
+
+      case "city":
+      case "district":
+        if (!value.trim()) return "This field is required";
+        if (value.length < 2) return "Must be at least 2 characters";
+        return "";
+
+      case "postalCode":
+        if (!value.trim()) return "Postal code is required";
+        if (!/^[\d\w\s-]{3,10}$/.test(value))
+          return "Invalid postal code format";
+        return "";
+
+      default:
+        return "";
     }
   };
 
@@ -249,10 +321,12 @@ const CartDrawer = () => {
                   <TextField
                     fullWidth
                     placeholder="Enter your first name"
-                    value={billingForm.firstName}
                     onChange={(e) =>
                       handleInputChange("firstName", e.target.value)
                     }
+                    value={billingForm.firstName}
+                    error={!!formErrors.firstName}
+                    helperText={formErrors.firstName}
                     sx={{
                       "& .MuiOutlinedInput-root": {
                         borderRadius: "20px",
@@ -292,6 +366,12 @@ const CartDrawer = () => {
                   <TextField
                     fullWidth
                     placeholder="Enter your last name"
+                    onChange={(e) =>
+                      handleInputChange("lastName", e.target.value)
+                    }
+                    value={billingForm.lastName}
+                    error={!!formErrors.lastName}
+                    helperText={formErrors.lastName}
                     sx={{
                       "& .MuiOutlinedInput-root": {
                         borderRadius: "20px",
@@ -333,6 +413,10 @@ const CartDrawer = () => {
               <TextField
                 fullWidth
                 placeholder="Enter your phone number"
+                onChange={(e) => handleInputChange("phone", e.target.value)}
+                value={billingForm.phone}
+                error={!!formErrors.phone}
+                helperText={formErrors.phone}
                 sx={{
                   "& .MuiOutlinedInput-root": {
                     borderRadius: "20px",
@@ -372,6 +456,10 @@ const CartDrawer = () => {
               <TextField
                 fullWidth
                 placeholder="Enter your email address"
+                onChange={(e) => handleInputChange("email", e.target.value)}
+                value={billingForm.email}
+                error={!!formErrors.email}
+                helperText={formErrors.email}
                 sx={{
                   "& .MuiOutlinedInput-root": {
                     borderRadius: "20px",
@@ -418,11 +506,15 @@ const CartDrawer = () => {
                   color: colors.text.primary,
                 }}
               >
-                Address
+                Address *
               </Typography>
               <TextField
                 fullWidth
                 placeholder="Enter your address"
+                onChange={(e) => handleInputChange("address", e.target.value)}
+                value={billingForm.address}
+                error={!!formErrors.address}
+                helperText={formErrors.address}
                 sx={{
                   "& .MuiOutlinedInput-root": {
                     borderRadius: "20px",
@@ -456,11 +548,15 @@ const CartDrawer = () => {
                   color: colors.text.primary,
                 }}
               >
-                City
+                City *
               </Typography>
               <TextField
                 fullWidth
                 placeholder="Enter your city name "
+                onChange={(e) => handleInputChange("city", e.target.value)}
+                value={billingForm.city}
+                error={!!formErrors.city}
+                helperText={formErrors.city}
                 sx={{
                   "& .MuiOutlinedInput-root": {
                     borderRadius: "20px",
@@ -494,11 +590,15 @@ const CartDrawer = () => {
                   color: colors.text.primary,
                 }}
               >
-                District
+                District *
               </Typography>
               <TextField
                 fullWidth
                 placeholder="Enter your district name"
+                onChange={(e) => handleInputChange("district", e.target.value)}
+                value={billingForm.district}
+                error={!!formErrors.district}
+                helperText={formErrors.district}
                 sx={{
                   "& .MuiOutlinedInput-root": {
                     borderRadius: "20px",
@@ -532,11 +632,17 @@ const CartDrawer = () => {
                   color: colors.text.primary,
                 }}
               >
-                Postal Code
+                Postal Code *
               </Typography>
               <TextField
                 fullWidth
                 placeholder="Enter your postal code"
+                onChange={(e) =>
+                  handleInputChange("postalCode", e.target.value)
+                }
+                value={billingForm.postalCode}
+                error={!!formErrors.postalCode}
+                helperText={formErrors.postalCode}
                 sx={{
                   "& .MuiOutlinedInput-root": {
                     borderRadius: "20px",
@@ -557,6 +663,10 @@ const CartDrawer = () => {
                       color: colors.text.secondary,
                       opacity: 1,
                     },
+                  },
+                  "& .MuiFormHelperText-root": {
+                    color: colors.status.error,
+                    marginLeft: 0,
                   },
                   mb: 3,
                 }}
@@ -1013,6 +1123,8 @@ const CartDrawer = () => {
                   variant="contained"
                   fullWidth
                   size="large"
+                  onClick={handlePlaceOrder}
+                  disabled={!isBillingValid || cart.length === 0}
                   sx={{
                     py: 1.5,
                     fontWeight: "bold",
@@ -1024,8 +1136,9 @@ const CartDrawer = () => {
                     "&:hover": {
                       bgcolor: colors.primary.dark,
                     },
+                    opacity: !isBillingValid ? 0.5 : 1,
+                    cursor: !isBillingValid ? "not-allowed" : "pointer",
                   }}
-                  onClick={handlePlaceOrder}
                 >
                   Place Order
                 </Button>

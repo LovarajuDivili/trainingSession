@@ -144,7 +144,7 @@ const OrderProgress = () => {
           <Typography
             sx={{
               fontWeight: 600,
-              color: colors.text.secondary,
+              color: colors.status.warning,
               fontSize: "18px",
             }}
           >

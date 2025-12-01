@@ -153,15 +153,15 @@ const RequestOrder = () => {
   };
 
   const getSortedItems = () => {
-  return [...itemsData].sort((a, b) => {
-    const aInCart = isInCart(a._id);
-    const bInCart = isInCart(b._id);
-    
-    if (aInCart && !bInCart) return -1; // a (in cart) comes first
-    if (!aInCart && bInCart) return 1;  // b (in cart) comes first
-    return 0; // keep original order for both in cart or both not in cart
-  });
-};
+    return [...itemsData].sort((a, b) => {
+      const aInCart = isInCart(a._id);
+      const bInCart = isInCart(b._id);
+
+      if (aInCart && !bInCart) return -1; // a (in cart) comes first
+      if (!aInCart && bInCart) return 1; // b (in cart) comes first
+      return 0; // keep original order for both in cart or both not in cart
+    });
+  };
 
   return (
     <Box
@@ -380,7 +380,17 @@ const RequestOrder = () => {
                             fontWeight: 600,
                           }}
                         >
-                          <strong>{item.category}</strong>
+                          <span style={{ fontWeight: 700 }}>
+                            <strong>{item.category}</strong>
+                          </span>
+                          <span
+                            style={{
+                              fontWeight: 400,
+                              color: colors.text.secondary,
+                            }}
+                          >
+                            / {item.brand}
+                          </span>
                         </Typography>
                         {categoryIcons[item.category?.toLowerCase()] || (
                           <CategoryIcon

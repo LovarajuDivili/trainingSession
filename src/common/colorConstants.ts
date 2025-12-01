@@ -19,7 +19,7 @@ export const colors = {
     background: {
       white: "#ffffff",
       lightGray: "#f9f9f9",
-      disabled: "#f0f0f0",
+      disabled: "#75757555",
       card: "#fdfefe",
       upload: "#f8f5ff",
       header: "#906aff",

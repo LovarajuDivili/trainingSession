@@ -64,39 +64,40 @@ const DashboardHeader = ({
       <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
         {showSearch && (
           <TextField
-  placeholder="Search"
-  variant="outlined"
-  size="small"
-  sx={{
-    width: "300px",
-    "& .MuiOutlinedInput-root": {
-      borderRadius: "50px",
-      backgroundColor: colors.background.white,
-      color: colors.text.primary,
-      "& fieldset": {
-        borderColor: themeMode === "dark" ? "#555555" : colors.border.light,
-      },
-      "&:hover fieldset": {
-        borderColor: colors.primary.main,
-      },
-      "&.Mui-focused fieldset": {
-        borderColor: colors.primary.main,
-      },
-    },
-    "& .MuiInputBase-input::placeholder": {
-      color: colors.text.secondary,
-    },
-  }}
-  value={searchText}
-  onChange={(e) => onSearchChange?.(e.target.value)}
-  InputProps={{
-    startAdornment: (
-      <InputAdornment position="start">
-        <SearchIcon sx={{ color: colors.text.secondary }} />
-      </InputAdornment>
-    ),
-  }}
-/>
+            placeholder="Search"
+            variant="outlined"
+            size="small"
+            sx={{
+              width: "300px",
+              "& .MuiOutlinedInput-root": {
+                borderRadius: "50px",
+                backgroundColor: colors.background.white,
+                color: colors.text.primary,
+                "& fieldset": {
+                  borderColor:
+                    themeMode === "dark" ? "#555555" : colors.border.light,
+                },
+                "&:hover fieldset": {
+                  borderColor: colors.primary.main,
+                },
+                "&.Mui-focused fieldset": {
+                  borderColor: colors.primary.main,
+                },
+              },
+              "& .MuiInputBase-input::placeholder": {
+                color: colors.text.secondary,
+              },
+            }}
+            value={searchText}
+            onChange={(e) => onSearchChange?.(e.target.value)}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchIcon sx={{ color: colors.text.secondary }} />
+                </InputAdornment>
+              ),
+            }}
+          />
         )}
 
         {showAddButton && (
