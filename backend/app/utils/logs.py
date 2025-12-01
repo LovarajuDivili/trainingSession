@@ -23,7 +23,7 @@ def create_log_entry(user: str, action: str, status: str):
         print(f"Error creating log entry: {str(e)}")
         return None
 
-def get_security_logs(page: int = 0, page_size: int = 10, search: str = ""):
+def get_security_logs(page: int = 0, page_size: int = 10, search: str = "",month: str | None = None):
     """Get security logs with pagination and search"""
     try:
         skip = page * page_size
@@ -36,6 +36,9 @@ def get_security_logs(page: int = 0, page_size: int = 10, search: str = ""):
                 {"action": {"$regex": search, "$options": "i"}},
                 {"status": {"$regex": search, "$options": "i"}}
             ]
+
+        if month:
+            query["date"] = {"$regex": f"^{month}", "$options": "i"}
         
         # Get total count
         total = db.logs.count_documents(query)

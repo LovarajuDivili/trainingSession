@@ -6,7 +6,7 @@ from ..database import db
 from bson import ObjectId
 from datetime import datetime
 from app.helpers import convert_objectid
-from typing import List
+from typing import List, Optional
 #from app.models.schemas import EmployeeCreate,EmployeeUpdate
 from fastapi.responses import JSONResponse
 from app.helpers import create_system_log
@@ -35,7 +35,7 @@ async def create_employee(
     laptop: str = Form("false"),
     headphones: str = Form("false"),
     monitor: str = Form("false"),
-    image: str = Form(None), 
+    image: Optional[str] = Form(None), 
 ):
     try:
         # Check duplicate email
@@ -66,8 +66,11 @@ async def create_employee(
         # Handle image → Base64
         image_base64 = None
         if image:
-            file_bytes = await image.read()
-            image_base64 = base64.b64encode(file_bytes).decode("utf-8")
+            # If it has data URL prefix, remove it
+            if "," in image:
+                image_base64 = image.split(",")[1]
+            else:
+                image_base64 = image
 
        
         employee_data = {
@@ -80,7 +83,7 @@ async def create_employee(
             "laptop": laptop_bool,
             "headphones": headphones_bool,
             "monitor": monitor_bool,
-            "image": image,
+            "image": image_base64, 
             "created_at": datetime.utcnow(),
         }
 
@@ -127,7 +130,7 @@ async def update_employee(
     laptop: str = Form("false"),
     headphones: str = Form("false"),
     monitor: str = Form("false"),
-   image: str = Form(None) 
+    image: Optional[str] = Form(None)
 ):
     try:
         update_fields = {}

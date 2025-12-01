@@ -1,3 +1,4 @@
+/* eslint-disable no-case-declarations */
 // Update your Logs component to handle system logs
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -10,6 +11,9 @@ import {
   Menu,
   MenuItem,
   IconButton,
+  Snackbar,
+  Alert,
+  type AlertColor,
 } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 import DashboardHeader from "../DashboardHeader";
@@ -19,9 +23,11 @@ import { useThemeColors } from "../../hooks/useThemeColors";
 import DownloadIcon from "@mui/icons-material/Download";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import axios from "axios";
+import * as XLSX from "xlsx";
 
 // Update the LogRow interface
 interface LogRow {
+  _id: string;
   id: string;
   user?: string;
   action?: string;
@@ -33,6 +39,14 @@ interface LogRow {
   type?: string;
 }
 
+interface ToastState {
+  open: boolean;
+  message: string;
+  severity: AlertColor;
+}
+
+type TimePeriod = "current-month" | "weekly" | "quarterly" | "yearly";
+
 const Logs = () => {
   const currentItem = sidebarItems.find((item) => item.route === "/admin/logs");
   const [activeTab, setActiveTab] = useState("security");
@@ -41,29 +55,38 @@ const Logs = () => {
     page: 0,
   });
   const colors = useThemeColors();
-  const [monthAnchorEl, setMonthAnchorEl] = useState<null | HTMLElement>(null);
-  const [selectedMonth, setSelectedMonth] = useState("Current Month");
+  const [periodAnchorEl, setPeriodAnchorEl] = useState<null | HTMLElement>(null);
+  const [selectedPeriod, setSelectedPeriod] = useState<TimePeriod>("current-month");
   const [searchText, setSearchText] = useState("");
   const [rows, setRows] = useState<LogRow[]>([]);
   const [loading, setLoading] = useState(false);
   const [totalCount, setTotalCount] = useState(0);
+  const [toast, setToast] = useState<ToastState>({
+    open: false,
+    message: "",
+    severity: "success",
+  });
 
-  const months = [
-    "January",
-    "February",
-    "March",
-    "April",
-    "May",
-    "June",
-    "July",
-    "August",
-    "September",
-    "October",
-    "November",
-    "December",
-  ];
+  // Toast handler functions
+  const showToast = (message: string, severity: AlertColor = "success") => {
+    setToast({
+      open: true,
+      message,
+      severity,
+    });
+  };
 
-  // Define columns for the data grid
+  const handleCloseToast = (
+    event?: React.SyntheticEvent | Event,
+    reason?: string
+  ) => {
+    if (reason === "clickaway") {
+      return;
+    }
+    setToast({ ...toast, open: false });
+  };
+
+  // Define columns for the data grid with updated status renderer
   const securityColumns = [
     {
       field: "user",
@@ -82,21 +105,41 @@ const Logs = () => {
       headerName: "Status",
       width: 250,
       headerClassName: "grid-header",
-      renderCell: (params: any) => (
-        <Typography
-          sx={{
-            color:
-              params.value === "success"
-                ? "green"
-                : params.value === "failed"
-                ? "red"
-                : "orange",
-            fontWeight: "bold",
-          }}
-        >
-          {params.value}
-        </Typography>
-      ),
+      renderCell: (params: any) => {
+        const status = params.value?.toLowerCase() || "";
+        let backgroundColor = "";
+        const textColor = "#ffffff";
+        
+        if (status === "success") {
+          backgroundColor = "#4caf50"; // Green
+        } else if (status === "failed") {
+          backgroundColor = "#f44336"; // Red
+        } else {
+          backgroundColor = "#ff9800"; // Orange for other statuses
+        }
+        
+        return (
+          <Box
+           sx={{
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              padding: "1px 6px",
+              borderRadius: "16px",
+              backgroundColor,
+              color: textColor,
+              fontSize: "12px",
+              fontWeight: "600",
+              textTransform: "capitalize",
+              minWidth: "50px",
+              height:"30px",
+              boxShadow: "0 1px 3px rgba(0,0,0,0.2)",
+            }}
+          >
+            {status}
+          </Box>
+        );
+      },
     },
     {
       field: "date",
@@ -136,21 +179,41 @@ const Logs = () => {
       headerName: "Status",
       width: 200,
       headerClassName: "grid-header",
-      renderCell: (params: any) => (
-        <Typography
-          sx={{
-            color:
-              params.value === "success"
-                ? "green"
-                : params.value === "failed"
-                ? "red"
-                : "orange",
-            fontWeight: "bold",
-          }}
-        >
-          {params.value}
-        </Typography>
-      ),
+      renderCell: (params: any) => {
+        const status = params.value?.toLowerCase() || "";
+        let backgroundColor = "";
+        const textColor = "#ffffff";
+        
+        if (status === "success") {
+          backgroundColor = "#4caf50"; // Green
+        } else if (status === "failed") {
+          backgroundColor = "#f44336"; // Red
+        } else {
+          backgroundColor = "#ff9800"; // Orange for other statuses
+        }
+        
+        return (
+          <Box
+            sx={{
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              padding: "1px 6px",
+              borderRadius: "16px",
+              backgroundColor,
+              color: textColor,
+              fontSize: "12px",
+              fontWeight: "600",
+              textTransform: "capitalize",
+              minWidth: "50px",
+              height:"30px",
+              boxShadow: "0 1px 3px rgba(0,0,0,0.2)",
+            }}
+          >
+            {status}
+          </Box>
+        );
+      },
     },
     {
       field: "date",
@@ -207,17 +270,217 @@ const Logs = () => {
     }
   };
 
+  // Helper function to get time period parameters for API
+  const getTimePeriodParams = (period: TimePeriod) => {
+    const now = new Date();
+    
+    switch (period) {
+      case "current-month":
+        return {
+          month: String(now.getMonth() + 1).padStart(2, "0")
+        };
+      
+      case "weekly":
+        // Last 7 days
+        const oneWeekAgo = new Date(now);
+        oneWeekAgo.setDate(now.getDate() - 7);
+        return {
+          from_date: oneWeekAgo.toISOString().split('T')[0],
+          to_date: now.toISOString().split('T')[0]
+        };
+      
+      case "quarterly":
+        // Last 3 months
+        const threeMonthsAgo = new Date(now);
+        threeMonthsAgo.setMonth(now.getMonth() - 3);
+        return {
+          from_date: threeMonthsAgo.toISOString().split('T')[0],
+          to_date: now.toISOString().split('T')[0]
+        };
+      
+      case "yearly":
+        // Last 12 months
+        const oneYearAgo = new Date(now);
+        oneYearAgo.setFullYear(now.getFullYear() - 1);
+        return {
+          from_date: oneYearAgo.toISOString().split('T')[0],
+          to_date: now.toISOString().split('T')[0]
+        };
+      
+      default:
+        return {};
+    }
+  };
+
+  // Get display label for selected period
+  const getPeriodLabel = (period: TimePeriod) => {
+    switch (period) {
+      case "current-month":
+        return "Current Month";
+      case "weekly":
+        return "Weekly";
+      case "quarterly":
+        return "Quarterly";
+      case "yearly":
+        return "Yearly";
+      default:
+        return "Current Month";
+    }
+  };
+
+  const handleDownload = async () => {
+    try {
+      const token = sessionStorage.getItem("token");
+
+      if (!token) {
+        showToast("You are not logged in. Please re-login.", "error");
+        return;
+      }
+
+      // Build parameters - max page_size is 100 according to backend
+      const params: Record<string, string> = {
+        page: "0",
+        page_size: "100",
+      };
+
+      // Add search parameter if provided
+      if (searchText) {
+        params.search = searchText;
+      }
+
+      // Add time period parameters
+      const periodParams = getTimePeriodParams(selectedPeriod);
+      Object.assign(params, periodParams);
+
+      // Build endpoint
+      let endpoint = "";
+      if (activeTab === "security") {
+        endpoint = `http://localhost:8000/v-1/application/logs/security`;
+      } else if (activeTab === "system") {
+        endpoint = `http://localhost:8000/v-1/application/logs/system`;
+      } else {
+        showToast("Download not supported for Audit tab", "warning");
+        return;
+      }
+
+      // First, get total count to know how many pages to fetch
+      const initialResponse = await axios.get(endpoint, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        params: params,
+      });
+
+      const totalCount = initialResponse.data?.total || 0;
+
+      if (totalCount === 0) {
+        showToast("No data available to download", "info");
+        return;
+      }
+
+      // Calculate number of pages needed
+      const pageSize = 100; // Max allowed by backend
+      const totalPages = Math.ceil(totalCount / pageSize);
+
+      // If we only need one page, use the data we already have
+      let allLogs = initialResponse.data?.logs || initialResponse.data?.data || [];
+
+      // Fetch additional pages if needed
+      for (let page = 1; page < totalPages; page++) {
+        const pageParams = { ...params, page: String(page) };
+
+        try {
+          const pageResponse = await axios.get(endpoint, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+            params: pageParams,
+          });
+
+          const pageLogs = pageResponse.data?.logs || pageResponse.data?.data || [];
+          allLogs = [...allLogs, ...pageLogs];
+
+          // Add a small delay to avoid overwhelming the server
+          await new Promise((resolve) => setTimeout(resolve, 100));
+        } catch (pageError) {
+          console.error(`Error fetching page ${page}:`, pageError);
+          // Continue with what we have
+          break;
+        }
+      }
+
+      if (!allLogs.length) {
+        showToast("No data available to download", "info");
+        return;
+      }
+
+      // Create Excel file
+      const worksheet = XLSX.utils.json_to_sheet(allLogs);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Logs");
+
+      const periodLabel = getPeriodLabel(selectedPeriod).toLowerCase().replace(" ", "_");
+      const filename = `${
+        activeTab === "security" ? "Security" : "System"
+      }_Logs_${periodLabel}_${new Date()
+        .toISOString()
+        .slice(0, 10)}.xlsx`;
+
+      XLSX.writeFile(workbook, filename);
+
+      showToast(`Successfully downloaded ${allLogs.length} records`);
+    } catch (error: any) {
+      console.error("Download failed:", error);
+
+      if (axios.isAxiosError(error)) {
+        // Show more specific error message
+        if (error.response?.data?.detail) {
+          showToast(
+            `Download failed: ${JSON.stringify(error.response.data.detail)}`,
+            "error"
+          );
+        } else {
+          showToast("Failed to download logs. Please try again.", "error");
+        }
+      } else {
+        showToast("An unexpected error occurred.", "error");
+      }
+    }
+  };
+
   // Fetch logs data
   const fetchLogs = async () => {
     try {
       setLoading(true);
       const token = sessionStorage.getItem("token");
 
+      if (!token) {
+        console.error("No token found");
+        setRows([]);
+        setTotalCount(0);
+        return;
+      }
+
+      // Build parameters
+      const params: Record<string, string> = {
+        page: String(paginationModel.page),
+        page_size: String(paginationModel.pageSize),
+      };
+
+      // Add search parameter if provided
+      if (searchText) {
+        params.search = searchText;
+      }
+
+      // Add time period parameters
+      const periodParams = getTimePeriodParams(selectedPeriod);
+      Object.assign(params, periodParams);
+
       let endpoint = "";
       if (activeTab === "security") {
-        endpoint = `http://localhost:8000/v-1/application/logs/security?page=${paginationModel.page}&page_size=${paginationModel.pageSize}&search=${searchText}`;
+        endpoint = `http://localhost:8000/v-1/application/logs/security`;
       } else if (activeTab === "system") {
-        endpoint = `http://localhost:8000/v-1/application/logs/system?page=${paginationModel.page}&page_size=${paginationModel.pageSize}&search=${searchText}`;
+        endpoint = `http://localhost:8000/v-1/application/logs/system`;
       } else {
         // For audit tab, return empty for now
         setRows([]);
@@ -229,6 +492,7 @@ const Logs = () => {
         headers: {
           Authorization: `Bearer ${token}`,
         },
+        params: params,
       });
 
       const data = response.data;
@@ -244,29 +508,62 @@ const Logs = () => {
   };
 
   useEffect(() => {
-    fetchLogs();
-  }, [activeTab, paginationModel, searchText]);
+    let mounted = true;
+
+    const safeFetch = async () => {
+      try {
+        if (!mounted) return;
+        await fetchLogs();
+      } catch (e) {
+        console.error(e);
+      }
+    };
+
+    safeFetch();
+
+    return () => {
+      mounted = false;
+    };
+  }, [activeTab, paginationModel, searchText, selectedPeriod]);
 
   const handleTabClick = (tab: string) => {
     setActiveTab(tab);
     setPaginationModel({ page: 0, pageSize: 10 });
   };
 
-  const handleMonthClick = (event: React.MouseEvent<HTMLElement>) => {
-    setMonthAnchorEl(event.currentTarget);
+  const handlePeriodClick = (event: React.MouseEvent<HTMLElement>) => {
+    setPeriodAnchorEl(event.currentTarget);
   };
 
-  const handleMonthClose = () => {
-    setMonthAnchorEl(null);
+  const handlePeriodClose = () => {
+    setPeriodAnchorEl(null);
   };
 
-  const handleMonthSelect = (month: string) => {
-    setSelectedMonth(month);
-    handleMonthClose();
+  const handlePeriodSelect = (period: TimePeriod) => {
+    setSelectedPeriod(period);
+    setPaginationModel({ page: 0, pageSize: 10 });
+    handlePeriodClose();
   };
 
   return (
     <Box>
+      {/* Toast Notification */}
+      <Snackbar
+        open={toast.open}
+        autoHideDuration={4000}
+        onClose={handleCloseToast}
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
+      >
+        <Alert
+          onClose={handleCloseToast}
+          severity={toast.severity}
+          variant="filled"
+          sx={{ width: "100%" }}
+        >
+          {toast.message}
+        </Alert>
+      </Snackbar>
+
       <DashboardHeader
         title={currentItem?.label || "Logs"}
         icon={currentItem?.icon}
@@ -365,16 +662,16 @@ const Logs = () => {
           </Button>
         </Stack>
 
-        {/* Right side - Month dropdown and Download button */}
+        {/* Right side - Time period dropdown and Download button */}
         <Stack
           direction="row"
           spacing={1}
           alignItems="center"
           sx={{ pr: 2, pb: 1 }}
         >
-          {/* Month Dropdown */}
+          {/* Time Period Dropdown */}
           <Button
-            onClick={handleMonthClick}
+            onClick={handlePeriodClick}
             endIcon={<ArrowDropDownIcon />}
             sx={{
               textTransform: "none",
@@ -386,31 +683,45 @@ const Logs = () => {
               borderRadius: 5,
             }}
           >
-            {selectedMonth}
+            {getPeriodLabel(selectedPeriod)}
           </Button>
           <Menu
-            anchorEl={monthAnchorEl}
-            open={Boolean(monthAnchorEl)}
-            onClose={handleMonthClose}
+            anchorEl={periodAnchorEl}
+            open={Boolean(periodAnchorEl)}
+            onClose={handlePeriodClose}
           >
-            <MenuItem onClick={() => handleMonthSelect("Current Month")}>
+            <MenuItem onClick={() => handlePeriodSelect("current-month")}>
               Current Month
             </MenuItem>
-            {months.map((month) => (
-              <MenuItem key={month} onClick={() => handleMonthSelect(month)}>
-                {month}
-              </MenuItem>
-            ))}
+            <MenuItem onClick={() => handlePeriodSelect("weekly")}>
+              Weekly
+            </MenuItem>
+            <MenuItem onClick={() => handlePeriodSelect("quarterly")}>
+              Quarterly
+            </MenuItem>
+            <MenuItem onClick={() => handlePeriodSelect("yearly")}>
+              Yearly
+            </MenuItem>
           </Menu>
 
           {/* Download Icon */}
           <IconButton
+            onClick={handleDownload}
             sx={{
+              backgroundColor: colors.primary.main, // Purple background
               border: "1px solid",
-              borderColor: "divider",
+              borderColor: colors.primary.main, // Purple border
               borderRadius: 8,
-              color: "text.primary",
+              color: "#ffffff", // White color for the icon
               height: 40,
+              width: 40, // Ensure it's square
+              "&:hover": {
+                backgroundColor: colors.primary.dark, // Darker purple on hover
+                borderColor: colors.primary.dark,
+              },
+              "& .MuiSvgIcon-root": {
+                color: "#ffffff", // Ensure the icon is white
+              },
             }}
           >
             <DownloadIcon />
@@ -424,6 +735,7 @@ const Logs = () => {
         <Paper sx={{ height: 450, width: "100%" }}>
           <DataGrid
             rows={rows}
+            getRowId={(row) => row.id || row._id}
             columns={getCurrentColumns()}
             paginationModel={paginationModel}
             onPaginationModelChange={setPaginationModel}

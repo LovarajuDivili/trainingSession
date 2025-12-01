@@ -50,13 +50,22 @@ const OpeningsEvents = () => {
 
   const [imageDialogOpen, setImageDialogOpen] = useState(false);
   const [openingDialogOpen, setOpeningDialogOpen] = useState(false);
+  
+  // Delete All Dialogs
   const [deleteImagesDialogOpen, setDeleteImagesDialogOpen] = useState(false);
   const [confirmDeleteImages, setConfirmDeleteImages] = useState(false);
-
-  // Delete All Openings Dialog
   const [deleteOpeningsDialogOpen, setDeleteOpeningsDialogOpen] =
     useState(false);
   const [confirmDeleteOpenings, setConfirmDeleteOpenings] = useState(false);
+
+  // Individual Delete Dialogs
+  const [deleteImageDialogOpen, setDeleteImageDialogOpen] = useState(false);
+  const [deleteOpeningDialogOpen, setDeleteOpeningDialogOpen] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState<{
+    id: string;
+    name: string;
+    type: 'image' | 'opening';
+  } | null>(null);
 
   const [newImage, setNewImage] = useState<{
     title: string;
@@ -239,23 +248,42 @@ const OpeningsEvents = () => {
     }
   };
 
-  const handleImageDelete = async (imageId: string) => {
-    if (window.confirm("Are you sure you want to delete this image?")) {
-      try {
-        await dispatch(deleteCarouselImage(imageId)).unwrap();
-      } catch (error) {
-        console.error("Failed to delete image:", error);
-      }
-    }
+  // Individual Image Delete Handler
+  const handleImageDeleteClick = (imageId: string, imageTitle: string) => {
+    setItemToDelete({
+      id: imageId,
+      name: imageTitle,
+      type: 'image'
+    });
+    setDeleteImageDialogOpen(true);
   };
 
-  const handleOpeningDelete = async (openingId: string) => {
-    if (window.confirm("Are you sure you want to delete this opening?")) {
-      try {
-        await dispatch(deleteCurrentOpening(openingId)).unwrap();
-      } catch (error) {
-        console.error("Failed to delete opening:", error);
+  // Individual Opening Delete Handler
+  const handleOpeningDeleteClick = (openingId: string, openingTitle: string) => {
+    setItemToDelete({
+      id: openingId,
+      name: openingTitle,
+      type: 'opening'
+    });
+    setDeleteOpeningDialogOpen(true);
+  };
+
+  // Execute Individual Delete
+  const handleConfirmDelete = async () => {
+    if (!itemToDelete) return;
+
+    try {
+      if (itemToDelete.type === 'image') {
+        await dispatch(deleteCarouselImage(itemToDelete.id)).unwrap();
+      } else {
+        await dispatch(deleteCurrentOpening(itemToDelete.id)).unwrap();
       }
+    } catch (error) {
+      console.error("Failed to delete item:", error);
+    } finally {
+      setItemToDelete(null);
+      setDeleteImageDialogOpen(false);
+      setDeleteOpeningDialogOpen(false);
     }
   };
 
@@ -394,7 +422,7 @@ const OpeningsEvents = () => {
                 }}
               />
               <IconButton
-                onClick={() => handleImageDelete(image.id)}
+                onClick={() => handleImageDeleteClick(image.id, image.title)}
                 sx={{
                   position: "absolute",
                   top: 8,
@@ -548,7 +576,7 @@ const OpeningsEvents = () => {
                 {opening.title}
               </Typography>
               <IconButton
-                onClick={() => handleOpeningDelete(opening.id)}
+                onClick={() => handleOpeningDeleteClick(opening.id, opening.title)}
                 sx={{
                   backgroundColor: colors.overlay.black04,
                   "&:hover": { backgroundColor: colors.overlay.black08 },
@@ -942,7 +970,103 @@ const OpeningsEvents = () => {
         </DialogActions>
       </Dialog>
 
-      {/* Rest of your dialogs remain the same */}
+      {/* Individual Delete Image Dialog */}
+      <Dialog
+        open={deleteImageDialogOpen}
+        onClose={() => {
+          setDeleteImageDialogOpen(false);
+          setItemToDelete(null);
+        }}
+        maxWidth="xs"
+        fullWidth
+        sx={{
+          "& .MuiDialog-paper": {
+            borderRadius: "15px",
+            padding: 1,
+          },
+        }}
+      >
+        <DialogTitle>Delete Image?</DialogTitle>
+        <Divider />
+
+        <DialogContent>
+          <Typography sx={{ color: colors.text.secondary, mb: 1 }}>
+            Are you sure you want to delete the image titled{" "}
+            <strong>"{itemToDelete?.name}"</strong>? This action cannot be undone.
+          </Typography>
+        </DialogContent>
+
+        <DialogActions>
+          <Button
+            onClick={() => {
+              setDeleteImageDialogOpen(false);
+              setItemToDelete(null);
+            }}
+            sx={{ color: colors.primary.main }}
+          >
+            Cancel
+          </Button>
+          <Button
+            variant="contained"
+            sx={{
+              backgroundColor: colors.status.error,
+            }}
+            onClick={handleConfirmDelete}
+          >
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Individual Delete Opening Dialog */}
+      <Dialog
+        open={deleteOpeningDialogOpen}
+        onClose={() => {
+          setDeleteOpeningDialogOpen(false);
+          setItemToDelete(null);
+        }}
+        maxWidth="xs"
+        fullWidth
+        sx={{
+          "& .MuiDialog-paper": {
+            borderRadius: "15px",
+            padding: 1,
+          },
+        }}
+      >
+        <DialogTitle>Delete Opening?</DialogTitle>
+        <Divider />
+
+        <DialogContent>
+          <Typography sx={{ color: colors.text.secondary, mb: 1 }}>
+            Are you sure you want to delete the job opening titled{" "}
+            <strong>"{itemToDelete?.name}"</strong>? This action cannot be undone.
+          </Typography>
+        </DialogContent>
+
+        <DialogActions>
+          <Button
+            onClick={() => {
+              setDeleteOpeningDialogOpen(false);
+              setItemToDelete(null);
+            }}
+            sx={{ color: colors.primary.main }}
+          >
+            Cancel
+          </Button>
+          <Button
+            variant="contained"
+            sx={{
+              backgroundColor: colors.status.error,
+            }}
+            onClick={handleConfirmDelete}
+          >
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Delete All Images Dialog */}
       <Dialog
         open={deleteImagesDialogOpen}
         onClose={() => {
@@ -1012,6 +1136,7 @@ const OpeningsEvents = () => {
         </DialogActions>
       </Dialog>
 
+      {/* Delete All Openings Dialog */}
       <Dialog
         open={deleteOpeningsDialogOpen}
         onClose={() => {

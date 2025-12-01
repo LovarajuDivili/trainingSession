@@ -210,6 +210,7 @@ const AllEmployees = () => {
     setNewEmployee((prev) => ({ ...prev, [field]: value }));
   };
 
+  // In handleSaveEmployee function, add debugging:
   const handleSaveEmployee = async () => {
     if (
       !newEmployee.name ||
@@ -225,6 +226,8 @@ const AllEmployees = () => {
     }
 
     try {
+      console.log("Saving employee:", newEmployee); // Add this for debugging
+
       if (isEditing) {
         await dispatch(updateEmployeeAPI(newEmployee)).unwrap();
         setSnackbarMessage("Employee updated successfully!");
@@ -240,10 +243,12 @@ const AllEmployees = () => {
       setSnackbarOpen(true);
     } catch (error: unknown) {
       console.error("Error saving employee:", error);
+      console.error("Full error object:", JSON.stringify(error, null, 2)); // Add this
 
       let message = `Failed to ${isEditing ? "update" : "add"} employee`;
 
       if (axios.isAxiosError(error)) {
+        console.error("Axios error response:", error.response); // Add this
         message = error.response?.data?.detail || message;
       } else if (error instanceof Error) {
         message = error.message || message;
@@ -254,7 +259,6 @@ const AllEmployees = () => {
       setSnackbarOpen(true);
     }
   };
-
   const handleDeleteEmployee = async (employeeId: string) => {
     setEmployeeToDelete(employeeId);
     setDeleteConfirmOpen(true);

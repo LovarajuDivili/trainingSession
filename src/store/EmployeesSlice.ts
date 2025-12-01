@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   createSlice,
   createAsyncThunk,
@@ -24,24 +25,53 @@ export const addEmployeeAPI = createAsyncThunk<
   try {
     const formData = new FormData();
 
-    for (const key in employee) {
-      const typedKey = key as keyof typeof employee;
-      const value = employee[typedKey];
+    // Append all fields
+    formData.append("name", employee.name);
+    formData.append("email", employee.email);
+    formData.append("role", employee.role);
+    formData.append("joinDate", employee.joinDate);
+    formData.append("id", employee.id);
+    formData.append("skills", JSON.stringify(employee.skills));
+    formData.append("laptop", employee.laptop?.toString() || "false");
+    formData.append("headphones", employee.headphones?.toString() || "false");
+    formData.append("monitor", employee.monitor?.toString() || "false");
 
-      if (value !== undefined && value !== null) {
-        if (typedKey === "skills") {
-          formData.append("skills", JSON.stringify(value));
-        } else if (typedKey === "image") {
-          formData.append("image", value as string);
-        } else {
-          formData.append(typedKey, value as string);
+    // Handle image properly
+    if (employee.image) {
+      // If image is base64 string, convert it to a Blob
+      const base64Data = employee.image;
+      // Check if it's base64
+      if (base64Data.startsWith("data:image")) {
+        // Extract base64 data
+        const base64String = base64Data.split(",")[1] || base64Data;
+        const byteCharacters = atob(base64String);
+        const byteNumbers = new Array(byteCharacters.length);
+        for (let i = 0; i < byteCharacters.length; i++) {
+          byteNumbers[i] = byteCharacters.charCodeAt(i);
         }
+        const byteArray = new Uint8Array(byteNumbers);
+        const blob = new Blob([byteArray], { type: "image/jpeg" });
+
+        // Create a File object
+        const file = new File([blob], "employee_image.jpg", {
+          type: "image/jpeg",
+        });
+        formData.append("image", file);
+      } else {
+        // If it's already just base64 data
+        formData.append("image", base64Data);
       }
+    }
+
+    console.log("FormData entries:"); // Debugging
+    for (const pair of (formData as any).entries()) {
+      console.log(pair[0] + ": " + pair[1]);
     }
 
     const response = await fetch(`${API_BASE}/employees/create/`, {
       method: "POST",
       body: formData,
+      // Don't set Content-Type header for FormData - browser sets it automatically
     });
 
     if (!response.ok) {
@@ -55,7 +85,6 @@ export const addEmployeeAPI = createAsyncThunk<
     }
 
     const data = await response.json();
-
     return data.data;
   } catch (err) {
     return rejectWithValue({
@@ -79,7 +108,7 @@ export const updateEmployeeAPI = createAsyncThunk<
       if (value !== undefined && value !== null) {
         if (typedKey === "skills") {
           formData.append("skills", JSON.stringify(value));
-        } else if (typedKey === "image" ) {
+        } else if (typedKey === "image") {
           formData.append("image", value as string);
         } else {
           formData.append(typedKey, String(value));
@@ -167,7 +196,7 @@ const employeesSlice = createSlice({
       state.error = null;
     },
     clearEmployeeImage: (state, action: PayloadAction<string>) => {
-      const employee = state.employees.find(emp => emp.id === action.payload);
+      const employee = state.employees.find((emp) => emp.id === action.payload);
       if (employee) {
         employee.image = null;
       }
