@@ -137,7 +137,11 @@ export interface Order {
 
 export interface OrderContextType {
   orders: Order[];
-  addOrder: (cartItems: CartItem[], billingDetails?: BillingDetails, paymentMethod?: string) => Promise<Order>;
+  addOrder: (
+    cartItems: CartItem[],
+    billingDetails?: BillingDetails,
+    paymentMethod?: string
+  ) => Promise<Order>;
   isLoading: boolean;
 }
 
@@ -156,7 +160,8 @@ export interface AuthContextType {
     name: string,
     email: string,
     password: string,
-    role: string
+    role: string,
+    profileImage?: string
   ) => Promise<void>;
   logout: () => void;
   isAuthenticated: boolean;

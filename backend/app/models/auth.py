@@ -26,7 +26,8 @@ class UserCreate(BaseModel):
     name: str
     email: str
     password: str
-    role: str = "user"  
+    role: str = "user"
+    profile_image: Optional[str]=None
 
     @validator('email')
     def validate_email(cls, v):
@@ -55,6 +56,7 @@ class UserResponse(BaseModel):
     name: str
     email: str
     role: str
+    profile_image: Optional[str] = None 
     created_at: datetime
     
     class Config:

@@ -20,9 +20,13 @@ import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useThemeColors } from "../hooks/useThemeColors";
 import axios from "axios";
+import { useAppDispatch, useAppSelector } from "../hooks/reduxHooks";
+import { fetchEmployees } from "../store/EmployeesSlice";
+
 
 const Accountant = () => {
   const colors = useThemeColors();
+  const dispatch = useAppDispatch();
   const [inventoryCounts, setInventoryCounts] = useState({
     laptops: 0,
     headphones: 0,
@@ -31,6 +35,7 @@ const Accountant = () => {
     total: 0,
   });
   const [loading, setLoading] = useState(true);
+  const employees = useAppSelector((state) => state.employees.employees);
 
   const getCardStyles = () => ({
     width: 210,
@@ -102,6 +107,9 @@ const Accountant = () => {
     }
   };
 
+  useEffect(() => {
+    dispatch(fetchEmployees());
+  }, [dispatch]);
   useEffect(() => {
     fetchInventoryCounts();
   }, []);
@@ -395,7 +403,11 @@ const Accountant = () => {
                     fontSize: "18px",
                   }}
                 >
-                  20
+                  {
+                    employees.filter(
+                      (emp) => emp.role.toLowerCase() !== "hr team"
+                    ).length
+                  }
                 </Box>
               </CardContent>
             </Card>
@@ -487,7 +499,11 @@ const Accountant = () => {
                     fontSize: "18px",
                   }}
                 >
-                  15
+                  {
+                    employees.filter(
+                      (emp) => emp.role.toLowerCase() === "hr team"
+                    ).length
+                  }
                 </Box>
               </CardContent>
             </Card>
@@ -590,7 +606,7 @@ const Accountant = () => {
                     fontSize: "18px",
                   }}
                 >
-                  9
+                  0
                 </Box>
               </CardContent>
             </Card>
@@ -605,7 +621,7 @@ const Accountant = () => {
             p: 2,
             border: `1px solid ${colors.border.light}`,
             height: "calc(100vh - 140px)", // Fixed height
-    overflow: "auto",
+            overflow: "auto",
           }}
         >
           <OrderProgress />

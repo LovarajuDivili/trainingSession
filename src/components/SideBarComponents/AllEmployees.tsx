@@ -717,6 +717,14 @@ const AllEmployees = () => {
               variant="outlined"
               className="cancel-button"
               onClick={handleCloseDialog}
+              sx={{
+                color: "purple",
+                borderColor: "purple",
+                "&:hover": {
+                  borderColor: "purple",
+                  backgroundColor: "rgba(128,0,128,0.08)",
+                },
+              }}
             >
               Cancel
             </Button>
@@ -1163,6 +1171,12 @@ const AllEmployees = () => {
               checked={confirmChecked}
               onChange={(e) => setConfirmChecked(e.target.checked)}
               size="small"
+              sx={{
+                color: colors.primary.main,
+                "&.Mui-checked": {
+                  color: colors.primary.main,
+                },
+              }}
             />
             <Typography
               component="label"
@@ -1183,9 +1197,10 @@ const AllEmployees = () => {
             onClick={handleCancelDelete}
             className="delete-cancel-button"
             sx={{
-              borderColor: "primary.main",
+              borderColor: colors.primary.main,
+              color: colors.primary.main,
               "&:hover": {
-                borderColor: "primary.main",
+                borderColor: colors.primary.main,
               },
             }}
           >
