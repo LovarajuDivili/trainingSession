@@ -12,6 +12,7 @@ Before installing, make sure you have the following installed on your system:
 
 ## Installation
 
+
 To install the project dependencies, run:
 
 ```bash
