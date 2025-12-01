@@ -17,7 +17,8 @@ from pydantic import BaseModel
 import random
 from app.models.otp import save_otp, verify_otp
 from app.utils.email_service import send_email
-from app.utils.email_service import send_email 
+from app.utils.email_service import send_email
+from app.utils.logs import create_log_entry  
 
 
 router = APIRouter(prefix="/auth", tags=["authentication"])
@@ -88,6 +89,7 @@ async def signup(user_data: UserCreate):
             data={"sub": user_data.email}, expires_delta=access_token_expires
         )
 
+        create_log_entry(user_data.email, "signup", "success")
         return {
             "access_token": access_token,
             "token_type": "bearer",
@@ -109,6 +111,7 @@ async def login(user_data: UserLogin):
     try:
         user = db.users.find_one({"email": user_data.email})
         if not user:
+            create_log_entry(user_data.email, "login", "failed")
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Incorrect email or password"
@@ -122,6 +125,7 @@ async def login(user_data: UserLogin):
             password_valid = verify_password(user_data.password, user["password"])
 
         if not password_valid:
+            create_log_entry(user_data.email, "login", "failed")
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Incorrect email or password"
@@ -141,6 +145,8 @@ async def login(user_data: UserLogin):
             data={"sub": user_data.email}, expires_delta=access_token_expires
         )
 
+        create_log_entry(user_data.email, "login", "success")
+
         return {
             "access_token": access_token,
             "token_type": "bearer",
@@ -151,6 +157,7 @@ async def login(user_data: UserLogin):
         raise
     except Exception as e:
         print(f"Login error: {str(e)}")
+        create_log_entry(user_data.email, "login", "error")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Internal server error during login"
@@ -213,3 +220,27 @@ async def reset_password_route(data: ResetPasswordRequest):
 @router.get("/me", response_model=UserResponse)
 async def get_current_user_info(current_user: dict = Depends(get_current_user)):
     return current_user
+
+
+@router.post("/logout")
+async def logout(current_user: dict = Depends(get_current_user)):
+    """Log user logout action"""
+    try:
+        # Check if a logout entry already exists in the last minute to prevent duplicates
+        current_time = datetime.utcnow()
+        one_minute_ago = current_time - timedelta(minutes=1)
+        
+        existing_logout = db.logs.find_one({
+            "user": current_user["email"],
+            "action": "logout",
+            "timestamp": {"$gte": one_minute_ago}
+        })
+        
+        # Only create a new log entry if no recent duplicate exists
+        if not existing_logout:
+            create_log_entry(current_user["email"], "logout", "success")
+        
+        return {"message": "Logged out successfully"}
+    except Exception as e:
+        print(f"Logout logging error: {str(e)}")
+        return {"message": "Logged out"}
