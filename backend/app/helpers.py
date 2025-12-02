@@ -57,7 +57,7 @@ def create_system_log(name: str, log_type: str, action: str, status: str):
         print(f"Error creating system log entry: {str(e)}")
         return None
 
-def get_system_logs(page: int = 0, page_size: int = 10, search: str = ""):
+def get_system_logs(page: int = 0, page_size: int = 10, search: str = "",month: str | None = None  ):
     """Get system logs with pagination and search"""
     try:
         skip = page * page_size
@@ -71,6 +71,12 @@ def get_system_logs(page: int = 0, page_size: int = 10, search: str = ""):
                 {"action": {"$regex": search, "$options": "i"}},
                 {"status": {"$regex": search, "$options": "i"}}
             ]
+
+        if month:
+            query["date"] = {
+                "$regex": f"^{month}",      # Matches "03-xx-2024"
+                "$options": "i"
+            }
         
         # Get total count
         total = db.system_logs.count_documents(query)

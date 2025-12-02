@@ -23,11 +23,12 @@ async def get_system_audit_logs(
     page: int = Query(0, ge=0, description="Page number"),
     page_size: int = Query(10, ge=1, le=100, description="Items per page"),
     search: str = Query("", description="Search term"),
+    month: str | None = Query(None),
     current_user: str = Depends(get_current_user)
 ):
     """Get system audit logs"""
     try:
-        result = get_system_logs(page=page, page_size=page_size, search=search)
+        result = get_system_logs(page=page, page_size=page_size, search=search,month=month )
         return result
     except Exception as e:
         raise HTTPException(
@@ -40,11 +41,12 @@ async def get_security_audit_logs(
     page: int = Query(0, ge=0, description="Page number"),
     page_size: int = Query(10, ge=1, le=100, description="Items per page"),
     search: str = Query("", description="Search term"),
+    month: str | None = Query(None), 
     current_user: str = Depends(get_current_user)
 ):
     """Get security audit logs"""
     try:
-        result = get_security_logs(page=page, page_size=page_size, search=search)
+        result = get_security_logs(page=page, page_size=page_size, search=search, month=month)
         return result
     except Exception as e:
         raise HTTPException(

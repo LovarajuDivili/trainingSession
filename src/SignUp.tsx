@@ -12,7 +12,13 @@ import MuiCard from "@mui/material/Card";
 import { styled } from "@mui/material/styles";
 import AppTheme from "./common/AppTheme";
 import { useNavigate } from "react-router-dom";
-import { Alert, CircularProgress, Snackbar } from "@mui/material";
+import {
+  Alert,
+  CircularProgress,
+  Snackbar,
+  Avatar,
+  
+} from "@mui/material";
 import { useAuth } from "./contexts/AuthContext";
 import InputAdornment from "@mui/material/InputAdornment";
 import IconButton from "@mui/material/IconButton";
@@ -20,6 +26,8 @@ import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import sha256 from "crypto-js/sha256";
 import MenuItem from "@mui/material/MenuItem";
+import CloudUploadIcon from "@mui/icons-material/CloudUpload";
+import PersonIcon from "@mui/icons-material/Person"; // Added for empty avatar
 
 const Card = styled(MuiCard)(({ theme }) => ({
   display: "flex",
@@ -47,7 +55,6 @@ const SignUpContainer = styled(Stack)(({ theme }) => ({
   [theme.breakpoints.up("sm")]: {
     padding: theme.spacing(4),
   },
-
   backgroundImage: 'url("/public/aifaBG.jpg")',
   backgroundSize: "100% 100%",
   backgroundPosition: "center",
@@ -66,6 +73,18 @@ const SignUpContainer = styled(Stack)(({ theme }) => ({
     }),
   },
 }));
+
+const VisuallyHiddenInput = styled("input")({
+  clip: "rect(0 0 0 0)",
+  clipPath: "inset(50%)",
+  height: 1,
+  overflow: "hidden",
+  position: "absolute",
+  bottom: 0,
+  left: 0,
+  whiteSpace: "nowrap",
+  width: 1,
+});
 
 export default function SignUp(props: { disableCustomTheme?: boolean }) {
   const navigate = useNavigate();
@@ -95,6 +114,7 @@ export default function SignUp(props: { disableCustomTheme?: boolean }) {
       navigate("/welcome", { replace: true });
     }
   }, [navigate]);
+
   const validateInputs = () => {
     const email = document.getElementById("email") as HTMLInputElement;
     const password = document.getElementById("password") as HTMLInputElement;
@@ -205,7 +225,7 @@ export default function SignUp(props: { disableCustomTheme?: boolean }) {
 
     try {
       const shaHashedPassword = sha256(password).toString();
-      await signup(name, email, shaHashedPassword, selectedRole,profileImage);
+      await signup(name, email, shaHashedPassword, selectedRole, profileImage);
 
       setSuccess("Account created! Redirecting to login...");
       setTimeout(() => navigate("/signin"), 2000);
@@ -229,16 +249,65 @@ export default function SignUp(props: { disableCustomTheme?: boolean }) {
         direction="column"
         justifyContent="space-between"
         sx={{
-          height: "96.5vh",
+          height: "100.5vh",
         }}
       >
         <Card
-          // variant="outlined"
           sx={{
             width: "100%",
             maxWidth: 400,
+            position: "relative", // For positioning the avatar
           }}
         >
+          {/* Profile Image Preview on Top Right - Always visible */}
+          <Box
+            sx={{
+              position: "absolute",
+              top: 16,
+              pt: 2,
+              pr: 2,
+              right: 16,
+              zIndex: 1,
+            }}
+          >
+            <Avatar
+              src={profileImage || undefined}
+              alt="Profile preview"
+              sx={{
+                width: 60,
+                height: 70,
+                border: "3px solid",
+                borderColor: profileImage ? "#906aff" : "divider",
+                boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+                backgroundColor: profileImage ? "transparent" : "action.hover",
+              }}
+            >
+              {!profileImage && (
+                <PersonIcon
+                  sx={{
+                    width: 40,
+                    height: 40,
+                    color: "text.secondary",
+                  }}
+                />
+              )}
+            </Avatar>
+            {!profileImage && (
+              <Typography
+                variant="caption"
+                sx={{
+                  display: "block",
+                  textAlign: "center",
+                  mt: 0.5,
+                  color: "text.secondary",
+                  fontSize: "0.7rem",
+                }}
+              >
+                Upload image
+              </Typography>
+            )}
+          </Box>
+
           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
             <Box
               component="img"
@@ -302,20 +371,6 @@ export default function SignUp(props: { disableCustomTheme?: boolean }) {
             sx={{ display: "flex", flexDirection: "column", gap: 2 }}
           >
             <FormControl>
-              <FormLabel htmlFor="profileImage">Profile Image</FormLabel>
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleImageUpload}
-                disabled={isSigningUp}
-              />
-              {imageError && (
-                <Typography color="error" variant="caption">
-                  {imageErrorMessage}
-                </Typography>
-              )}
-            </FormControl>
-            <FormControl>
               <FormLabel htmlFor="name">Full name</FormLabel>
               <TextField
                 autoComplete="name"
@@ -346,6 +401,48 @@ export default function SignUp(props: { disableCustomTheme?: boolean }) {
                 disabled={isSigningUp}
               />
             </FormControl>
+
+            {/* Profile Image Upload - Moved after email */}
+            <FormControl>
+              <FormLabel htmlFor="profileImage">Profile Image</FormLabel>
+              <Button
+                component="label"
+                variant="outlined"
+                startIcon={<CloudUploadIcon />}
+                fullWidth
+                disabled={isSigningUp}
+                sx={{
+                  py: 1.5,
+                  borderColor: imageError ? "error.main" : "divider",
+                  "&:hover": {
+                    borderColor: imageError ? "error.dark" : "primary.main",
+                  },
+                }}
+              >
+                {profileImage ? "Change Image" : "Upload Image"}
+                <VisuallyHiddenInput
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  disabled={isSigningUp}
+                />
+              </Button>
+              {profileImage && (
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  sx={{ mt: 0.5 }}
+                >
+                  Image uploaded successfully
+                </Typography>
+              )}
+              {imageError && (
+                <Typography color="error" variant="caption" sx={{ mt: 0.5 }}>
+                  {imageErrorMessage}
+                </Typography>
+              )}
+            </FormControl>
+
             <FormControl>
               <FormLabel htmlFor="role">Role</FormLabel>
               <TextField
