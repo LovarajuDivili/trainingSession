@@ -44,7 +44,7 @@ async def create_employee(
             create_system_log(
                 name=name,
                 log_type="employee",
-                action="creation",
+                action="Creation",
                 status="failed"
             )
             return JSONResponse(
@@ -93,7 +93,7 @@ async def create_employee(
         create_system_log(
             name=name,
             log_type="employee",
-            action="creation",
+            action="Creation",
             status="success"
         )
 
@@ -104,7 +104,7 @@ async def create_employee(
             create_system_log(
                 name=name,
                 log_type="employee",
-                action="creation",
+                action="Creation",
                 status="failed"
             )
         return JSONResponse(status_code=500, content={"detail": str(e)})

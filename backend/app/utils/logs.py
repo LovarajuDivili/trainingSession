@@ -1,7 +1,7 @@
 from datetime import datetime
 from app.database import db
 
-def create_log_entry(user: str, action: str, status: str):
+def create_log_entry(user: str, action: str, status: str, reason: str = None):
     """Create a log entry for user actions"""
     try:
         current_time = datetime.utcnow()
