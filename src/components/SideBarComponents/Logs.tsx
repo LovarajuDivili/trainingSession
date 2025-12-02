@@ -1,5 +1,4 @@
 /* eslint-disable no-case-declarations */
-// Update your Logs component to handle system logs
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import {
@@ -34,7 +33,6 @@ interface LogRow {
   status?: string;
   date?: string;
   time?: string;
-  // Add system log fields
   name?: string;
   type?: string;
 }
@@ -55,8 +53,11 @@ const Logs = () => {
     page: 0,
   });
   const colors = useThemeColors();
-  const [periodAnchorEl, setPeriodAnchorEl] = useState<null | HTMLElement>(null);
-  const [selectedPeriod, setSelectedPeriod] = useState<TimePeriod>("current-month");
+  const [periodAnchorEl, setPeriodAnchorEl] = useState<null | HTMLElement>(
+    null
+  );
+  const [selectedPeriod, setSelectedPeriod] =
+    useState<TimePeriod>("current-month");
   const [searchText, setSearchText] = useState("");
   const [rows, setRows] = useState<LogRow[]>([]);
   const [loading, setLoading] = useState(false);
@@ -77,7 +78,7 @@ const Logs = () => {
   };
 
   const handleCloseToast = (
-    event?: React.SyntheticEvent | Event,
+    _event?: React.SyntheticEvent | Event,
     reason?: string
   ) => {
     if (reason === "clickaway") {
@@ -86,7 +87,6 @@ const Logs = () => {
     setToast({ ...toast, open: false });
   };
 
-  // Define columns for the data grid with updated status renderer
   const securityColumns = [
     {
       field: "user",
@@ -109,18 +109,18 @@ const Logs = () => {
         const status = params.value?.toLowerCase() || "";
         let backgroundColor = "";
         const textColor = "#ffffff";
-        
+
         if (status === "success") {
-          backgroundColor = "#4caf50"; // Green
+          backgroundColor = "#4caf50";
         } else if (status === "failed") {
-          backgroundColor = "#f44336"; // Red
+          backgroundColor = "#f44336";
         } else {
-          backgroundColor = "#ff9800"; // Orange for other statuses
+          backgroundColor = "#ff9800";
         }
-        
+
         return (
           <Box
-           sx={{
+            sx={{
               display: "inline-flex",
               alignItems: "center",
               justifyContent: "center",
@@ -132,7 +132,7 @@ const Logs = () => {
               fontWeight: "600",
               textTransform: "capitalize",
               minWidth: "50px",
-              height:"30px",
+              height: "30px",
               boxShadow: "0 1px 3px rgba(0,0,0,0.2)",
             }}
           >
@@ -183,15 +183,15 @@ const Logs = () => {
         const status = params.value?.toLowerCase() || "";
         let backgroundColor = "";
         const textColor = "#ffffff";
-        
+
         if (status === "success") {
-          backgroundColor = "#4caf50"; // Green
+          backgroundColor = "#4caf50";
         } else if (status === "failed") {
-          backgroundColor = "#f44336"; // Red
+          backgroundColor = "#f44336";
         } else {
-          backgroundColor = "#ff9800"; // Orange for other statuses
+          backgroundColor = "#ff9800";
         }
-        
+
         return (
           <Box
             sx={{
@@ -206,7 +206,7 @@ const Logs = () => {
               fontWeight: "600",
               textTransform: "capitalize",
               minWidth: "50px",
-              height:"30px",
+              height: "30px",
               boxShadow: "0 1px 3px rgba(0,0,0,0.2)",
             }}
           >
@@ -273,40 +273,40 @@ const Logs = () => {
   // Helper function to get time period parameters for API
   const getTimePeriodParams = (period: TimePeriod) => {
     const now = new Date();
-    
+
     switch (period) {
       case "current-month":
         return {
-          month: String(now.getMonth() + 1).padStart(2, "0")
+          month: String(now.getMonth() + 1).padStart(2, "0"),
         };
-      
+
       case "weekly":
         // Last 7 days
         const oneWeekAgo = new Date(now);
         oneWeekAgo.setDate(now.getDate() - 7);
         return {
-          from_date: oneWeekAgo.toISOString().split('T')[0],
-          to_date: now.toISOString().split('T')[0]
+          from_date: oneWeekAgo.toISOString().split("T")[0],
+          to_date: now.toISOString().split("T")[0],
         };
-      
+
       case "quarterly":
         // Last 3 months
         const threeMonthsAgo = new Date(now);
         threeMonthsAgo.setMonth(now.getMonth() - 3);
         return {
-          from_date: threeMonthsAgo.toISOString().split('T')[0],
-          to_date: now.toISOString().split('T')[0]
+          from_date: threeMonthsAgo.toISOString().split("T")[0],
+          to_date: now.toISOString().split("T")[0],
         };
-      
+
       case "yearly":
         // Last 12 months
         const oneYearAgo = new Date(now);
         oneYearAgo.setFullYear(now.getFullYear() - 1);
         return {
-          from_date: oneYearAgo.toISOString().split('T')[0],
-          to_date: now.toISOString().split('T')[0]
+          from_date: oneYearAgo.toISOString().split("T")[0],
+          to_date: now.toISOString().split("T")[0],
         };
-      
+
       default:
         return {};
     }
@@ -343,12 +343,10 @@ const Logs = () => {
         page_size: "100",
       };
 
-      // Add search parameter if provided
       if (searchText) {
         params.search = searchText;
       }
 
-      // Add time period parameters
       const periodParams = getTimePeriodParams(selectedPeriod);
       Object.assign(params, periodParams);
 
@@ -363,7 +361,6 @@ const Logs = () => {
         return;
       }
 
-      // First, get total count to know how many pages to fetch
       const initialResponse = await axios.get(endpoint, {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -378,14 +375,12 @@ const Logs = () => {
         return;
       }
 
-      // Calculate number of pages needed
-      const pageSize = 100; // Max allowed by backend
+      const pageSize = 100;
       const totalPages = Math.ceil(totalCount / pageSize);
 
-      // If we only need one page, use the data we already have
-      let allLogs = initialResponse.data?.logs || initialResponse.data?.data || [];
+      let allLogs =
+        initialResponse.data?.logs || initialResponse.data?.data || [];
 
-      // Fetch additional pages if needed
       for (let page = 1; page < totalPages; page++) {
         const pageParams = { ...params, page: String(page) };
 
@@ -397,14 +392,14 @@ const Logs = () => {
             params: pageParams,
           });
 
-          const pageLogs = pageResponse.data?.logs || pageResponse.data?.data || [];
+          const pageLogs =
+            pageResponse.data?.logs || pageResponse.data?.data || [];
           allLogs = [...allLogs, ...pageLogs];
 
-          // Add a small delay to avoid overwhelming the server
           await new Promise((resolve) => setTimeout(resolve, 100));
         } catch (pageError) {
           console.error(`Error fetching page ${page}:`, pageError);
-          // Continue with what we have
+
           break;
         }
       }
@@ -419,12 +414,12 @@ const Logs = () => {
       const workbook = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(workbook, worksheet, "Logs");
 
-      const periodLabel = getPeriodLabel(selectedPeriod).toLowerCase().replace(" ", "_");
+      const periodLabel = getPeriodLabel(selectedPeriod)
+        .toLowerCase()
+        .replace(" ", "_");
       const filename = `${
         activeTab === "security" ? "Security" : "System"
-      }_Logs_${periodLabel}_${new Date()
-        .toISOString()
-        .slice(0, 10)}.xlsx`;
+      }_Logs_${periodLabel}_${new Date().toISOString().slice(0, 10)}.xlsx`;
 
       XLSX.writeFile(workbook, filename);
 
@@ -461,18 +456,15 @@ const Logs = () => {
         return;
       }
 
-      // Build parameters
       const params: Record<string, string> = {
         page: String(paginationModel.page),
         page_size: String(paginationModel.pageSize),
       };
 
-      // Add search parameter if provided
       if (searchText) {
         params.search = searchText;
       }
 
-      // Add time period parameters
       const periodParams = getTimePeriodParams(selectedPeriod);
       Object.assign(params, periodParams);
 
@@ -482,7 +474,6 @@ const Logs = () => {
       } else if (activeTab === "system") {
         endpoint = `http://localhost:8000/v-1/application/logs/system`;
       } else {
-        // For audit tab, return empty for now
         setRows([]);
         setTotalCount(0);
         return;
@@ -708,19 +699,19 @@ const Logs = () => {
           <IconButton
             onClick={handleDownload}
             sx={{
-              backgroundColor: colors.primary.main, // Purple background
+              backgroundColor: colors.primary.main,
               border: "1px solid",
-              borderColor: colors.primary.main, // Purple border
+              borderColor: colors.primary.main,
               borderRadius: 8,
-              color: "#ffffff", // White color for the icon
+              color: "#ffffff",
               height: 40,
-              width: 40, // Ensure it's square
+              width: 40,
               "&:hover": {
-                backgroundColor: colors.primary.dark, // Darker purple on hover
+                backgroundColor: colors.primary.dark,
                 borderColor: colors.primary.dark,
               },
               "& .MuiSvgIcon-root": {
-                color: "#ffffff", // Ensure the icon is white
+                color: "#ffffff",
               },
             }}
           >

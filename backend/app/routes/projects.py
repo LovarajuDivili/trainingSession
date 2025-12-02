@@ -34,7 +34,7 @@ async def create_project(project: ProjectBase):
         create_system_log(
             name=project.projectName,
             log_type="project",
-            action="creation",
+            action="Creation",
             status="success"
         )
         
@@ -44,7 +44,7 @@ async def create_project(project: ProjectBase):
         create_system_log(
             name=project.projectName,
             log_type="project",
-            action="creation",
+            action="Creation",
             status="failed"
         )
         raise
@@ -53,7 +53,7 @@ async def create_project(project: ProjectBase):
         create_system_log(
             name=project.projectName,
             log_type="project",
-            action="creation",
+            action="Creation",
             status="failed"
         )
         raise HTTPException(status_code=500, detail=str(e))

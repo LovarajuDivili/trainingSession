@@ -19,6 +19,8 @@ from app.models.otp import save_otp, verify_otp
 from app.utils.email_service import send_email
 from app.utils.email_service import send_email
 from app.utils.logs import create_log_entry  
+from jose import jwt, JWTError
+from app.utils.logs import create_log_entry
 
 
 router = APIRouter(prefix="/auth", tags=["authentication"])
@@ -26,14 +28,53 @@ security = HTTPBearer()
 
 def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)):
     token = credentials.credentials
-    email = verify_token(token)
-    if email is None:
+    
+    try:
+        # First, try to verify the token normally
+        from app.utils.auth import SECRET_KEY, ALGORITHM
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        email = payload.get("sub")
+        
+        if email is None:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid authentication credentials",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+        
+    except jwt.ExpiredSignatureError:
+        # Token is expired - log the automatic logout
+        try:
+            # Decode without verification to get email from expired token
+            payload = jwt.decode(
+                token, 
+                SECRET_KEY, 
+                algorithms=[ALGORITHM], 
+                options={"verify_exp": False}
+            )
+            expired_email = payload.get("sub")
+            
+            if expired_email:
+                # Log the automatic logout due to token expiry
+                create_log_entry(expired_email, "logout", "success", "token_expired")
+        except Exception:
+            pass
+        
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Token expired",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+        
+    except JWTError:
+        # Other JWT errors
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid authentication credentials",
             headers={"WWW-Authenticate": "Bearer"},
         )
     
+    # If we get here, token is valid
     user = db.users.find_one({"email": email})
     if user is None:
         raise HTTPException(
@@ -217,14 +258,9 @@ async def reset_password_route(data: ResetPasswordRequest):
     )
     return {"message": "Password reset successful"}
 
-@router.get("/me", response_model=UserResponse)
-async def get_current_user_info(current_user: dict = Depends(get_current_user)):
-    return current_user
-
-
 @router.post("/logout")
 async def logout(current_user: dict = Depends(get_current_user)):
-    """Log user logout action"""
+    """Log manual user logout"""
     try:
         # Check if a logout entry already exists in the last minute to prevent duplicates
         current_time = datetime.utcnow()
@@ -238,7 +274,12 @@ async def logout(current_user: dict = Depends(get_current_user)):
         
         # Only create a new log entry if no recent duplicate exists
         if not existing_logout:
-            create_log_entry(current_user["email"], "logout", "success")
+            create_log_entry(
+                current_user["email"], 
+                "logout", 
+                "success"
+                # No reason field for manual logout
+            )
         
         return {"message": "Logged out successfully"}
     except Exception as e:

@@ -28,10 +28,27 @@ import OpeningsEvents from "./components/SideBarComponents/OpeningsEvents";
 import OpeningsAndEvents from "./pages/OpeningsAndEvents";
 import { OrdersProvider } from "./context/OrderContext";
 import { ThemeProvider } from "./context/ThemeContext";
+import { useEffect } from "react";
 
-// Create a separate component that uses useAuth
 const AppContent = () => {
   const { isAuthenticated, isLoading } = useAuth();
+
+  useEffect(() => {
+    const checkAuthStatus = () => {
+      const token = sessionStorage.getItem("token");
+      const currentPath = window.location.pathname;
+
+      if (
+        !token &&
+        !currentPath.includes("/signin") &&
+        !currentPath.includes("/signup") &&
+        !currentPath.includes("/logout")
+      ) {
+        window.location.href = "/signin";
+      }
+    };
+    checkAuthStatus();
+  }, []);
 
   if (isLoading) {
     return (
@@ -177,12 +194,14 @@ const AppContent = () => {
 const App = () => {
   return (
     <ThemeProvider>
-      <AuthProvider> {/* AuthProvider first */}
-        <CartProvider> {/* Then CartProvider */}
+      <AuthProvider>
+        {" "}
+        <CartProvider>
+          {" "}
           <OrdersProvider>
             <CartDrawerProvider>
               <Box>
-                <AppContent /> {/* Use AppContent instead of AppRoutes */}
+                <AppContent />
               </Box>
               <CartDrawer />
             </CartDrawerProvider>

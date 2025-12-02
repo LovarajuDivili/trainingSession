@@ -28,6 +28,8 @@ import sha256 from "crypto-js/sha256";
 import MenuItem from "@mui/material/MenuItem";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import PersonIcon from "@mui/icons-material/Person"; // Added for empty avatar
+import { colors } from "./common/colorConstants";
+
 
 const Card = styled(MuiCard)(({ theme }) => ({
   display: "flex",
@@ -274,7 +276,7 @@ export default function SignUp(props: { disableCustomTheme?: boolean }) {
               src={profileImage || undefined}
               alt="Profile preview"
               sx={{
-                width: 60,
+                width: 70,
                 height: 70,
                 border: "3px solid",
                 borderColor: profileImage ? "#906aff" : "divider",
@@ -285,8 +287,8 @@ export default function SignUp(props: { disableCustomTheme?: boolean }) {
               {!profileImage && (
                 <PersonIcon
                   sx={{
-                    width: 40,
-                    height: 40,
+                    width: 50,
+                    height: 50,
                     color: "text.secondary",
                   }}
                 />
@@ -299,8 +301,9 @@ export default function SignUp(props: { disableCustomTheme?: boolean }) {
                   display: "block",
                   textAlign: "center",
                   mt: 0.5,
-                  color: "text.secondary",
+                  
                   fontSize: "0.7rem",
+                  color: colors.light.primary.main,
                 }}
               >
                 Upload image
@@ -417,6 +420,7 @@ export default function SignUp(props: { disableCustomTheme?: boolean }) {
                   "&:hover": {
                     borderColor: imageError ? "error.dark" : "primary.main",
                   },
+                  color:colors.light.primary.main,
                 }}
               >
                 {profileImage ? "Change Image" : "Upload Image"}
