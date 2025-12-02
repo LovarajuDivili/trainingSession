@@ -20,6 +20,52 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [isSigningUp, setIsSigningUp] = useState(false);
   const [isLoggingIn, setIsLoggingIn] = useState(false);
 
+  // Function to clear auth data
+  const clearAuthData = () => {
+    sessionStorage.removeItem("token");
+    sessionStorage.removeItem("user");
+    delete axios.defaults.headers.common["Authorization"];
+    setUser(null);
+  };
+
+  // Setup axios interceptor to handle token expiration
+  useEffect(() => {
+    const setupInterceptors = () => {
+      const interceptor = axios.interceptors.response.use(
+        (response) => response,
+        (error) => {
+          if (error.response?.status === 401) {
+            const errorMessage = error.response?.data?.detail || "";
+
+            if (
+              errorMessage.includes("Token expired") ||
+              errorMessage.includes("Invalid authentication credentials")
+            ) {
+              // Clear auth data
+              clearAuthData();
+
+              // Redirect to login if not already there
+              if (
+                !window.location.pathname.includes("/signin") &&
+                !window.location.pathname.includes("/signup")
+              ) {
+                window.location.href = "/signin";
+              }
+            }
+          }
+          return Promise.reject(error);
+        }
+      );
+
+      return () => {
+        axios.interceptors.response.eject(interceptor);
+      };
+    };
+
+    setupInterceptors();
+  }, []);
+
+  // Initialize auth state
   useEffect(() => {
     const token = sessionStorage.getItem("token");
     const userData = sessionStorage.getItem("user");
@@ -94,31 +140,29 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
-  // FIXED: Call the logout endpoint but handle errors gracefully
   const logout = async () => {
     try {
       const token = sessionStorage.getItem("token");
       if (token) {
-        // Call logout endpoint to record the action
-        await axios.post(
-          "http://localhost:8000/v-1/application/auth/logout",
-          {},
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
+        // Try to call logout endpoint, but don't fail if it doesn't work
+        await axios
+          .post(
+            "http://localhost:8000/v-1/application/auth/logout",
+            {},
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            }
+          )
+          .catch(() => {
+            // Ignore errors - we still want to clear local storage
+          });
       }
-    } catch (error) {
-      // Even if the logout API call fails, we still want to clear local storage
-      console.error("Error calling logout endpoint:", error);
     } finally {
-      // Always clear local storage and state
-      sessionStorage.removeItem("token");
-      sessionStorage.removeItem("user");
-      delete axios.defaults.headers.common["Authorization"];
-      setUser(null);
+      clearAuthData();
+      // Redirect to login page
+      window.location.href = "/signin";
     }
   };
 
