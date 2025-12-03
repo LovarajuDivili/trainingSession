@@ -78,7 +78,7 @@ const Header = ({ role: propRole }: { role?: string }) => {
     const path = location.pathname;
     if (path.includes("/admin")) return "admin";
     if (path.includes("/accountant")) return "accountant";
-    if (path.includes("/functional")) return "functional";
+    if (path.includes("/aitools")) return "aitools";
     if (path.includes("/migrator")) return "migrator";
     if (path.includes("/tester")) return "tester";
 
@@ -95,13 +95,13 @@ const Header = ({ role: propRole }: { role?: string }) => {
     setOpenDialog(true);
   };
 
-   const confirmLogout = async () => {
+  const confirmLogout = async () => {
     try {
       setIsLoggingOut(true);
       await logout(); // Wait for logout to complete
       setOpenDialog(false);
       setOpenSnackbar(true);
-      
+
       // Navigate to login page after successful logout
       setTimeout(() => {
         navigate("/login");
@@ -177,7 +177,7 @@ const Header = ({ role: propRole }: { role?: string }) => {
           <strong>{Aifa.AIFA}</strong>
         </Typography>
 
-        {/* Show role badge only if we have a role AND we're not on welcome page */}
+        
         {!isWelcomePage && role && roleIcon && (
           <>
             <Divider
@@ -320,9 +320,9 @@ const Header = ({ role: propRole }: { role?: string }) => {
           <Box sx={{ position: "relative" }}>
             <IconButton
               onClick={handleIconClick}
-              sx={{ 
+              sx={{
                 color: colors.primary.main,
-                padding: '4px' // Reduce padding for better avatar fit
+                padding: "4px", // Reduce padding for better avatar fit
               }}
             >
               {profileImage ? (
@@ -398,7 +398,7 @@ const Header = ({ role: propRole }: { role?: string }) => {
               },
             }}
           >
-           {isLoggingOut ? "Logging out..." : Confirm.CONFIRM}
+            {isLoggingOut ? "Logging out..." : Confirm.CONFIRM}
           </Button>
         </DialogActions>
       </Dialog>

@@ -1,11 +1,10 @@
 import type { JSX } from "react";
 import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
 import CodeIcon from "@mui/icons-material/Code";
-import SettingsApplicationsIcon from "@mui/icons-material/SettingsApplications";
+import SmartToyIcon from "@mui/icons-material/SmartToy";
 import SyncAltIcon from "@mui/icons-material/SyncAlt";
 import BugReportIcon from "@mui/icons-material/BugReport";
 import AccountBalanceWalletIcon from "@mui/icons-material/AccountBalanceWallet";
-import GroupIcon from "@mui/icons-material/Group";
 import PersonAddIcon from "@mui/icons-material/Group";
 
 export const roleIcons: Record<string, JSX.Element> = {
@@ -14,8 +13,8 @@ export const roleIcons: Record<string, JSX.Element> = {
     <AccountBalanceWalletIcon sx={{ fontSize: 18, color: "white" }} />
   ),
   developer: <CodeIcon sx={{ fontSize: 18, color: "white" }} />,
-  functional: (
-    <SettingsApplicationsIcon sx={{ fontSize: 18, color: "white" }} />
+  aitools: (
+    <SmartToyIcon sx={{ fontSize: 18, color: "white" }} />
   ),
   migrator: <SyncAltIcon sx={{ fontSize: 18, color: "white" }} />,
   tester: <BugReportIcon sx={{ fontSize: 18, color: "white" }} />,
@@ -38,13 +37,13 @@ export const roles = [
     active: true,
   },
   {
-    value: "employee",
-    label: "Employee",
-    description: "Execute daily assigned tasks",
+    value: "aitools",
+    label: "AI Tools",
+    description: "Automating tasks, solving problems. ",
     icon: (
-      <GroupIcon sx={{ fontSize: 50, color: "rgba(255, 153, 153, 0.81)" }} />
+      <SmartToyIcon sx={{ fontSize: 50, color: "rgba(255, 153, 153, 0.81)" }} />
     ),
-    active: false,
+    active: true,
   },
   {
     value: "hrteam",
