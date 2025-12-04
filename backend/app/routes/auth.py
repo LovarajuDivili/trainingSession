@@ -55,10 +55,27 @@ def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(securit
             expired_email = payload.get("sub")
             
             if expired_email:
-                # Log the automatic logout due to token expiry
-                create_log_entry(expired_email, "logout", "success", "token_expired")
+                # Check for duplicate automatic logout in last minute
+                current_time = datetime.utcnow()
+                one_minute_ago = current_time - timedelta(minutes=1)
+                
+                existing_auto_logout = db.logs.find_one({
+                    "user": expired_email,
+                    "action": "logout",
+                    "reason": "token_expired",
+                    "timestamp": {"$gte": one_minute_ago}
+                })
+                
+                # Only create a new log entry if no recent duplicate exists
+                if not existing_auto_logout:
+                    create_log_entry(
+                        expired_email, 
+                        "logout", 
+                        "success", 
+                        "token_expired"
+                    )
         except Exception:
-            pass
+            pass  # Don't let logging errors interfere with the main flow
         
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,

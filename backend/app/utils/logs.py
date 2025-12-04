@@ -17,6 +17,8 @@ def create_log_entry(user: str, action: str, status: str, reason: str = None):
             "timestamp": current_time
         }
         
+        if reason:
+            log_entry["reason"] = reason
         result = db.logs.insert_one(log_entry)
         return str(result.inserted_id)
     except Exception as e:
