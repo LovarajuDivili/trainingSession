@@ -34,7 +34,7 @@ interface LogRow {
   time?: string;
   name?: string;
   type?: string;
-  reason?: string;
+  // reason?: string;
 }
 
 interface ToastState {
@@ -140,16 +140,16 @@ const Logs = () => {
         );
       },
     },
-    {
-      field: "reason",
-      headerName: "Reason",
-      width: 180,
-      headerClassName: "grid-header",
-      valueGetter: (params: any) => {
-        if (!params || !params.row) return "-";
-        return params.row.reason || "-";
-      },
-    },
+    // {
+    //   field: "reason",
+    //   headerName: "Reason",
+    //   width: 180,
+    //   headerClassName: "grid-header",
+    //   valueGetter: (params: any) => {
+    //     if (!params || !params.row) return "-";
+    //     return params.row.reason || "-";
+    //   },
+    // },
     {
       field: "date",
       headerName: "DATE (MM-DD-YYYY)",
