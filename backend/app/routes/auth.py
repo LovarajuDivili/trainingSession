@@ -9,7 +9,8 @@ from app.utils.auth import (
     create_access_token, 
     verify_token,
     ACCESS_TOKEN_EXPIRE_MINUTES,
-    timedelta
+    timedelta,
+    verify_token_allow_expired
 )
 from datetime import datetime
 from bson import ObjectId
@@ -30,7 +31,7 @@ def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(securit
     token = credentials.credentials
     
     try:
-        # First, try to verify the token normally
+        
         from app.utils.auth import SECRET_KEY, ALGORITHM
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         email = payload.get("sub")
@@ -43,9 +44,9 @@ def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(securit
             )
         
     except jwt.ExpiredSignatureError:
-        # Token is expired - log the automatic logout
+       
         try:
-            # Decode without verification to get email from expired token
+           
             payload = jwt.decode(
                 token, 
                 SECRET_KEY, 
@@ -55,7 +56,7 @@ def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(securit
             expired_email = payload.get("sub")
             
             if expired_email:
-                # Check for duplicate automatic logout in last minute
+                
                 current_time = datetime.utcnow()
                 one_minute_ago = current_time - timedelta(minutes=1)
                 
@@ -66,7 +67,7 @@ def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(securit
                     "timestamp": {"$gte": one_minute_ago}
                 })
                 
-                # Only create a new log entry if no recent duplicate exists
+
                 if not existing_auto_logout:
                     create_log_entry(
                         expired_email, 
@@ -75,7 +76,7 @@ def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(securit
                         "token_expired"
                     )
         except Exception:
-            pass  # Don't let logging errors interfere with the main flow
+            pass  
         
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -279,7 +280,7 @@ async def reset_password_route(data: ResetPasswordRequest):
 async def logout(current_user: dict = Depends(get_current_user)):
     """Log manual user logout"""
     try:
-        # Check if a logout entry already exists in the last minute to prevent duplicates
+        
         current_time = datetime.utcnow()
         one_minute_ago = current_time - timedelta(minutes=1)
         
@@ -289,16 +290,56 @@ async def logout(current_user: dict = Depends(get_current_user)):
             "timestamp": {"$gte": one_minute_ago}
         })
         
-        # Only create a new log entry if no recent duplicate exists
+        
         if not existing_logout:
             create_log_entry(
                 current_user["email"], 
                 "logout", 
                 "success"
-                # No reason field for manual logout
+                
             )
         
         return {"message": "Logged out successfully"}
     except Exception as e:
         print(f"Logout logging error: {str(e)}")
         return {"message": "Logged out"}
+    
+@router.post("/log-automatic-logout")
+async def log_automatic_logout(request: dict):
+    """Log automatic logout for expired tokens"""
+    try:
+        token = request.get("token")
+        if not token:
+            return {"message": "No token provided"}
+        
+       
+        email = verify_token_allow_expired(token)
+        if not email:
+            return {"message": "Invalid token"}
+        
+        reason = request.get("reason", "token_expired")
+        
+        
+        current_time = datetime.utcnow()
+        one_minute_ago = current_time - timedelta(minutes=1)
+        
+        existing_auto_logout = db.logs.find_one({
+            "user": email,
+            "action": "logout",
+            "reason": reason,
+            "timestamp": {"$gte": one_minute_ago}
+        })
+        
+       
+        if not existing_auto_logout:
+            create_log_entry(
+                email, 
+                "logout", 
+                "success", 
+                reason
+            )
+        
+        return {"message": "Automatic logout logged successfully"}
+    except Exception as e:
+        print(f"Automatic logout logging error: {str(e)}")
+        return {"message": "Logging failed"}

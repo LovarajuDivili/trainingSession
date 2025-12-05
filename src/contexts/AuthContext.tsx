@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable react-refresh/only-export-components */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { createContext, useState, useContext, useEffect } from "react";
@@ -20,7 +21,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [isSigningUp, setIsSigningUp] = useState(false);
   const [isLoggingIn, setIsLoggingIn] = useState(false);
 
-  // Function to clear auth data
+ 
   const clearAuthData = () => {
     sessionStorage.removeItem("token");
     sessionStorage.removeItem("user");
@@ -28,7 +29,44 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setUser(null);
   };
 
-  // Setup axios interceptor to handle token expiration
+  
+  const handleAutomaticLogout = async (errorMessage: string) => {
+    const token = sessionStorage.getItem("token");
+    
+    if (token) {
+      try {
+        // Try to call logout endpoint to record automatic logout
+        await axios.post(
+          "http://localhost:8000/v-1/application/auth/automatic-logout",
+          {
+            reason: errorMessage.includes("Token expired") 
+              ? "token_expired" 
+              : "invalid_credentials"
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+      } catch (error) {
+        console.log("Automatic logout logging failed (expected for expired tokens)");
+      }
+    }
+    
+    
+    clearAuthData();
+    
+    
+    if (
+      !window.location.pathname.includes("/signin") &&
+      !window.location.pathname.includes("/signup")
+    ) {
+      window.location.href = "/signin";
+    }
+  };
+
+  
   useEffect(() => {
     const setupInterceptors = () => {
       const interceptor = axios.interceptors.response.use(
@@ -41,16 +79,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
               errorMessage.includes("Token expired") ||
               errorMessage.includes("Invalid authentication credentials")
             ) {
-              // Clear auth data
-              clearAuthData();
-
-              // Redirect to login if not already there
-              if (
-                !window.location.pathname.includes("/signin") &&
-                !window.location.pathname.includes("/signup")
-              ) {
-                window.location.href = "/signin";
-              }
+              
+              handleAutomaticLogout(errorMessage);
             }
           }
           return Promise.reject(error);
@@ -65,7 +95,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setupInterceptors();
   }, []);
 
-  // Initialize auth state
+  
   useEffect(() => {
     const token = sessionStorage.getItem("token");
     const userData = sessionStorage.getItem("user");
@@ -144,24 +174,22 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       const token = sessionStorage.getItem("token");
       if (token) {
-        // Try to call logout endpoint, but don't fail if it doesn't work
-        await axios
-          .post(
-            "http://localhost:8000/v-1/application/auth/logout",
-            {},
-            {
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-            }
-          )
-          .catch(() => {
-            // Ignore errors - we still want to clear local storage
-          });
+        await axios.post(
+          "http://localhost:8000/v-1/application/auth/logout",
+          {},
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
       }
+    } catch (error) {
+     
+      console.log("Logout endpoint failed, but clearing local storage anyway");
     } finally {
       clearAuthData();
-      // Redirect to login page
+     
       window.location.href = "/signin";
     }
   };

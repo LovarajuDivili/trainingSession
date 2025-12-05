@@ -151,7 +151,7 @@ const Chatbot = () => {
               borderTopRightRadius: "10px",
             }}
           >
-            <Typography fontWeight="bold">AI Assistant</Typography>
+            <Typography fontWeight="bold">🤖 AI Assistant</Typography>
 
             <IconButton
               size="small"
