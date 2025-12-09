@@ -8,3 +8,4 @@ python-jose[cryptography]
 passlib[bcrypt]
 python-multipart
 pydantic[email]
+google-generativeai>=0.3.0

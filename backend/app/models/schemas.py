@@ -169,3 +169,13 @@ class OrderResponse(OrderBase):
     
     class Config:
         from_attributes = True
+
+class ChatMessage(BaseModel):
+    message: str
+    conversation_id: Optional[str] = None
+
+
+class ChatResponse(BaseModel):
+    reply: str
+    status: str = "success"
+    conversation_id: Optional[str] = None
