@@ -24,7 +24,6 @@ import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import axios from "axios";
 import * as XLSX from "xlsx";
 
-// Update the LogRow interface
 interface LogRow {
   _id: string;
   id: string;
@@ -35,6 +34,7 @@ interface LogRow {
   time?: string;
   name?: string;
   type?: string;
+  // reason?: string;
 }
 
 interface ToastState {
@@ -68,7 +68,6 @@ const Logs = () => {
     severity: "success",
   });
 
-  // Toast handler functions
   const showToast = (message: string, severity: AlertColor = "success") => {
     setToast({
       open: true,
@@ -141,6 +140,16 @@ const Logs = () => {
         );
       },
     },
+    // {
+    //   field: "reason",
+    //   headerName: "Reason",
+    //   width: 180,
+    //   headerClassName: "grid-header",
+    //   valueGetter: (params: any) => {
+    //     if (!params || !params.row) return "-";
+    //     return params.row.reason || "-";
+    //   },
+    // },
     {
       field: "date",
       headerName: "DATE (MM-DD-YYYY)",

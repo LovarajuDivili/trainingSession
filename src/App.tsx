@@ -29,6 +29,8 @@ import OpeningsAndEvents from "./pages/OpeningsAndEvents";
 import { OrdersProvider } from "./context/OrderContext";
 import { ThemeProvider } from "./context/ThemeContext";
 import { useEffect } from "react";
+import Chatbot from "./components/Chatbot";
+
 
 const AppContent = () => {
   const { isAuthenticated, isLoading } = useAuth();
@@ -202,6 +204,7 @@ const App = () => {
             <CartDrawerProvider>
               <Box>
                 <AppContent />
+                <Chatbot />
               </Box>
               <CartDrawer />
             </CartDrawerProvider>
