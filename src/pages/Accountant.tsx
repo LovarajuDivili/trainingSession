@@ -23,7 +23,6 @@ import axios from "axios";
 import { useAppDispatch, useAppSelector } from "../hooks/reduxHooks";
 import { fetchEmployees } from "../store/EmployeesSlice";
 
-
 const Accountant = () => {
   const colors = useThemeColors();
   const dispatch = useAppDispatch();
@@ -254,7 +253,15 @@ const Accountant = () => {
 
             {/* Card 4 - Others */}
             <Card
-              sx={getCardStyles}
+              sx={{
+                ...getCardStyles(),
+                cursor: "pointer",
+
+                "&:hover": {
+                  transform: "scale(1.03)",
+                  boxShadow: 6,
+                },
+              }}
               onClick={() => navigate("/accountant/requestOrder")}
             >
               <CardContent
