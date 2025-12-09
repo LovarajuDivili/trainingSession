@@ -13,7 +13,7 @@ import Statistics from "./components/SideBarComponents/Statistics";
 import AddProject from "./components/ExtraComponents/AddProject";
 import SignIn from "./SignIn";
 import SignUp from "./SignUp";
-import Functional from "./pages/Funtional";
+import AITools from "./pages/AITools";
 import Migrator from "./pages/Migrator";
 import Tester from "./pages/Tester";
 import Accountant from "./pages/Accountant";
@@ -141,10 +141,10 @@ const AppContent = () => {
       />
 
       <Route
-        path="/functional"
+        path="/aitools"
         element={
           <ProtectedRoute>
-            <Functional />
+            <AITools />
           </ProtectedRoute>
         }
       />
