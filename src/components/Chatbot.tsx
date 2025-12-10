@@ -16,6 +16,10 @@ import { useLocation } from "react-router-dom";
 import { useThemeColors } from "../hooks/useThemeColors";
 import MicIcon from "@mui/icons-material/Mic";
 import SendIcon from "@mui/icons-material/Send";
+import type { RootState } from "../store/Store";
+import { useDispatch, useSelector } from "react-redux";
+import { addMessage, setHistory } from "../store/ChatSlice";
+import { useAuth } from "../contexts/AuthContext";
 
 type Message = {
   sender: "user" | "bot";
@@ -26,18 +30,11 @@ type Message = {
 const Chatbot = () => {
   const location = useLocation();
   const colors = useThemeColors();
+  const { user, getToken, getUserEmail } = useAuth();
 
   const [open, setOpen] = useState(false);
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      sender: "bot",
-      text: "👋 Hi! I'm your AI assistant. How can I help you today?",
-      time: new Date().toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-      }),
-    },
-  ]);
+  const dispatch = useDispatch();
+  const messages = useSelector((s: RootState) => s.chat.messages);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [conversationId, setConversationId] = useState<string | null>(null);
@@ -45,54 +42,87 @@ const Chatbot = () => {
 
   const bottomRef = useRef<HTMLDivElement>(null);
 
-  // Scroll to bottom when messages change
+  const getAuthToken = (): string | null => {
+    if (!getToken) {
+      return sessionStorage.getItem("token");
+    }
+    return getToken();
+  };
+
+  const getCurrentUserEmail = (): string | undefined => {
+    if (!getUserEmail) {
+      return (
+        user?.email || JSON.parse(sessionStorage.getItem("user") || "{}")?.email
+      );
+    }
+    return getUserEmail();
+  };
+
+  const currentUserEmail = getCurrentUserEmail();
+  const currentToken = getAuthToken();
+
+  
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  const getTime = useCallback(() =>
-    new Date().toLocaleTimeString([], {
-      hour: "2-digit",
-      minute: "2-digit",
-    }), []);
+  const getTime = useCallback(
+    () =>
+      new Date().toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      }),
+    []
+  );
 
-  const startNewConversation = useCallback(async () => {
-    try {
-      const response = await fetch(
-        "http://localhost:8000/v-1/application/chatbot/new-conversation",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
+  
+  useEffect(() => {
+    if (!open || !currentUserEmail || !currentToken) return;
+
+    const loadHistory = async () => {
+      try {
+        setLoading(true);
+
+        const res = await fetch(
+          `http://localhost:8000/v-1/application/chatbot/history?user_email=${encodeURIComponent(
+            currentUserEmail
+          )}`,
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${currentToken}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        if (res.ok) {
+          const data = await res.json();
+          dispatch(setHistory(data.messages));
+
+          if (data.conversation_id) {
+            setConversationId(data.conversation_id);
+          }
+        } else {
+          console.error("Failed to load history:", await res.text());
         }
-      );
-
-      if (response.ok) {
-        const data = await response.json();
-        setConversationId(data.conversation_id);
+      } catch (error) {
+        console.error("Failed to load chat history:", error);
+      } finally {
+        setLoading(false);
       }
-    } catch (err) {
-      console.error("Failed to start new conversation:", err);
-    }
-  }, []);
+    };
 
-  // Initialize new conversation when chatbot opens
-  useEffect(() => {
-    if (open && !conversationId) {
-      startNewConversation();
-    }
-  }, [open, conversationId, startNewConversation]); // Added all dependencies
+    loadHistory();
+  }, [open, currentUserEmail, currentToken, dispatch]);
 
-  // If you want to start a new conversation every time the chatbot opens,
-  // regardless of existing conversationId, use this version:
-  /*
   useEffect(() => {
-    if (open) {
-      startNewConversation();
-    }
-  }, [open, startNewConversation]);
-  */
+    return () => {
+      
+      dispatch(setHistory([]));
+      setConversationId(null);
+    };
+  }, [dispatch]);
 
   if (
     location.pathname === "/welcome" ||
@@ -103,35 +133,74 @@ const Chatbot = () => {
 
   const getContextFromLocation = (): string => {
     const path = location.pathname;
-    
+
     if (path.includes("/admin")) return "User is on admin dashboard";
     if (path.includes("/accountant")) return "User is an accountant";
     if (path.includes("/projects")) return "User is viewing projects";
     if (path.includes("/inventory")) return "User is viewing inventory";
     if (path.includes("/hr")) return "User is viewing HR section";
-    
+
     return "General user context";
   };
 
-  const sendMessageToAPI = async (userMessage: string): Promise<{ reply: string; conversation_id?: string }> => {
+  const sendMessageToAPI = async (
+    userMessage: string
+  ): Promise<{ reply: string; conversation_id?: string }> => {
     try {
       const context = getContextFromLocation();
+      const token = getAuthToken(); 
+
+      if (!token) {
+        throw new Error("Authentication required. Please log in again.");
+      }
+
       
-      const response = await fetch("http://localhost:8000/v-1/application/chatbot/ask", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          message: userMessage,
-          context: context,
-          conversation_id: conversationId,
-        }),
-      });
+      console.log(
+        "Sending to API:",
+        JSON.stringify(
+          {
+            message: userMessage,
+            context: context,
+            conversation_id: conversationId,
+          },
+          null,
+          2
+        )
+      );
+
+      const response = await fetch(
+        "http://localhost:8000/v-1/application/chatbot/ask",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            message: userMessage,
+            context: context,
+            conversation_id: conversationId,
+           
+          }),
+        }
+      );
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.detail || `API error: ${response.status}`);
+        const errorText = await response.text();
+        console.error("API Error Response:", errorText);
+
+        let errorData = {};
+        try {
+          errorData = JSON.parse(errorText);
+        } catch {
+          errorData = { detail: errorText };
+        }
+
+        throw new Error(
+          (errorData as any).detail ||
+            (errorData as any).message ||
+            `API error: ${response.status}`
+        );
       }
 
       return await response.json();
@@ -142,7 +211,7 @@ const Chatbot = () => {
   };
 
   const sendMessage = async () => {
-    if (!input.trim() || loading) return;
+    if (!input.trim() || loading || !user?.email) return;
 
     const userMsg: Message = {
       sender: "user",
@@ -150,40 +219,36 @@ const Chatbot = () => {
       time: getTime(),
     };
 
-    setMessages((prev) => [...prev, userMsg]);
+    dispatch(addMessage(userMsg));
     setInput("");
     setLoading(true);
     setError(null);
 
     try {
       const result = await sendMessageToAPI(input);
-      
-      // Update conversation ID if returned
+
       if (result.conversation_id && !conversationId) {
         setConversationId(result.conversation_id);
       }
-      
+
       const botReply: Message = {
         sender: "bot",
         text: result.reply,
         time: getTime(),
       };
 
-      setMessages((prev) => [...prev, botReply]);
+      dispatch(addMessage(botReply));
     } catch (error: any) {
       console.error("Error getting AI response:", error);
-      
-      // Show error to user
       setError(error.message || "Failed to get AI response. Please try again.");
-      
-      // Fallback to basic response if AI fails
+
       const errorReply: Message = {
         sender: "bot",
         text: "I apologize, but I'm having trouble connecting to the AI service right now. Please try again in a moment.",
         time: getTime(),
       };
-      
-      setMessages((prev) => [...prev, errorReply]);
+
+      dispatch(addMessage(errorReply));
     } finally {
       setLoading(false);
     }
@@ -191,18 +256,6 @@ const Chatbot = () => {
 
   const handleCloseError = () => {
     setError(null);
-  };
-
-  const handleClearConversation = () => {
-    setMessages([
-      {
-        sender: "bot",
-        text: "👋 Hi! I'm your AI assistant. I've cleared our previous conversation. How can I help you now?",
-        time: getTime(),
-      },
-    ]);
-    setConversationId(null);
-    startNewConversation();
   };
 
   return (
@@ -213,7 +266,11 @@ const Chatbot = () => {
         onClose={handleCloseError}
         anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
       >
-        <Alert onClose={handleCloseError} severity="error" sx={{ width: "100%" }}>
+        <Alert
+          onClose={handleCloseError}
+          severity="error"
+          sx={{ width: "100%" }}
+        >
           {error}
         </Alert>
       </Snackbar>
@@ -279,19 +336,6 @@ const Chatbot = () => {
               <Typography fontWeight="bold">
                 <span style={{ fontSize: "30px" }}>🤖 </span>AI Assistant
               </Typography>
-              {conversationId && (
-                <Tooltip title="Clear conversation">
-                  <IconButton
-                    size="small"
-                    sx={{ color: "#fff", ml: 1 }}
-                    onClick={handleClearConversation}
-                  >
-                    <Typography variant="caption" sx={{ fontSize: "10px" }}>
-                      Clear
-                    </Typography>
-                  </IconButton>
-                </Tooltip>
-              )}
             </Box>
 
             <IconButton
@@ -442,7 +486,9 @@ const Chatbot = () => {
               size="small"
               fullWidth
               onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && sendMessage()}
+              onKeyDown={(e) =>
+                e.key === "Enter" && !e.shiftKey && sendMessage()
+              }
               placeholder="Type your message..."
               disabled={loading}
               multiline
@@ -466,9 +512,15 @@ const Chatbot = () => {
               onClick={sendMessage}
               disabled={!input.trim() || loading}
               sx={{
-                color: input.trim() && !loading ? colors.primary.main : colors.text.disabled,
+                color:
+                  input.trim() && !loading
+                    ? colors.primary.main
+                    : colors.text.disabled,
                 "&:hover": {
-                  backgroundColor: input.trim() && !loading ? colors.primary.light : "transparent",
+                  backgroundColor:
+                    input.trim() && !loading
+                      ? colors.primary.light
+                      : "transparent",
                 },
               }}
             >
