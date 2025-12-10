@@ -168,6 +168,8 @@ export interface AuthContextType {
   isLoading: boolean;
   isSigningUp: boolean;
   isLoggingIn: boolean;
+  getToken?: () => string | null;
+  getUserEmail?: () => string | undefined;
 }
 
 export interface AuthProviderProps {
