@@ -20,44 +20,39 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [isSigningUp, setIsSigningUp] = useState(false);
   const [isLoggingIn, setIsLoggingIn] = useState(false);
+  const [token, setToken] = useState<string | null>(null);
 
- 
   const clearAuthData = () => {
     sessionStorage.removeItem("token");
     sessionStorage.removeItem("user");
     delete axios.defaults.headers.common["Authorization"];
     setUser(null);
+    setToken(null);
   };
 
-  
   const handleAutomaticLogout = async (errorMessage: string) => {
-    const token = sessionStorage.getItem("token");
-    
-    if (token) {
+    const currentToken = sessionStorage.getItem("token");
+
+    if (currentToken) {
       try {
-        // Try to call logout endpoint to record automatic logout
         await axios.post(
-          "http://localhost:8000/v-1/application/auth/automatic-logout",
+          "http://localhost:8000/v-1/application/auth/log-automatic-logout",
           {
-            reason: errorMessage.includes("Token expired") 
-              ? "token_expired" 
-              : "invalid_credentials"
-          },
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
+            token: currentToken,
+            reason: errorMessage.includes("Token expired")
+              ? "token_expired"
+              : "invalid_credentials",
           }
         );
       } catch (error) {
-        console.log("Automatic logout logging failed (expected for expired tokens)");
+        console.log(
+          "Automatic logout logging failed (expected for expired tokens)"
+        );
       }
     }
-    
-    
+
     clearAuthData();
-    
-    
+
     if (
       !window.location.pathname.includes("/signin") &&
       !window.location.pathname.includes("/signup")
@@ -66,7 +61,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
-  
   useEffect(() => {
     const setupInterceptors = () => {
       const interceptor = axios.interceptors.response.use(
@@ -79,7 +73,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
               errorMessage.includes("Token expired") ||
               errorMessage.includes("Invalid authentication credentials")
             ) {
-              
               handleAutomaticLogout(errorMessage);
             }
           }
@@ -95,14 +88,22 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setupInterceptors();
   }, []);
 
-  
   useEffect(() => {
-    const token = sessionStorage.getItem("token");
+    const storedToken = sessionStorage.getItem("token");
     const userData = sessionStorage.getItem("user");
 
-    if (token && userData) {
-      setUser(JSON.parse(userData));
-      axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+    if (storedToken && userData) {
+      try {
+        const parsedUser = JSON.parse(userData);
+        setUser(parsedUser);
+        setToken(storedToken);
+        axios.defaults.headers.common[
+          "Authorization"
+        ] = `Bearer ${storedToken}`;
+      } catch (error) {
+        console.error("Error parsing user data:", error);
+        clearAuthData();
+      }
     }
 
     setIsLoading(false);
@@ -120,13 +121,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         }
       );
 
-      const { access_token: token, user: userData } = response.data;
+      const { access_token: newToken, user: userData } = response.data;
 
-      sessionStorage.setItem("token", token);
+      sessionStorage.setItem("token", newToken);
       sessionStorage.setItem("user", JSON.stringify(userData));
 
       setUser(userData);
-      axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+      setToken(newToken);
+      axios.defaults.headers.common["Authorization"] = `Bearer ${newToken}`;
 
       return userData;
     } catch (error: any) {
@@ -162,6 +164,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         }
       );
 
+      const { access_token: newToken, user: userData } = response.data;
+
+      sessionStorage.setItem("token", newToken);
+      sessionStorage.setItem("user", JSON.stringify(userData));
+
+      setUser(userData);
+      setToken(newToken);
+      axios.defaults.headers.common["Authorization"] = `Bearer ${newToken}`;
+
       return response.data;
     } catch (error: any) {
       throw new Error(error.response?.data?.detail || "Signup failed");
@@ -172,26 +183,34 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const logout = async () => {
     try {
-      const token = sessionStorage.getItem("token");
-      if (token) {
+      const currentToken = sessionStorage.getItem("token");
+      if (currentToken) {
         await axios.post(
           "http://localhost:8000/v-1/application/auth/logout",
           {},
           {
             headers: {
-              Authorization: `Bearer ${token}`,
+              Authorization: `Bearer ${currentToken}`,
             },
           }
         );
       }
     } catch (error) {
-     
       console.log("Logout endpoint failed, but clearing local storage anyway");
     } finally {
       clearAuthData();
-     
       window.location.href = "/signin";
     }
+  };
+
+  const getToken = () => {
+    return token || sessionStorage.getItem("token");
+  };
+
+  const getUserEmail = () => {
+    return (
+      user?.email || JSON.parse(sessionStorage.getItem("user") || "{}")?.email
+    );
   };
 
   const value = {
@@ -203,6 +222,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     isLoading,
     isSigningUp,
     isLoggingIn,
+    getToken,
+    getUserEmail,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

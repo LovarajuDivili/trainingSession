@@ -71,7 +71,7 @@ const coin3DWrapper = {
 
 const spinningCard = {
   transformStyle: "preserve-3d",
-  animation: "coinSpin 7s linear infinite",
+  animation: "coinSpin 30s linear infinite",
 
   "&:hover": {
     animationPlayState: "paused",

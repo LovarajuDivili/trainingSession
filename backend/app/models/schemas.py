@@ -1,6 +1,7 @@
 from pydantic import BaseModel
 from typing import List, Optional
 from datetime import date, datetime
+from typing import Literal
 
 class Item(BaseModel):
     name: str
@@ -169,3 +170,22 @@ class OrderResponse(OrderBase):
     
     class Config:
         from_attributes = True
+
+class ChatMessage(BaseModel):
+    message: str
+    conversation_id: Optional[str] = None
+    user_email: Optional[str] = None  
+    context: Optional[str] = None  
+
+
+class ChatResponse(BaseModel):
+    reply: str
+    status: str = "success"
+    conversation_id: Optional[str] = None
+
+class ChatDBModel(BaseModel):
+    conversation_id: str
+    sender: Literal["user", "bot"]
+    message: str
+    user_email: str  
+    created_at: datetime

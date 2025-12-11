@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState } from "react";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { useEffect, useRef, useState, useCallback } from "react";
 import {
   Box,
   Fab,
@@ -6,14 +7,19 @@ import {
   Typography,
   IconButton,
   TextField,
+  CircularProgress,
+  Snackbar,
+  Alert,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
-import PersonIcon from "@mui/icons-material/Person";
-import SmartToyIcon from "@mui/icons-material/SmartToy";
 import { useLocation } from "react-router-dom";
 import { useThemeColors } from "../hooks/useThemeColors";
 import MicIcon from "@mui/icons-material/Mic";
 import SendIcon from "@mui/icons-material/Send";
+import type { RootState } from "../store/Store";
+import { useDispatch, useSelector } from "react-redux";
+import { addMessage, setHistory } from "../store/ChatSlice";
+import { useAuth } from "../contexts/AuthContext";
 
 type Message = {
   sender: "user" | "bot";
@@ -24,53 +30,188 @@ type Message = {
 const Chatbot = () => {
   const location = useLocation();
   const colors = useThemeColors();
+  const { user, getToken, getUserEmail } = useAuth();
 
   const [open, setOpen] = useState(false);
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      sender: "bot",
-      text: "👋 Hi! I'm your AI assistant. How can I help you today?",
-      time: new Date().toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-      }),
-    },
-  ]);
+  const dispatch = useDispatch();
+  const messages = useSelector((s: RootState) => s.chat.messages);
   const [input, setInput] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [conversationId, setConversationId] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const bottomRef = useRef<HTMLDivElement>(null);
 
+  const getAuthToken = (): string | null => {
+    if (!getToken) {
+      return sessionStorage.getItem("token");
+    }
+    return getToken();
+  };
+
+  const getCurrentUserEmail = (): string | undefined => {
+    if (!getUserEmail) {
+      return (
+        user?.email || JSON.parse(sessionStorage.getItem("user") || "{}")?.email
+      );
+    }
+    return getUserEmail();
+  };
+
+  const currentUserEmail = getCurrentUserEmail();
+  const currentToken = getAuthToken();
+
+  
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  if (location.pathname === "/welcome" || location.pathname === "/signup" || location.pathname === "/signin" ) return null;
+  const getTime = useCallback(
+    () =>
+      new Date().toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      }),
+    []
+  );
 
-  const getTime = () =>
-    new Date().toLocaleTimeString([], {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
+  
+  useEffect(() => {
+    if (!open || !currentUserEmail || !currentToken) return;
 
-  const getBotReply = (userMsg: string) => {
-    const msg = userMsg.toLowerCase();
+    const loadHistory = async () => {
+      try {
+        setLoading(true);
 
-    if (msg.includes("hello") || msg.includes("hi"))
-      return "Hello 👋 How can I help you today?";
+        const res = await fetch(
+          `http://localhost:8000/v-1/application/chatbot/history?user_email=${encodeURIComponent(
+            currentUserEmail
+          )}`,
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${currentToken}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
 
-    if (msg.includes("help")) return "Sure! Tell me what you'd like help with.";
+        if (res.ok) {
+          const data = await res.json();
+          dispatch(setHistory(data.messages));
 
-    if (msg.includes("admin"))
-      return "You're on the Admin dashboard. I can help with projects, users, or logs.";
+          if (data.conversation_id) {
+            setConversationId(data.conversation_id);
+          }
+        } else {
+          console.error("Failed to load history:", await res.text());
+        }
+      } catch (error) {
+        console.error("Failed to load chat history:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-    if (msg.includes("accountant"))
-      return "I can help with accounting flows and HR data.";
+    loadHistory();
+  }, [open, currentUserEmail, currentToken, dispatch]);
 
-    return "✅ Got it! Real AI responses coming soon.";
+  useEffect(() => {
+    return () => {
+      
+      dispatch(setHistory([]));
+      setConversationId(null);
+    };
+  }, [dispatch]);
+
+  if (
+    location.pathname === "/welcome" ||
+    location.pathname === "/signup" ||
+    location.pathname === "/signin"
+  )
+    return null;
+
+  const getContextFromLocation = (): string => {
+    const path = location.pathname;
+
+    if (path.includes("/admin")) return "User is on admin dashboard";
+    if (path.includes("/accountant")) return "User is an accountant";
+    if (path.includes("/projects")) return "User is viewing projects";
+    if (path.includes("/inventory")) return "User is viewing inventory";
+    if (path.includes("/hr")) return "User is viewing HR section";
+
+    return "General user context";
   };
 
-  const sendMessage = () => {
-    if (!input.trim()) return;
+  const sendMessageToAPI = async (
+    userMessage: string
+  ): Promise<{ reply: string; conversation_id?: string }> => {
+    try {
+      const context = getContextFromLocation();
+      const token = getAuthToken(); 
+
+      if (!token) {
+        throw new Error("Authentication required. Please log in again.");
+      }
+
+      
+      console.log(
+        "Sending to API:",
+        JSON.stringify(
+          {
+            message: userMessage,
+            context: context,
+            conversation_id: conversationId,
+          },
+          null,
+          2
+        )
+      );
+
+      const response = await fetch(
+        "http://localhost:8000/v-1/application/chatbot/ask",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            message: userMessage,
+            context: context,
+            conversation_id: conversationId,
+           
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("API Error Response:", errorText);
+
+        let errorData = {};
+        try {
+          errorData = JSON.parse(errorText);
+        } catch {
+          errorData = { detail: errorText };
+        }
+
+        throw new Error(
+          (errorData as any).detail ||
+            (errorData as any).message ||
+            `API error: ${response.status}`
+        );
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error("Error calling chatbot API:", error);
+      throw error;
+    }
+  };
+
+  const sendMessage = async () => {
+    if (!input.trim() || loading || !user?.email) return;
 
     const userMsg: Message = {
       sender: "user",
@@ -78,22 +219,62 @@ const Chatbot = () => {
       time: getTime(),
     };
 
-    setMessages((prev) => [...prev, userMsg]);
+    dispatch(addMessage(userMsg));
     setInput("");
+    setLoading(true);
+    setError(null);
 
-    setTimeout(() => {
+    try {
+      const result = await sendMessageToAPI(input);
+
+      if (result.conversation_id && !conversationId) {
+        setConversationId(result.conversation_id);
+      }
+
       const botReply: Message = {
         sender: "bot",
-        text: getBotReply(userMsg.text),
+        text: result.reply,
         time: getTime(),
       };
 
-      setMessages((prev) => [...prev, botReply]);
-    }, 600);
+      dispatch(addMessage(botReply));
+    } catch (error: any) {
+      console.error("Error getting AI response:", error);
+      setError(error.message || "Failed to get AI response. Please try again.");
+
+      const errorReply: Message = {
+        sender: "bot",
+        text: "I apologize, but I'm having trouble connecting to the AI service right now. Please try again in a moment.",
+        time: getTime(),
+      };
+
+      dispatch(addMessage(errorReply));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCloseError = () => {
+    setError(null);
   };
 
   return (
     <>
+      <Snackbar
+        open={!!error}
+        autoHideDuration={6000}
+        onClose={handleCloseError}
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+      >
+        <Alert
+          onClose={handleCloseError}
+          severity="error"
+          sx={{ width: "100%" }}
+        >
+          {error}
+        </Alert>
+      </Snackbar>
+
       {!open && (
         <Box
           sx={{
@@ -143,7 +324,7 @@ const Chatbot = () => {
             sx={{
               backgroundColor: colors.primary.main,
               color: "#fff",
-              padding: "10px 12px",
+              padding: "8px 10px",
               display: "flex",
               justifyContent: "space-between",
               alignItems: "center",
@@ -151,7 +332,11 @@ const Chatbot = () => {
               borderTopRightRadius: "10px",
             }}
           >
-            <Typography fontWeight="bold">🤖 AI Assistant</Typography>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+              <Typography fontWeight="bold">
+                <span style={{ fontSize: "30px" }}>🤖 </span>AI Assistant
+              </Typography>
+            </Box>
 
             <IconButton
               size="small"
@@ -192,23 +377,11 @@ const Chatbot = () => {
                     display: "flex",
                     alignItems: "center",
                     mt: 1,
+                    fontSize: "16px",
+                    color: colors.text.secondary,
                   }}
                 >
-                  {msg.sender === "user" ? (
-                    <PersonIcon
-                      sx={{
-                        fontSize: "16px",
-                        color: colors.text.secondary,
-                      }}
-                    />
-                  ) : (
-                    <SmartToyIcon
-                      sx={{
-                        fontSize: "16px",
-                        color: colors.text.secondary,
-                      }}
-                    />
-                  )}
+                  {msg.sender === "user" ? "👤" : "🤖"}
                 </Box>
 
                 {/* Message Container */}
@@ -216,9 +389,6 @@ const Chatbot = () => {
                   sx={{
                     display: "flex",
                     flexDirection: "column",
-                    "&:hover .timestamp": {
-                      opacity: 1,
-                    },
                   }}
                 >
                   {/* Message Bubble */}
@@ -230,23 +400,24 @@ const Chatbot = () => {
                           : colors.background.lightGray,
                       px: 1.2,
                       py: 0.8,
-                      borderRadius: "12px",
+                      borderRadius: "8px",
                       boxShadow: "0 1px 4px rgba(0,0,0,0.12)",
                       maxWidth: "100%",
+                      whiteSpace: "pre-wrap",
+                      wordBreak: "break-word",
                     }}
                   >
                     {msg.text}
                   </Box>
 
                   <Typography
-                    className="timestamp"
                     sx={{
                       fontSize: "9px",
                       color: colors.text.secondary,
                       textAlign: "right",
                       marginTop: "1px",
                       paddingRight: "4px",
-                      opacity: 0,
+                      opacity: 1,
                       transition: "opacity 0.2s ease",
                       height: "12px",
                     }}
@@ -256,6 +427,46 @@ const Chatbot = () => {
                 </Box>
               </Box>
             ))}
+
+            {/* Loading indicator */}
+            {loading && (
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "flex-start",
+                  gap: 0.8,
+                  alignSelf: "flex-start",
+                  maxWidth: "80%",
+                }}
+              >
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    mt: 1,
+                    fontSize: "16px",
+                    color: colors.text.secondary,
+                  }}
+                >
+                  🤖
+                </Box>
+                <Box
+                  sx={{
+                    backgroundColor: colors.background.lightGray,
+                    px: 1.2,
+                    py: 0.8,
+                    borderRadius: "8px",
+                    boxShadow: "0 1px 4px rgba(0,0,0,0.12)",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 1,
+                  }}
+                >
+                  <CircularProgress size={16} />
+                  <Typography variant="body2">Thinking...</Typography>
+                </Box>
+              </Box>
+            )}
 
             <div ref={bottomRef} />
           </Box>
@@ -275,18 +486,20 @@ const Chatbot = () => {
               size="small"
               fullWidth
               onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && sendMessage()}
+              onKeyDown={(e) =>
+                e.key === "Enter" && !e.shiftKey && sendMessage()
+              }
               placeholder="Type your message..."
+              disabled={loading}
+              multiline
+              maxRows={3}
               sx={{
                 flex: 1,
-
                 "& .MuiOutlinedInput-root": {
                   borderRadius: "10px",
-
                   "&:hover fieldset": {
                     borderColor: colors.border.light,
                   },
-
                   "&.Mui-focused fieldset": {
                     borderColor: colors.border.light,
                   },
@@ -295,11 +508,28 @@ const Chatbot = () => {
             />
 
             {/* SEND BUTTON */}
-            <SendIcon sx={{ fontSize: "30px", color: colors.primary.main }} />
+            <IconButton
+              onClick={sendMessage}
+              disabled={!input.trim() || loading}
+              sx={{
+                color:
+                  input.trim() && !loading
+                    ? colors.primary.main
+                    : colors.text.disabled,
+                "&:hover": {
+                  backgroundColor:
+                    input.trim() && !loading
+                      ? colors.primary.light
+                      : "transparent",
+                },
+              }}
+            >
+              <SendIcon sx={{ fontSize: "30px" }} />
+            </IconButton>
 
             {/* MICROPHONE ICON */}
             <Tooltip
-              title="Voice input"
+              title="Voice input (coming soon)"
               PopperProps={{
                 sx: {
                   zIndex: 10000,
@@ -309,18 +539,13 @@ const Chatbot = () => {
               <IconButton
                 size="small"
                 sx={{
-                  color: colors.primary.main,
+                  color: colors.text.disabled,
                   borderRadius: "10px",
                   height: "36px",
                   width: "36px",
-                  "&:hover": {
-                    backgroundColor: colors.primary.main,
-                    color: "#fff",
-                  },
+                  cursor: "not-allowed",
                 }}
-                onClick={() => {
-                  console.log("🎤 Microphone clicked");
-                }}
+                disabled
               >
                 <MicIcon />
               </IconButton>

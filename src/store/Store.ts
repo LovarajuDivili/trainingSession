@@ -4,6 +4,7 @@ import employeesReducer from "./EmployeesSlice";
 import statisticsReducer from "./StatisticsSlice";
 import carouselReducer from "./CarouselSlice";
 import currentOpeningsReducer from "./CurrentOpeningsSlice";
+import chatReducer from "./ChatSlice";
 
 export const store = configureStore({
   reducer: {
@@ -12,6 +13,7 @@ export const store = configureStore({
     statistics: statisticsReducer,
     carousel: carouselReducer,
     currentOpenings: currentOpeningsReducer,
+    chat: chatReducer,
   },
 });
 
