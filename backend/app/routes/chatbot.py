@@ -3,7 +3,10 @@ from fastapi.responses import JSONResponse
 from typing import Optional
 from dotenv import load_dotenv
 from app.models.schemas import ChatMessage, ChatResponse
-import google.generativeai as genai
+# 1. Remove google.generativeai import
+# import google.generativeai as genai
+# 2. Add Groq import
+from groq import Groq, AsyncGroq  # Use AsyncGroq for async/await
 import os
 from datetime import datetime, timedelta
 from app.database import db
@@ -13,14 +16,18 @@ load_dotenv()
 
 router = APIRouter(prefix="/chatbot", tags=["chatbot"])
 
+# 3. Change environment variable name
+GROQ_API_KEY = os.getenv("GROQ_API_KEY")  # Changed from GEMINI_API_KEY
 
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+if not GROQ_API_KEY:
+    raise ValueError("GROQ_API_KEY missing in .env")
 
-if not GEMINI_API_KEY:
-    raise ValueError("GEMINI_API_KEY missing in .env")
+# 4. Initialize the Groq async client
+client = AsyncGroq(api_key=GROQ_API_KEY)
 
-genai.configure(api_key=GEMINI_API_KEY)
-model = genai.GenerativeModel("gemini-2.5-flash")
+# 5. Define the Groq model to use
+# Available models include: 'llama3-70b-8192', 'mixtral-8x7b-32768', 'llama-3.1-8b-instant'
+GROQ_MODEL = "llama-3.3-70b-versatile"
 
 SYSTEM_PROMPT = """
 You are a helpful AI assistant. Answer questions clearly and helpfully.
@@ -43,12 +50,16 @@ def get_user_history(user_email: str, cid: str = None):
         "created_at": {"$gte": cutoff_time}
     }).sort("created_at", 1).limit(50))
     
-    history = SYSTEM_PROMPT
+    # 6. Format history as messages list for Groq API
+    history_messages = [{"role": "system", "content": SYSTEM_PROMPT}]
     for msg in messages:
-        sender_prefix = "User" if msg["sender"] == "user" else "Assistant"
-        history += f"\n{sender_prefix}: {msg['message']}"
+        role = "user" if msg["sender"] == "user" else "assistant"
+        history_messages.append({
+            "role": role,
+            "content": msg["message"]
+        })
     
-    return history, cid
+    return history_messages, cid
 
 async def get_current_user_email(request: Request):
     """Extract user email from token"""
@@ -82,38 +93,39 @@ async def ask_chatbot(
     user_email: Optional[str] = Depends(get_current_user_email)
 ):
     try:
-       
         if request.method == "OPTIONS" or user_email is None:
             return JSONResponse(content={}, status_code=200)
         
-       
         if not data.message or not data.message.strip():
             raise HTTPException(status_code=400, detail="Message cannot be empty")
         
-       
         cid = data.conversation_id
         if not cid:
             cid = get_user_conversation_id(user_email)
         
-      
-        history, cid = get_user_history(user_email, cid)
+        # 7. Get formatted message history
+        history_messages, cid = get_user_history(user_email, cid)
         
+        # 8. Add the new user message to the list
+        messages_for_api = history_messages + [{"role": "user", "content": data.message}]
         
-        full_prompt = f"{history}\n\nUser: {data.message}\nAssistant:"
-        
-       
+        # 9. Call Groq API (major change from Gemini)
         try:
-            response = model.generate_content(full_prompt)
-            reply = response.text
-        except Exception as genai_error:
+            chat_completion = await client.chat.completions.create(
+                messages=messages_for_api,
+                model=GROQ_MODEL,
+                temperature=0.7,  # Optional: controls creativity (0.0 to 1.0)
+                max_tokens=1024,  # Optional: limit response length
+            )
+            reply = chat_completion.choices[0].message.content
+        except Exception as groq_error:
             raise HTTPException(
                 status_code=503, 
-                detail=f"AI service error: {str(genai_error)}"
+                detail=f"AI service error: {str(groq_error)}"
             )
         
-        
+        # 10. Save conversation (unchanged)
         current_time = datetime.utcnow()
-        
         db.chat_messages.insert_one({
             "conversation_id": cid,
             "sender": "user",
@@ -121,7 +133,6 @@ async def ask_chatbot(
             "user_email": user_email,
             "created_at": current_time
         })
-        
         db.chat_messages.insert_one({
             "conversation_id": cid,
             "sender": "bot",
@@ -209,6 +220,54 @@ async def options_history():
         headers={
             "Access-Control-Allow-Origin": "http://localhost:5173",
             "Access-Control-Allow-Methods": "GET, OPTIONS",
+            "Access-Control-Allow-Headers": "Authorization, Content-Type",
+        }
+    )
+
+@router.delete("/clear-chat")
+async def clear_chat_history(
+    request: Request,
+    user_email: str,
+    user_email_from_token: Optional[str] = Depends(get_current_user_email)
+):
+    """Clear all chat history for a specific user"""
+    try:
+        if request.method == "OPTIONS" or user_email_from_token is None:
+            return JSONResponse(content={}, status_code=200)
+        
+        # Optional: Verify the user_email from query matches the token user
+        if user_email != user_email_from_token:
+            raise HTTPException(status_code=403, detail="Not authorized to clear this user's chat")
+        
+        # Delete all chat messages for this user
+        result = db.chat_messages.delete_many({
+            "user_email": user_email
+        })
+        
+        return {
+            "status": "success",
+            "message": f"Cleared {result.deleted_count} messages",
+            "deleted_count": result.deleted_count
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Error clearing chat history: {str(e)}")
+        raise HTTPException(
+            status_code=500, 
+            detail="Error clearing chat history"
+        )
+
+@router.options("/clear-chat")
+async def options_clear_chat():
+    """Handle OPTIONS requests for clear-chat endpoint"""
+    return JSONResponse(
+        content={},
+        status_code=200,
+        headers={
+            "Access-Control-Allow-Origin": "http://localhost:5173",
+            "Access-Control-Allow-Methods": "DELETE, OPTIONS",
             "Access-Control-Allow-Headers": "Authorization, Content-Type",
         }
     )
