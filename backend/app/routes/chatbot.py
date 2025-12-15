@@ -103,19 +103,22 @@ async def ask_chatbot(
         if not cid:
             cid = get_user_conversation_id(user_email)
         
-        # 7. Get formatted message history
+        # Get formatted message history
         history_messages, cid = get_user_history(user_email, cid)
         
-        # 8. Add the new user message to the list
+        # Add the new user message to the list
         messages_for_api = history_messages + [{"role": "user", "content": data.message}]
         
-        # 9. Call Groq API (major change from Gemini)
+        # Use the selected model or default to GROQ_MODEL
+        model_to_use = data.model if data.model else GROQ_MODEL
+        
+        # Call Groq API with the selected model
         try:
             chat_completion = await client.chat.completions.create(
                 messages=messages_for_api,
-                model=GROQ_MODEL,
-                temperature=0.7,  # Optional: controls creativity (0.0 to 1.0)
-                max_tokens=1024,  # Optional: limit response length
+                model=model_to_use,  # Use the selected model
+                temperature=0.7,
+                max_tokens=1024,
             )
             reply = chat_completion.choices[0].message.content
         except Exception as groq_error:
@@ -124,12 +127,13 @@ async def ask_chatbot(
                 detail=f"AI service error: {str(groq_error)}"
             )
         
-        # 10. Save conversation (unchanged)
+        # Save conversation
         current_time = datetime.utcnow()
         db.chat_messages.insert_one({
             "conversation_id": cid,
             "sender": "user",
             "message": data.message,
+            "model": model_to_use,  # Save the model used
             "user_email": user_email,
             "created_at": current_time
         })
@@ -137,6 +141,7 @@ async def ask_chatbot(
             "conversation_id": cid,
             "sender": "bot",
             "message": reply,
+            "model": model_to_use,  # Save the model used
             "user_email": user_email,
             "created_at": current_time
         })

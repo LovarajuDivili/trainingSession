@@ -16,6 +16,8 @@ import {
   Switch,
   ListItemIcon,
   ListItemText,
+  ThemeProvider,
+  createTheme,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import { useLocation } from "react-router-dom";
@@ -30,15 +32,12 @@ import FullscreenIcon from "@mui/icons-material/Fullscreen";
 import AssistantIcon from "@mui/icons-material/Assistant";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 import HistoryIcon from "@mui/icons-material/History";
-//import AutoFixHighIcon  from "@mui/icons-material/AutoFixHigh";
-//import ContentCutIcon from "@mui/icons-material/Screenshot";
 import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
 import TuneIcon from "@mui/icons-material/Tune";
 import DvrIcon from "@mui/icons-material/Dvr";
 import DarkModeIcon from "@mui/icons-material/DarkMode";
 import LightModeIcon from "@mui/icons-material/LightMode";
 import ImageIcon from "@mui/icons-material/Image";
-//import ScreenshotIcon from "@mui/icons-material/Screenshot";
 import html2canvas from "html2canvas";
 
 type Message = {
@@ -49,7 +48,6 @@ type Message = {
 
 const Chatbot = () => {
   const location = useLocation();
-  //const navigate = useNavigate();
   const colors = useThemeColors();
   const { user, getToken, getUserEmail } = useAuth();
   const [openConfirmDialog, setOpenConfirmDialog] = useState(false);
@@ -68,6 +66,11 @@ const Chatbot = () => {
   const [darkMode, setDarkMode] = useState<boolean>(false);
   const [lightMode, setLightMode] = useState<boolean>(true);
   const [isTakingScreenshot, setIsTakingScreenshot] = useState<boolean>(false);
+  const [isFullScreen, setIsFullScreen] = useState<boolean>(false);
+  const [selectedModelId, setSelectedModelId] = useState<string>(
+    "llama-3.3-70b-versatile"
+  );
+  const [mode, setMode] = useState<"light" | "dark">("light");
 
   const models = [
     { provider: "Meta", models: ["meta-llama/llama-prompt-guard-2-8"] },
@@ -110,6 +113,65 @@ const Chatbot = () => {
     },
   ];
 
+  // Create theme based on mode
+  const theme = createTheme({
+    palette: {
+      mode: mode,
+      primary: {
+        main: mode === "dark" ? "#90caf9" : colors.primary.main,
+      },
+      background: {
+        default: mode === "dark" ? "#121212" : "#ffffff",
+        paper: mode === "dark" ? "#1e1e1e" : colors.background.white,
+      },
+      text: {
+        primary: mode === "dark" ? "#ffffff" : colors.text.primary,
+        secondary: mode === "dark" ? "#b0b0b0" : colors.text.secondary,
+      },
+      divider: mode === "dark" ? "#333" : colors.border.light,
+    },
+  });
+
+  // Handle Escape key to exit full screen
+  useEffect(() => {
+    const handleEscKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape" && isFullScreen) {
+        setIsFullScreen(false);
+      }
+    };
+
+    document.addEventListener("keydown", handleEscKey);
+
+    return () => {
+      document.removeEventListener("keydown", handleEscKey);
+    };
+  }, [isFullScreen]);
+
+  // Load saved preferences
+  useEffect(() => {
+    const savedFullScreen = localStorage.getItem("chatFullScreen");
+    if (savedFullScreen) {
+      setIsFullScreen(JSON.parse(savedFullScreen));
+    }
+
+    const savedTheme = localStorage.getItem("chatTheme");
+    if (savedTheme) {
+      const themeMode = JSON.parse(savedTheme) as "light" | "dark";
+      setMode(themeMode);
+      setDarkMode(themeMode === "dark");
+      setLightMode(themeMode === "light");
+    }
+  }, []);
+
+  // Save preferences
+  useEffect(() => {
+    localStorage.setItem("chatFullScreen", JSON.stringify(isFullScreen));
+  }, [isFullScreen]);
+
+  useEffect(() => {
+    localStorage.setItem("chatTheme", JSON.stringify(mode));
+  }, [mode]);
+
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
   };
@@ -128,16 +190,17 @@ const Chatbot = () => {
 
   const handleModelSelect = (modelName: string) => {
     setSelectedModel(modelName);
+    const modelId = modelName.split(" (")[0];
+    setSelectedModelId(modelId);
     handleMenuClose();
-    // Here you can add logic to switch the AI model
-    console.log("Selected model:", modelName);
+    console.log("Selected model:", modelId);
   };
 
   const handleDarkModeToggle = () => {
     const newDarkMode = !darkMode;
     setDarkMode(newDarkMode);
     setLightMode(!newDarkMode);
-    // Here you can add logic to switch to dark mode
+    setMode(newDarkMode ? "dark" : "light");
     console.log("Dark Mode:", newDarkMode);
   };
 
@@ -145,12 +208,11 @@ const Chatbot = () => {
     const newLightMode = !lightMode;
     setLightMode(newLightMode);
     setDarkMode(!newLightMode);
-    // Here you can add logic to switch to light mode
+    setMode(newLightMode ? "light" : "dark");
     console.log("Light Mode:", newLightMode);
   };
 
   const handleImageUpload = () => {
-    // Create a file input element
     const input = document.createElement("input");
     input.type = "file";
     input.accept = "image/*";
@@ -159,9 +221,6 @@ const Chatbot = () => {
       const file = (event.target as HTMLInputElement).files?.[0];
       if (file) {
         console.log("Image selected:", file.name);
-        // Here you can add logic to handle the image upload
-        // For example, upload to server or process the image
-        // setInput(`[Image uploaded: ${file.name}]`);
         handleThemeMenuClose();
       }
     };
@@ -173,7 +232,6 @@ const Chatbot = () => {
     try {
       setIsTakingScreenshot(true);
 
-      // Get the chat container element
       const chatContainer = document.querySelector(
         ".chat-container"
       ) as HTMLElement;
@@ -182,53 +240,69 @@ const Chatbot = () => {
         throw new Error("Chat container not found");
       }
 
-      // Create a clone of the chat container to avoid affecting the original
-      const clone = chatContainer.cloneNode(true) as HTMLElement;
+      const originalStyles = {
+        position: chatContainer.style.position,
+        top: chatContainer.style.top,
+        left: chatContainer.style.left,
+        transform: chatContainer.style.transform,
+        zIndex: chatContainer.style.zIndex,
+      };
 
-      // Hide the confirmation dialog overlay if it's open in the clone
-      const confirmDialog = clone.querySelector(
-        '[style*="rgba(0, 0, 0, 0.5)"]'
-      );
-      if (confirmDialog) {
-        (confirmDialog as HTMLElement).style.display = "none";
-      }
+      chatContainer.style.position = "fixed";
+      chatContainer.style.top = "0";
+      chatContainer.style.left = "0";
+      chatContainer.style.transform = "none";
+      chatContainer.style.zIndex = "99999";
 
-      // Set the clone's position and size for the screenshot
-      clone.style.position = "fixed";
-      clone.style.top = "0";
-      clone.style.left = "0";
-      clone.style.width = chatContainer.offsetWidth + "px";
-      clone.style.height = chatContainer.offsetHeight + "px";
-      clone.style.zIndex = "-9999";
-      clone.style.opacity = "0";
-      document.body.appendChild(clone);
+      await new Promise((resolve) => setTimeout(resolve, 100));
 
-      // Use html2canvas to capture the screenshot
-      const canvas = await html2canvas(clone, {
-        backgroundColor: colors.background.white,
-        scale: 2, // Higher quality
+      const canvas = await html2canvas(chatContainer, {
+        backgroundColor: mode === "dark" ? "#1e1e1e" : colors.background.white,
+        scale: 2,
         useCORS: true,
         logging: false,
         allowTaint: true,
+        removeContainer: true,
+
+        x: 0,
+        y: 0,
+        scrollX: -window.scrollX,
+        scrollY: -window.scrollY,
+        windowWidth: document.documentElement.scrollWidth,
+        windowHeight: document.documentElement.scrollHeight,
+
+        onclone: (clonedDocument) => {
+          const clonedContainer =
+            clonedDocument.querySelector(".chat-container");
+          if (clonedContainer) {
+            (clonedContainer as HTMLElement).style.position = "fixed";
+            (clonedContainer as HTMLElement).style.top = "0";
+            (clonedContainer as HTMLElement).style.left = "0";
+            (clonedContainer as HTMLElement).style.transform = "none";
+
+            const confirmDialogs = clonedContainer.querySelectorAll(
+              '[style*="rgba(0, 0, 0, 0.5)"]'
+            );
+            confirmDialogs.forEach((dialog) => {
+              (dialog as HTMLElement).style.display = "none";
+            });
+          }
+        },
       });
 
-      // Remove the clone
-      document.body.removeChild(clone);
+      Object.assign(chatContainer.style, originalStyles);
 
-      // Convert canvas to image URL
-      const imageUrl = canvas.toDataURL("image/png");
+      const imageUrl = canvas.toDataURL("image/png", 1.0);
 
-      // Create a download link
       const link = document.createElement("a");
       link.href = imageUrl;
       link.download = `chat-screenshot-${new Date()
         .toISOString()
-        .slice(0, 10)}.png`;
+        .slice(0, 10)}-${Date.now()}.png`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
 
-      // Show success message
       setError("Screenshot saved successfully!");
       setTimeout(() => setError(null), 2000);
     } catch (error) {
@@ -312,11 +386,10 @@ const Chatbot = () => {
   }, [open, currentUserEmail, currentToken, dispatch]);
 
   useEffect(() => {
-    // This runs when chat opens for the first time
     if (open && messages.length === 0 && !loading) {
       const greetingMessage: Message = {
         sender: "bot",
-        text: "Hello! 👋 How can I help you today?", // Change this text if you want
+        text: "Hello! 👋 How can I help you today?",
         time: getTime(),
       };
 
@@ -338,23 +411,10 @@ const Chatbot = () => {
   )
     return null;
 
-  // const getContextFromLocation = (): string => {
-  //   const path = location.pathname;
-
-  //   if (path.includes("/admin")) return "User is on admin dashboard";
-  //   if (path.includes("/accountant")) return "User is an accountant";
-  //   if (path.includes("/projects")) return "User is viewing projects";
-  //   if (path.includes("/inventory")) return "User is viewing inventory";
-  //   if (path.includes("/hr")) return "User is viewing HR section";
-
-  //   return "General user context";
-  // };
-
   const sendMessageToAPI = async (
     userMessage: string
   ): Promise<{ reply: string; conversation_id?: string }> => {
     try {
-      //const context = getContextFromLocation();
       const token = getAuthToken();
 
       if (!token) {
@@ -366,7 +426,7 @@ const Chatbot = () => {
         JSON.stringify(
           {
             message: userMessage,
-            //context: context,
+            model: selectedModelId,
             conversation_id: conversationId,
           },
           null,
@@ -384,7 +444,7 @@ const Chatbot = () => {
           },
           body: JSON.stringify({
             message: userMessage,
-            //context: context,
+            model: selectedModelId,
             conversation_id: conversationId,
           }),
         }
@@ -415,7 +475,6 @@ const Chatbot = () => {
     }
   };
 
-  // Add this function after the sendMessageToAPI function
   const clearChatFromDB = async () => {
     try {
       const token = getAuthToken();
@@ -543,769 +602,913 @@ const Chatbot = () => {
       )}
 
       {open && (
-        <Box
-          sx={{
-            position: "fixed",
-            bottom: "20px",
-            right: "20px",
-            width: "540px",
-            height: "650px",
-            backgroundColor: colors.background.white,
-            borderRadius: "16px",
-            display: "flex",
-            flexDirection: "column",
-            zIndex: 9999,
-            boxShadow: "0px 8px 30px rgba(0,0,0,0.3)",
-          }}
-          className="chat-container"
-        >
-          {/* Confirmation Dialog Overlay */}
-          {openConfirmDialog && (
-            <Box
-              sx={{
-                position: "absolute",
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                backgroundColor: "rgba(0, 0, 0, 0.5)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                zIndex: 10000,
-                borderRadius: "16px",
-              }}
-            >
-              <Box
-                sx={{
-                  backgroundColor: colors.background.white,
-                  borderRadius: "12px",
-                  padding: "20px",
-                  width: "320px",
-                  boxShadow: "0px 4px 20px rgba(0,0,0,0.2)",
-                }}
-              >
-                <Typography
-                  fontWeight="bold"
-                  color="text.primary"
-                  mb={1}
-                  fontSize="16px"
-                >
-                  Clear Chat History
-                </Typography>
-                <Typography variant="body2" color="text.primary" mb={3}>
-                  Are you sure you want to delete all chat messages? This action
-                  cannot be undone.
-                </Typography>
-                <Box
-                  sx={{ display: "flex", justifyContent: "flex-end", gap: 2 }}
-                >
-                  <Button
-                    size="small"
-                    variant="outlined"
-                    onClick={() => setOpenConfirmDialog(false)}
-                    sx={{
-                      textTransform: "none",
-                      fontSize: "14px",
-                      px: 2,
-                      borderColor: colors.border.light,
-                      color: colors.text.primary,
-                    }}
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    size="small"
-                    variant="contained"
-                    onClick={async () => {
-                      setOpenConfirmDialog(false);
-                      try {
-                        // Clear from Redux state
-                        dispatch(setHistory([]));
-                        setConversationId(null);
-
-                        // Clear from database
-                        await clearChatFromDB();
-
-                        // Show success message
-                        setError("Chat cleared successfully!");
-                        setTimeout(() => setError(null), 2000);
-                      } catch (error) {
-                        console.error("Error clearing chat:", error);
-                        setError("Failed to clear chat. Please try again.");
-                      }
-                    }}
-                    sx={{
-                      textTransform: "none",
-                      fontSize: "14px",
-                      px: 2,
-                      backgroundColor: colors.status.error,
-                      "&:hover": {
-                        backgroundColor: colors.status.error,
-                      },
-                    }}
-                  >
-                    Delete All
-                  </Button>
-                </Box>
-              </Box>
-            </Box>
-          )}
-
-          {/* HEADER */}
+        <ThemeProvider theme={theme}>
           <Box
             sx={{
-              backgroundColor: colors.primary.main,
-              color: "#fff",
-              padding: "8px 10px",
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              borderTopLeftRadius: "10px",
-              borderTopRightRadius: "10px",
-            }}
-          >
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-              <Typography fontWeight="bold">
-                <span style={{ fontSize: "30px" }}>🤖 </span>AI Assistant
-              </Typography>
-            </Box>
-
-            <IconButton
-              size="small"
-              sx={{ color: "#fff" }}
-              onClick={() => setOpen(false)}
-            >
-              <CloseIcon />
-            </IconButton>
-          </Box>
-
-          {/* MESSAGES */}
-          <Box
-            ref={messagesContainerRef}
-            sx={{
-              flex: 1,
-              p: 1.2,
-              overflowY: "auto",
+              position: "fixed",
+              bottom: isFullScreen ? "0" : "20px",
+              right: isFullScreen ? "0" : "20px",
+              width: isFullScreen ? "calc(100vw - 40px)" : "540px",
+              height: isFullScreen ? "calc(100vh - 40px)" : "650px",
+              backgroundColor:
+                mode === "dark" ? "#1e1e1e" : colors.background.white,
+              borderRadius: isFullScreen ? "20px" : "16px",
               display: "flex",
               flexDirection: "column",
-              gap: 1,
+              zIndex: 9999,
+              boxShadow: isFullScreen
+                ? "0px 8px 40px rgba(0,0,0,0.3)"
+                : "0px 8px 30px rgba(0,0,0,0.3)",
+              transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+              ...(isFullScreen && {
+                top: "50%",
+                left: "50%",
+                transform: "translate(-50%, -50%)",
+                bottom: "auto",
+                right: "auto",
+              }),
             }}
+            className="chat-container"
           >
-            {messages.map((msg, i) => (
+            {/* Confirmation Dialog Overlay */}
+            {openConfirmDialog && (
               <Box
-                key={i}
                 sx={{
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  backgroundColor: "rgba(0, 0, 0, 0.5)",
                   display: "flex",
-                  alignItems: "flex-start",
-                  gap: 0.8,
-                  alignSelf: msg.sender === "user" ? "flex-end" : "flex-start",
-                  flexDirection: msg.sender === "user" ? "row-reverse" : "row",
-                  maxWidth: "80%",
-                  position: "relative",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  zIndex: 10000,
+                  borderRadius: "inherit",
                 }}
               >
-                {/* Icon */}
                 <Box
                   sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    mt: 1,
-                    fontSize: "16px",
-                    color: colors.text.secondary,
+                    backgroundColor:
+                      mode === "dark" ? "#2a2a2a" : colors.background.white,
+                    borderRadius: "12px",
+                    padding: "20px",
+                    width: "320px",
+                    boxShadow: "0px 4px 20px rgba(0,0,0,0.2)",
                   }}
                 >
-                  {msg.sender === "user" ? "👤" : "🤖"}
+                  <Typography
+                    fontWeight="bold"
+                    color={mode === "dark" ? "#ffffff" : colors.text.primary}
+                    mb={1}
+                    fontSize="16px"
+                  >
+                    Clear Chat History
+                  </Typography>
+                  <Typography
+                    variant="body2"
+                    color={mode === "dark" ? "#b0b0b0" : colors.text.primary}
+                    mb={3}
+                  >
+                    Are you sure you want to delete all chat messages? This
+                    action cannot be undone.
+                  </Typography>
+                  <Box
+                    sx={{ display: "flex", justifyContent: "flex-end", gap: 2 }}
+                  >
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      onClick={() => setOpenConfirmDialog(false)}
+                      sx={{
+                        textTransform: "none",
+                        fontSize: "14px",
+                        px: 2,
+                        borderColor:
+                          mode === "dark" ? "#555" : colors.border.light,
+                        color:
+                          mode === "dark" ? "#ffffff" : colors.text.primary,
+                      }}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      size="small"
+                      variant="contained"
+                      onClick={async () => {
+                        setOpenConfirmDialog(false);
+                        try {
+                          dispatch(setHistory([]));
+                          setConversationId(null);
+                          await clearChatFromDB();
+                          setError("Chat cleared successfully!");
+                          setTimeout(() => setError(null), 2000);
+                        } catch (error) {
+                          console.error("Error clearing chat:", error);
+                          setError("Failed to clear chat. Please try again.");
+                        }
+                      }}
+                      sx={{
+                        textTransform: "none",
+                        fontSize: "14px",
+                        px: 2,
+                        backgroundColor: colors.status.error,
+                        "&:hover": {
+                          backgroundColor: colors.status.error,
+                        },
+                      }}
+                    >
+                      Delete All
+                    </Button>
+                  </Box>
                 </Box>
+              </Box>
+            )}
 
-                {/* Message Container */}
+            {/* HEADER */}
+            <Box
+              sx={{
+                backgroundColor: mode === "dark" ? "#333" : colors.primary.main,
+                color: "#fff",
+                padding: "12px 16px",
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                borderTopLeftRadius: "inherit",
+                borderTopRightRadius: "inherit",
+              }}
+            >
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                <Typography fontWeight="bold">
+                  <span style={{ fontSize: "30px" }}>🤖 </span>AI Assistant
+                  {isFullScreen && " (Full Screen)"}
+                </Typography>
+              </Box>
+
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                {isFullScreen && (
+                  <Tooltip title="Exit Full Screen">
+                    <IconButton
+                      size="small"
+                      sx={{ color: "#fff" }}
+                      onClick={() => setIsFullScreen(false)}
+                    >
+                      <FullscreenIcon />
+                    </IconButton>
+                  </Tooltip>
+                )}
+                <IconButton
+                  size="small"
+                  sx={{ color: "#fff" }}
+                  onClick={() => {
+                    setOpen(false);
+                    setIsFullScreen(false);
+                  }}
+                >
+                  <CloseIcon />
+                </IconButton>
+              </Box>
+            </Box>
+
+            {/* MESSAGES */}
+            <Box
+              ref={messagesContainerRef}
+              sx={{
+                flex: 1,
+                p: 2,
+                overflowY: "auto",
+                display: "flex",
+                flexDirection: "column",
+                gap: 1.5,
+                backgroundColor: mode === "dark" ? "#121212" : "transparent",
+              }}
+            >
+              {messages.map((msg, i) => (
+                <Box
+                  key={i}
+                  sx={{
+                    display: "flex",
+                    alignItems: "flex-start",
+                    gap: 1,
+                    alignSelf:
+                      msg.sender === "user" ? "flex-end" : "flex-start",
+                    flexDirection:
+                      msg.sender === "user" ? "row-reverse" : "row",
+                    maxWidth: "85%",
+                    position: "relative",
+                  }}
+                >
+                  {/* Icon */}
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      mt: 1.5,
+                      fontSize: "18px",
+                      color:
+                        mode === "dark" ? "#b0b0b0" : colors.text.secondary,
+                    }}
+                  >
+                    {msg.sender === "user" ? "👤" : "🤖"}
+                  </Box>
+
+                  {/* Message Container */}
+                  <Box
+                    sx={{
+                      display: "flex",
+                      flexDirection: "column",
+                    }}
+                  >
+                    {/* Message Bubble */}
+                    <Box
+                      sx={{
+                        backgroundColor:
+                          msg.sender === "user"
+                            ? mode === "dark"
+                              ? "#2d3b4d"
+                              : colors.primary.light
+                            : mode === "dark"
+                            ? "#2a2a2a"
+                            : colors.background.lightGray,
+                        px: 2,
+                        py: 1.2,
+                        borderRadius: "12px",
+                        boxShadow: "0 2px 6px rgba(0,0,0,0.12)",
+                        maxWidth: "100%",
+                        whiteSpace: "pre-wrap",
+                        wordBreak: "break-word",
+                        lineHeight: 1.5,
+                        color: mode === "dark" ? "#ffffff" : "inherit",
+                      }}
+                    >
+                      {msg.text}
+                    </Box>
+
+                    <Typography
+                      sx={{
+                        fontSize: "10px",
+                        color:
+                          mode === "dark" ? "#b0b0b0" : colors.text.secondary,
+                        textAlign: "right",
+                        marginTop: "3px",
+                        paddingRight: "6px",
+                        opacity: 1,
+                        transition: "opacity 0.2s ease",
+                        height: "14px",
+                      }}
+                    >
+                      {msg.time}
+                    </Typography>
+                  </Box>
+                </Box>
+              ))}
+
+              {/* Loading indicator */}
+              {loading && (
                 <Box
                   sx={{
                     display: "flex",
-                    flexDirection: "column",
+                    alignItems: "flex-start",
+                    gap: 1,
+                    alignSelf: "flex-start",
+                    maxWidth: "85%",
                   }}
                 >
-                  {/* Message Bubble */}
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      mt: 1.5,
+                      fontSize: "18px",
+                      color:
+                        mode === "dark" ? "#b0b0b0" : colors.text.secondary,
+                    }}
+                  >
+                    🤖
+                  </Box>
                   <Box
                     sx={{
                       backgroundColor:
-                        msg.sender === "user"
-                          ? colors.primary.light
+                        mode === "dark"
+                          ? "#2a2a2a"
                           : colors.background.lightGray,
-                      px: 1.2,
-                      py: 0.8,
-                      borderRadius: "8px",
-                      boxShadow: "0 1px 4px rgba(0,0,0,0.12)",
-                      maxWidth: "100%",
-                      whiteSpace: "pre-wrap",
-                      wordBreak: "break-word",
+                      px: 2,
+                      py: 1.2,
+                      borderRadius: "12px",
+                      boxShadow: "0 2px 6px rgba(0,0,0,0.12)",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 1.2,
+                      color: mode === "dark" ? "#ffffff" : "inherit",
                     }}
                   >
-                    {msg.text}
+                    <CircularProgress
+                      size={18}
+                      color={mode === "dark" ? "inherit" : "primary"}
+                    />
+                    <Typography variant="body2">Thinking...</Typography>
                   </Box>
+                </Box>
+              )}
 
-                  <Typography
+              {/* Screenshot loading indicator */}
+              {isTakingScreenshot && (
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "flex-start",
+                    gap: 1,
+                    alignSelf: "flex-start",
+                    maxWidth: "85%",
+                  }}
+                >
+                  <Box
                     sx={{
-                      fontSize: "9px",
-                      color: colors.text.secondary,
-                      textAlign: "right",
-                      marginTop: "1px",
-                      paddingRight: "4px",
-                      opacity: 1,
-                      transition: "opacity 0.2s ease",
-                      height: "12px",
+                      display: "flex",
+                      alignItems: "center",
+                      mt: 1.5,
+                      fontSize: "18px",
+                      color:
+                        mode === "dark" ? "#b0b0b0" : colors.text.secondary,
                     }}
                   >
-                    {msg.time}
-                  </Typography>
+                    📸
+                  </Box>
+                  <Box
+                    sx={{
+                      backgroundColor:
+                        mode === "dark" ? "#2d3b4d" : colors.primary.light,
+                      px: 2,
+                      py: 1.2,
+                      borderRadius: "12px",
+                      boxShadow: "0 2px 6px rgba(0,0,0,0.12)",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 1.2,
+                      color: mode === "dark" ? "#ffffff" : "inherit",
+                    }}
+                  >
+                    <CircularProgress size={18} color="inherit" />
+                    <Typography variant="body2">
+                      Taking screenshot...
+                    </Typography>
+                  </Box>
                 </Box>
-              </Box>
-            ))}
+              )}
 
-            {/* Loading indicator */}
-            {loading && (
-              <Box
-                sx={{
-                  display: "flex",
-                  alignItems: "flex-start",
-                  gap: 0.8,
-                  alignSelf: "flex-start",
-                  maxWidth: "80%",
-                }}
-              >
-                <Box
-                  sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    mt: 1,
-                    fontSize: "16px",
-                    color: colors.text.secondary,
-                  }}
-                >
-                  🤖
-                </Box>
-                <Box
-                  sx={{
-                    backgroundColor: colors.background.lightGray,
-                    px: 1.2,
-                    py: 0.8,
-                    borderRadius: "8px",
-                    boxShadow: "0 1px 4px rgba(0,0,0,0.12)",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 1,
-                  }}
-                >
-                  <CircularProgress size={16} />
-                  <Typography variant="body2">Thinking...</Typography>
-                </Box>
-              </Box>
-            )}
-
-            {/* Screenshot loading indicator */}
-            {isTakingScreenshot && (
-              <Box
-                sx={{
-                  display: "flex",
-                  alignItems: "flex-start",
-                  gap: 0.8,
-                  alignSelf: "flex-start",
-                  maxWidth: "80%",
-                }}
-              >
-                <Box
-                  sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    mt: 1,
-                    fontSize: "16px",
-                    color: colors.text.secondary,
-                  }}
-                >
-                  📸
-                </Box>
-                <Box
-                  sx={{
-                    backgroundColor: colors.primary.light,
-                    px: 1.2,
-                    py: 0.8,
-                    borderRadius: "8px",
-                    boxShadow: "0 1px 4px rgba(0,0,0,0.12)",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 1,
-                  }}
-                >
-                  <CircularProgress size={16} color="inherit" />
-                  <Typography variant="body2">Taking screenshot...</Typography>
-                </Box>
-              </Box>
-            )}
-
-            <div ref={bottomRef} />
-          </Box>
-          {/* BUTTONS SECTION */}
-          <Box
-            sx={{
-              //borderTop: `1px solid ${colors.border.light}`,
-              p: 1,
-              display: "flex",
-              gap: 1,
-              justifyContent: "space-between",
-              alignItems: "center",
-            }}
-          >
-            <Button
-              variant="outlined"
-              size="small"
+              <div ref={bottomRef} />
+            </Box>
+            {/* BUTTONS SECTION */}
+            <Box
               sx={{
-                flex: 1,
-                fontSize: "12px",
-                textTransform: "none",
-                borderRadius: "8px",
-                borderColor: colors.border.light,
-                color: colors.text.primary,
-                "&:hover": {
-                  borderColor: colors.primary.main,
-                  backgroundColor: colors.primary.light + "20",
-                },
+                p: isFullScreen ? 2 : 1,
+                display: "flex",
+                gap: 1,
+                justifyContent: "space-between",
+                alignItems: "center",
+                backgroundColor: mode === "dark" ? "#1e1e1e" : "transparent",
               }}
             >
-              <FullscreenIcon sx={{ fontSize: "15px", mr: 0.5 }} /> Full Screen
-            </Button>
-            <Button
-              onClick={() =>
-                window.open("https://chat.deepseek.com/", "_blank")
-              }
-              variant="outlined"
-              size="small"
-              sx={{
-                flex: 1,
-                fontSize: "12px",
-                textTransform: "none",
-                borderRadius: "8px",
-                borderColor: colors.border.light,
-                color: colors.text.primary,
-                "&:hover": {
-                  borderColor: colors.primary.main,
-                  backgroundColor: colors.primary.light + "20",
-                },
-              }}
-            >
-              <AssistantIcon sx={{ fontSize: "small", mr: 0.5 }} /> Deep
-              Research
-            </Button>
-            <Button
-              onClick={() => setOpenConfirmDialog(true)}
-              variant="outlined"
-              size="small"
-              sx={{
-                flex: 1,
-                fontSize: "12px",
-                textTransform: "none",
-                borderRadius: "8px",
-                borderColor: colors.border.light,
-                color: colors.text.primary,
-                "&:hover": {
-                  borderColor: colors.status.error,
-                  backgroundColor: colors.status.error + "20",
-                },
-              }}
-            >
-              <DeleteForeverIcon sx={{ fontSize: "small", mr: 0.5 }} /> Clear
-              Chat
-            </Button>
-            <Button
-              variant="outlined"
-              size="small"
-              sx={{
-                flex: 1,
-                fontSize: "12px",
-                textTransform: "none",
-                borderRadius: "8px",
-                borderColor: colors.border.light,
-                color: colors.text.primary,
-                "&:hover": {
-                  borderColor: colors.primary.main,
-                  backgroundColor: colors.primary.light + "20",
-                },
-              }}
-            >
-              <DvrIcon sx={{ mr: 0.5, fontSize: "15px" }} /> AI Slides
-            </Button>
-          </Box>
-
-          <Box
-            sx={{
-              borderTop: `1px solid ${colors.border.light}`,
-              gap: 2,
-              pl: 1,
-              display: "flex",
-              alignItems: "center",
-              position: "relative",
-            }}
-          >
-            <Tooltip title="Select AI Model">
-              <IconButton
-                onClick={handleMenuOpen}
+              <Button
+                variant="outlined"
                 size="small"
+                onClick={() => setIsFullScreen(!isFullScreen)}
                 sx={{
-                  color: colors.text.secondary,
-                  "&:hover": { color: colors.primary.main },
-                }}
-              >
-                <AutoAwesomeIcon fontSize="small" />
-              </IconButton>
-            </Tooltip>
-
-            <Tooltip title="Take Screenshot">
-              <IconButton
-                onClick={takeScreenshot}
-                size="small"
-                disabled={isTakingScreenshot}
-                sx={{
-                  color: isTakingScreenshot
-                    ? colors.text.disabled
-                    : colors.text.secondary,
+                  flex: 1,
+                  fontSize: "12px",
+                  textTransform: "none",
+                  borderRadius: "8px",
+                  borderColor: mode === "dark" ? "#555" : colors.border.light,
+                  color: mode === "dark" ? "#ffffff" : colors.text.primary,
                   "&:hover": {
+                    borderColor:
+                      mode === "dark" ? "#90caf9" : colors.primary.main,
+                    backgroundColor:
+                      mode === "dark"
+                        ? "rgba(144, 202, 249, 0.08)"
+                        : colors.primary.light + "20",
+                  },
+                }}
+              >
+                <FullscreenIcon sx={{ fontSize: "15px", mr: 0.5 }} />
+                {isFullScreen ? "Exit Full Screen" : "Full Screen"}
+              </Button>
+              <Button
+                onClick={() =>
+                  window.open("https://chat.deepseek.com/", "_blank")
+                }
+                variant="outlined"
+                size="small"
+                sx={{
+                  flex: 1,
+                  fontSize: "12px",
+                  textTransform: "none",
+                  borderRadius: "8px",
+                  borderColor: mode === "dark" ? "#555" : colors.border.light,
+                  color: mode === "dark" ? "#ffffff" : colors.text.primary,
+                  "&:hover": {
+                    borderColor:
+                      mode === "dark" ? "#90caf9" : colors.primary.main,
+                    backgroundColor:
+                      mode === "dark"
+                        ? "rgba(144, 202, 249, 0.08)"
+                        : colors.primary.light + "20",
+                  },
+                }}
+              >
+                <AssistantIcon sx={{ fontSize: "small", mr: 0.5 }} /> Deep
+                Research
+              </Button>
+              <Button
+                onClick={() => setOpenConfirmDialog(true)}
+                variant="outlined"
+                size="small"
+                sx={{
+                  flex: 1,
+                  fontSize: "12px",
+                  textTransform: "none",
+                  borderRadius: "8px",
+                  borderColor: mode === "dark" ? "#555" : colors.border.light,
+                  color: mode === "dark" ? "#ffffff" : colors.text.primary,
+                  "&:hover": {
+                    borderColor: colors.status.error,
+                    backgroundColor:
+                      mode === "dark"
+                        ? "rgba(244, 67, 54, 0.08)"
+                        : colors.status.error + "20",
+                  },
+                }}
+              >
+                <DeleteForeverIcon sx={{ fontSize: "small", mr: 0.5 }} /> Clear
+                Chat
+              </Button>
+              <Button
+                variant="outlined"
+                size="small"
+                sx={{
+                  flex: 1,
+                  fontSize: "12px",
+                  textTransform: "none",
+                  borderRadius: "8px",
+                  borderColor: mode === "dark" ? "#555" : colors.border.light,
+                  color: mode === "dark" ? "#ffffff" : colors.text.primary,
+                  "&:hover": {
+                    borderColor:
+                      mode === "dark" ? "#90caf9" : colors.primary.main,
+                    backgroundColor:
+                      mode === "dark"
+                        ? "rgba(144, 202, 249, 0.08)"
+                        : colors.primary.light + "20",
+                  },
+                }}
+              >
+                <DvrIcon sx={{ mr: 0.5, fontSize: "15px" }} /> AI Slides
+              </Button>
+            </Box>
+
+            <Box
+              sx={{
+                borderTop: `1px solid ${
+                  mode === "dark" ? "#333" : colors.border.light
+                }`,
+                gap: 2,
+                pl: 1,
+                display: "flex",
+                alignItems: "center",
+                position: "relative",
+                backgroundColor: mode === "dark" ? "#1e1e1e" : "transparent",
+              }}
+            >
+              <Tooltip title="Select AI Model">
+                <IconButton
+                  onClick={handleMenuOpen}
+                  size="small"
+                  sx={{
+                    color: mode === "dark" ? "#b0b0b0" : colors.text.secondary,
+                    "&:hover": {
+                      color: mode === "dark" ? "#90caf9" : colors.primary.main,
+                    },
+                  }}
+                >
+                  <AutoAwesomeIcon fontSize="small" />
+                </IconButton>
+              </Tooltip>
+
+              <Tooltip title="Take Screenshot">
+                <IconButton
+                  onClick={takeScreenshot}
+                  size="small"
+                  disabled={isTakingScreenshot}
+                  sx={{
                     color: isTakingScreenshot
                       ? colors.text.disabled
-                      : colors.primary.main,
-                  },
-                }}
-              >
-                {isTakingScreenshot ? (
-                  <CircularProgress size={20} color="inherit" />
-                ) : (
-                  <span
-                    style={{
-                      display: "inline-block",
-                      transform: "rotate(-90deg)",
-                      fontSize: "20px",
-                    }}
-                  >
-                    ✂
-                  </span>
-                )}
-              </IconButton>
-            </Tooltip>
-
-            <Tooltip title="Theme & Image">
-              <IconButton
-                onClick={handleThemeMenuOpen}
-                size="small"
-                sx={{
-                  color: colors.text.secondary,
-                  "&:hover": { color: colors.primary.main },
-                }}
-              >
-                <TuneIcon sx={{ fontSize: 22 }} />
-              </IconButton>
-            </Tooltip>
-
-            <Tooltip title="Scroll to History Top">
-              <IconButton
-                onClick={() => {
-                  if (messagesContainerRef.current) {
-                    messagesContainerRef.current.scrollTop = 0;
-                  }
-                }}
-                size="small"
-                sx={{
-                  color: colors.text.secondary,
-                  "&:hover": { color: colors.primary.main },
-                }}
-              >
-                <HistoryIcon fontSize="small" />
-              </IconButton>
-            </Tooltip>
-          </Box>
-          {/* INPUT */}
-          <Box
-            sx={{
-              p: 1,
-              display: "flex",
-              gap: 1,
-              alignItems: "center",
-            }}
-          >
-            <TextField
-              value={input}
-              size="small"
-              fullWidth
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) =>
-                e.key === "Enter" && !e.shiftKey && sendMessage()
-              }
-              placeholder="Type your message..."
-              disabled={loading}
-              multiline
-              maxRows={3}
-              sx={{
-                flex: 1,
-                "& .MuiOutlinedInput-root": {
-                  borderRadius: "10px",
-                  "&:hover fieldset": {
-                    borderColor: colors.border.light,
-                  },
-                  "&.Mui-focused fieldset": {
-                    borderColor: colors.border.light,
-                  },
-                },
-              }}
-            />
-
-            {/* SEND BUTTON */}
-            <IconButton
-              onClick={sendMessage}
-              disabled={!input.trim() || loading}
-              sx={{
-                color:
-                  input.trim() && !loading
-                    ? colors.primary.main
-                    : colors.text.disabled,
-                "&:hover": {
-                  backgroundColor:
-                    input.trim() && !loading
-                      ? colors.primary.light
-                      : "transparent",
-                },
-              }}
-            >
-              <SendIcon sx={{ fontSize: "30px" }} />
-            </IconButton>
-
-            {/* MICROPHONE ICON */}
-            <Tooltip
-              title="Voice input (coming soon)"
-              PopperProps={{
-                sx: {
-                  zIndex: 10000,
-                },
-              }}
-            >
-              <IconButton
-                size="small"
-                sx={{
-                  color: colors.text.disabled,
-                  borderRadius: "10px",
-                  height: "36px",
-                  width: "36px",
-                  cursor: "not-allowed",
-                }}
-                disabled
-              >
-                <MicIcon />
-              </IconButton>
-            </Tooltip>
-          </Box>
-
-          {/* AI MODEL MENU */}
-          <Menu
-            anchorEl={anchorEl}
-            open={Boolean(anchorEl)}
-            onClose={handleMenuClose}
-            anchorOrigin={{
-              vertical: "top",
-              horizontal: "center",
-            }}
-            transformOrigin={{
-              vertical: "bottom",
-              horizontal: "center",
-            }}
-            sx={{
-              zIndex: 10001,
-              "& .MuiPaper-root": {
-                marginTop: "-8px",
-                zIndex: 10001,
-              },
-            }}
-            PaperProps={{
-              sx: {
-                maxHeight: 400,
-                width: 320,
-                borderRadius: "8px",
-                boxShadow: "0px 4px 20px rgba(0,0,0,0.15)",
-                zIndex: 10001,
-              },
-            }}
-            disablePortal={false}
-            container={() => document.querySelector(".chat-container")}
-            style={{ zIndex: 10001 }}
-          >
-            <Box
-              sx={{
-                p: 1.5,
-                borderBottom: `1px solid ${colors.border.light}`,
-              }}
-            >
-              <Typography
-                variant="subtitle2"
-                fontWeight="bold"
-                color="text.primary"
-              >
-                Select AI Model
-              </Typography>
-              <Typography variant="caption" color="text.secondary">
-                Currently selected: {selectedModel}
-              </Typography>
-            </Box>
-
-            <Box sx={{ maxHeight: 300, overflowY: "auto" }}>
-              {models.map((providerGroup, index) => (
-                <Box key={index}>
-                  <Typography
-                    variant="caption"
-                    sx={{
-                      px: 2,
-                      py: 1,
-                      display: "block",
-                      fontWeight: "bold",
-                      color: colors.text.secondary,
-                      backgroundColor: colors.background.lightGray,
-                    }}
-                  >
-                    {providerGroup.provider}
-                  </Typography>
-                  {providerGroup.models.map((model, modelIndex) => (
-                    <MenuItem
-                      key={modelIndex}
-                      onClick={() => handleModelSelect(model)}
-                      sx={{
-                        fontSize: "13px",
-                        py: 1,
-                        borderLeft: `3px solid ${
-                          selectedModel === model
-                            ? colors.primary.main
-                            : "transparent"
-                        }`,
-                        backgroundColor:
-                          selectedModel === model
-                            ? colors.primary.light + "20"
-                            : "transparent",
+                      : mode === "dark"
+                      ? "#b0b0b0"
+                      : colors.text.secondary,
+                    "&:hover": {
+                      color: isTakingScreenshot
+                        ? colors.text.disabled
+                        : mode === "dark"
+                        ? "#90caf9"
+                        : colors.primary.main,
+                    },
+                  }}
+                >
+                  {isTakingScreenshot ? (
+                    <CircularProgress size={20} color="inherit" />
+                  ) : (
+                    <span
+                      style={{
+                        display: "inline-block",
+                        transform: "rotate(-90deg)",
+                        fontSize: "20px",
+                        color: mode === "dark" ? "#b0b0b0" : "inherit",
                       }}
                     >
-                      <Typography
-                        variant="body2"
-                        sx={{
-                          color: colors.text.primary,
-                          fontFamily: model.includes("Deprecated")
-                            ? "'Courier New', monospace"
-                            : "inherit",
-                          opacity: model.includes("Deprecated") ? 0.7 : 1,
-                        }}
-                      >
-                        {model}
-                      </Typography>
-                    </MenuItem>
-                  ))}
-                </Box>
-              ))}
-            </Box>
-          </Menu>
+                      ✂
+                    </span>
+                  )}
+                </IconButton>
+              </Tooltip>
 
-          {/* THEME & IMAGE MENU */}
-          <Menu
-            anchorEl={themeAnchorEl}
-            open={Boolean(themeAnchorEl)}
-            onClose={handleThemeMenuClose}
-            anchorOrigin={{
-              vertical: "top",
-              horizontal: "center",
-            }}
-            transformOrigin={{
-              vertical: "bottom",
-              horizontal: "center",
-            }}
-            sx={{
-              zIndex: 10001,
-              "& .MuiPaper-root": {
-                marginTop: "-8px",
-                zIndex: 10001,
-              },
-            }}
-            PaperProps={{
-              sx: {
-                width: 250,
-                borderRadius: "8px",
-                boxShadow: "0px 4px 20px rgba(0,0,0,0.15)",
-                zIndex: 10001,
-              },
-            }}
-            disablePortal={false}
-            container={() => document.querySelector(".chat-container")}
-            style={{ zIndex: 10001 }}
-          >
+              <Tooltip title="Theme & Image">
+                <IconButton
+                  onClick={handleThemeMenuOpen}
+                  size="small"
+                  sx={{
+                    color: mode === "dark" ? "#b0b0b0" : colors.text.secondary,
+                    "&:hover": {
+                      color: mode === "dark" ? "#90caf9" : colors.primary.main,
+                    },
+                  }}
+                >
+                  <TuneIcon sx={{ fontSize: 22 }} />
+                </IconButton>
+              </Tooltip>
+
+              <Tooltip title="Scroll to History Top">
+                <IconButton
+                  onClick={() => {
+                    if (messagesContainerRef.current) {
+                      messagesContainerRef.current.scrollTop = 0;
+                    }
+                  }}
+                  size="small"
+                  sx={{
+                    color: mode === "dark" ? "#b0b0b0" : colors.text.secondary,
+                    "&:hover": {
+                      color: mode === "dark" ? "#90caf9" : colors.primary.main,
+                    },
+                  }}
+                >
+                  <HistoryIcon fontSize="small" />
+                </IconButton>
+              </Tooltip>
+            </Box>
+            {/* INPUT */}
             <Box
               sx={{
-                p: 1.5,
-                borderBottom: `1px solid ${colors.border.light}`,
+                p: isFullScreen ? 2 : 1,
+                display: "flex",
+                gap: 1,
+                alignItems: "center",
+                backgroundColor: mode === "dark" ? "#1e1e1e" : "transparent",
               }}
             >
-              <Typography
-                variant="subtitle2"
-                fontWeight="bold"
-                color="text.primary"
+              <TextField
+                value={input}
+                size="small"
+                fullWidth
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={(e) =>
+                  e.key === "Enter" && !e.shiftKey && sendMessage()
+                }
+                placeholder="Type your message..."
+                disabled={loading}
+                multiline
+                maxRows={3}
+                sx={{
+                  flex: 1,
+                  "& .MuiOutlinedInput-root": {
+                    borderRadius: "10px",
+                    backgroundColor:
+                      mode === "dark" ? "#2a2a2a" : "transparent",
+                    "& fieldset": {
+                      borderColor:
+                        mode === "dark" ? "#555" : colors.border.light,
+                    },
+                    "&:hover fieldset": {
+                      borderColor:
+                        mode === "dark" ? "#777" : colors.border.light,
+                    },
+                    "&.Mui-focused fieldset": {
+                      borderColor:
+                        mode === "dark" ? "#90caf9" : colors.border.light,
+                    },
+                    "& .MuiInputBase-input": {
+                      color: mode === "dark" ? "#ffffff" : "inherit",
+                    },
+                    "& .MuiInputBase-input::placeholder": {
+                      color: mode === "dark" ? "#888" : "inherit",
+                    },
+                  },
+                }}
+              />
+
+              {/* SEND BUTTON */}
+              <IconButton
+                onClick={sendMessage}
+                disabled={!input.trim() || loading}
+                sx={{
+                  color:
+                    input.trim() && !loading
+                      ? mode === "dark"
+                        ? "#90caf9"
+                        : colors.primary.main
+                      : colors.text.disabled,
+                  "&:hover": {
+                    backgroundColor:
+                      input.trim() && !loading
+                        ? mode === "dark"
+                          ? "rgba(144, 202, 249, 0.08)"
+                          : colors.primary.light
+                        : "transparent",
+                  },
+                }}
               >
-                Theme & Image
-              </Typography>
+                <SendIcon sx={{ fontSize: "30px" }} />
+              </IconButton>
+
+              {/* MICROPHONE ICON */}
+              <Tooltip
+                title="Voice input (coming soon)"
+                PopperProps={{
+                  sx: {
+                    zIndex: 10000,
+                  },
+                }}
+              >
+                <IconButton
+                  size="small"
+                  sx={{
+                    color: colors.text.disabled,
+                    borderRadius: "10px",
+                    height: "36px",
+                    width: "36px",
+                    cursor: "not-allowed",
+                  }}
+                  disabled
+                >
+                  <MicIcon />
+                </IconButton>
+              </Tooltip>
             </Box>
 
-            {/* Dark Mode Option */}
-            <MenuItem
-              onClick={handleDarkModeToggle}
-              sx={{
-                py: 1.5,
-                px: 2,
+            {/* AI MODEL MENU */}
+            <Menu
+              anchorEl={anchorEl}
+              open={Boolean(anchorEl)}
+              onClose={handleMenuClose}
+              anchorOrigin={{
+                vertical: "top",
+                horizontal: "center",
               }}
+              transformOrigin={{
+                vertical: "bottom",
+                horizontal: "center",
+              }}
+              sx={{
+                zIndex: 10001,
+                "& .MuiPaper-root": {
+                  marginTop: "-8px",
+                  zIndex: 10001,
+                },
+              }}
+              PaperProps={{
+                sx: {
+                  maxHeight: 400,
+                  width: 320,
+                  borderRadius: "8px",
+                  boxShadow: "0px 4px 20px rgba(0,0,0,0.15)",
+                  zIndex: 10001,
+                  backgroundColor: mode === "dark" ? "#2a2a2a" : "#ffffff",
+                },
+              }}
+              disablePortal={false}
+              container={() => document.querySelector(".chat-container")}
+              style={{ zIndex: 10001 }}
             >
-              <ListItemIcon>
-                <DarkModeIcon fontSize="small" />
-              </ListItemIcon>
-              <ListItemText primary="Dark Mode" />
-              <Switch
-                size="small"
-                checked={darkMode}
-                onChange={handleDarkModeToggle}
-                onClick={(e) => e.stopPropagation()}
-              />
-            </MenuItem>
+              <Box
+                sx={{
+                  p: 1.5,
+                  borderBottom: `1px solid ${
+                    mode === "dark" ? "#333" : colors.border.light
+                  }`,
+                }}
+              >
+                <Typography
+                  variant="subtitle2"
+                  fontWeight="bold"
+                  color={mode === "dark" ? "#ffffff" : colors.text.primary}
+                >
+                  Select AI Model
+                </Typography>
+                <Typography
+                  variant="caption"
+                  color={mode === "dark" ? "#b0b0b0" : colors.text.secondary}
+                >
+                  Currently selected: {selectedModel}
+                </Typography>
+              </Box>
 
-            {/* Light Mode Option */}
-            <MenuItem
-              onClick={handleLightModeToggle}
-              sx={{
-                py: 1.5,
-                px: 2,
-              }}
-            >
-              <ListItemIcon>
-                <LightModeIcon fontSize="small" />
-              </ListItemIcon>
-              <ListItemText primary="Light Mode" />
-              <Switch
-                size="small"
-                checked={lightMode}
-                onChange={handleLightModeToggle}
-                onClick={(e) => e.stopPropagation()}
-              />
-            </MenuItem>
+              <Box sx={{ maxHeight: 300, overflowY: "auto" }}>
+                {models.map((providerGroup, index) => (
+                  <Box key={index}>
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        px: 2,
+                        py: 1,
+                        display: "block",
+                        fontWeight: "bold",
+                        color:
+                          mode === "dark" ? "#b0b0b0" : colors.text.secondary,
+                        backgroundColor:
+                          mode === "dark"
+                            ? "#333"
+                            : colors.background.lightGray,
+                      }}
+                    >
+                      {providerGroup.provider}
+                    </Typography>
+                    {providerGroup.models.map((model, modelIndex) => (
+                      <MenuItem
+                        key={modelIndex}
+                        onClick={() => handleModelSelect(model)}
+                        sx={{
+                          fontSize: "13px",
+                          py: 1,
+                          borderLeft: `3px solid ${
+                            selectedModel === model
+                              ? mode === "dark"
+                                ? "#90caf9"
+                                : colors.primary.main
+                              : "transparent"
+                          }`,
+                          backgroundColor:
+                            selectedModel === model
+                              ? mode === "dark"
+                                ? "rgba(144, 202, 249, 0.08)"
+                                : colors.primary.light + "20"
+                              : "transparent",
+                          color:
+                            mode === "dark" ? "#ffffff" : colors.text.primary,
+                          "&:hover": {
+                            backgroundColor:
+                              mode === "dark"
+                                ? "#333"
+                                : colors.background.lightGray,
+                          },
+                        }}
+                      >
+                        <Typography
+                          variant="body2"
+                          sx={{
+                            color:
+                              mode === "dark" ? "#ffffff" : colors.text.primary,
+                            fontFamily: model.includes("Deprecated")
+                              ? "'Courier New', monospace"
+                              : "inherit",
+                            opacity: model.includes("Deprecated") ? 0.7 : 1,
+                          }}
+                        >
+                          {model}
+                        </Typography>
+                      </MenuItem>
+                    ))}
+                  </Box>
+                ))}
+              </Box>
+            </Menu>
 
-            {/* Image Upload Option */}
-            <MenuItem
-              onClick={handleImageUpload}
-              sx={{
-                py: 1.5,
-                px: 2,
+            {/* THEME & IMAGE MENU */}
+            <Menu
+              anchorEl={themeAnchorEl}
+              open={Boolean(themeAnchorEl)}
+              onClose={handleThemeMenuClose}
+              anchorOrigin={{
+                vertical: "top",
+                horizontal: "center",
               }}
+              transformOrigin={{
+                vertical: "bottom",
+                horizontal: "center",
+              }}
+              sx={{
+                zIndex: 10001,
+                "& .MuiPaper-root": {
+                  marginTop: "-8px",
+                  zIndex: 10001,
+                },
+              }}
+              PaperProps={{
+                sx: {
+                  width: 250,
+                  borderRadius: "8px",
+                  boxShadow: "0px 4px 20px rgba(0,0,0,0.15)",
+                  zIndex: 10001,
+                  backgroundColor: mode === "dark" ? "#2a2a2a" : "#ffffff",
+                },
+              }}
+              disablePortal={false}
+              container={() => document.querySelector(".chat-container")}
+              style={{ zIndex: 10001 }}
             >
-              <ListItemIcon>
-                <ImageIcon fontSize="small" />
-              </ListItemIcon>
-              <ListItemText primary="Image" />
-            </MenuItem>
-          </Menu>
-        </Box>
+              <Box
+                sx={{
+                  p: 1.5,
+                  borderBottom: `1px solid ${
+                    mode === "dark" ? "#333" : colors.border.light
+                  }`,
+                }}
+              >
+                <Typography
+                  variant="subtitle2"
+                  fontWeight="bold"
+                  color={mode === "dark" ? "#ffffff" : colors.text.primary}
+                >
+                  Theme & Image
+                </Typography>
+              </Box>
+
+              {/* Dark Mode Option */}
+              <MenuItem
+                onClick={handleDarkModeToggle}
+                sx={{
+                  py: 1.5,
+                  px: 2,
+                  color: mode === "dark" ? "#ffffff" : colors.text.primary,
+                }}
+              >
+                <ListItemIcon>
+                  <DarkModeIcon
+                    fontSize="small"
+                    color={mode === "dark" ? "inherit" : "action"}
+                  />
+                </ListItemIcon>
+                <ListItemText primary="Dark Mode" />
+                <Switch
+                  size="small"
+                  checked={darkMode}
+                  onChange={handleDarkModeToggle}
+                  onClick={(e) => e.stopPropagation()}
+                />
+              </MenuItem>
+
+              {/* Light Mode Option */}
+              <MenuItem
+                onClick={handleLightModeToggle}
+                sx={{
+                  py: 1.5,
+                  px: 2,
+                  color: mode === "dark" ? "#ffffff" : colors.text.primary,
+                }}
+              >
+                <ListItemIcon>
+                  <LightModeIcon
+                    fontSize="small"
+                    color={mode === "dark" ? "inherit" : "action"}
+                  />
+                </ListItemIcon>
+                <ListItemText primary="Light Mode" />
+                <Switch
+                  size="small"
+                  checked={lightMode}
+                  onChange={handleLightModeToggle}
+                  onClick={(e) => e.stopPropagation()}
+                />
+              </MenuItem>
+
+              {/* Image Upload Option */}
+              <MenuItem
+                onClick={handleImageUpload}
+                sx={{
+                  py: 1.5,
+                  px: 2,
+                  color: mode === "dark" ? "#ffffff" : colors.text.primary,
+                }}
+              >
+                <ListItemIcon>
+                  <ImageIcon
+                    fontSize="small"
+                    color={mode === "dark" ? "inherit" : "action"}
+                  />
+                </ListItemIcon>
+                <ListItemText primary="Image" />
+              </MenuItem>
+            </Menu>
+          </Box>
+        </ThemeProvider>
       )}
     </>
   );

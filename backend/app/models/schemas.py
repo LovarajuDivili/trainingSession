@@ -176,6 +176,7 @@ class ChatMessage(BaseModel):
     conversation_id: Optional[str] = None
     user_email: Optional[str] = None  
     context: Optional[str] = None  
+    model: Optional[str] = None  # Add this field
 
 
 class ChatResponse(BaseModel):
