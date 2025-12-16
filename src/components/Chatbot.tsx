@@ -849,9 +849,14 @@ const Chatbot = () => {
                         fontSize: "10px",
                         color:
                           mode === "dark" ? "#b0b0b0" : colors.text.secondary,
-                        textAlign: "right",
+
+                        textAlign: msg.sender === "user" ? "left" : "right",
+
                         marginTop: "3px",
-                        paddingRight: "6px",
+
+                        paddingLeft: msg.sender === "user" ? "6px" : 0,
+                        paddingRight: msg.sender === "user" ? 0 : "6px",
+
                         opacity: 1,
                         transition: "opacity 0.2s ease",
                         height: "14px",
@@ -1084,7 +1089,7 @@ const Chatbot = () => {
                   onClick={handleMenuOpen}
                   size="small"
                   sx={{
-                    color: mode === "dark" ? "#b0b0b0" : colors.text.secondary,
+                    color: mode === "dark" ? "#b0b0b0" : colors.primary.main,
                     "&:hover": {
                       color: mode === "dark" ? "#90caf9" : colors.primary.main,
                     },
@@ -1101,10 +1106,10 @@ const Chatbot = () => {
                   disabled={isTakingScreenshot}
                   sx={{
                     color: isTakingScreenshot
-                      ? colors.text.disabled
+                      ? colors.primary.main
                       : mode === "dark"
                       ? "#b0b0b0"
-                      : colors.text.secondary,
+                      : colors.primary.main,
                     "&:hover": {
                       color: isTakingScreenshot
                         ? colors.text.disabled
@@ -1136,7 +1141,7 @@ const Chatbot = () => {
                   onClick={handleThemeMenuOpen}
                   size="small"
                   sx={{
-                    color: mode === "dark" ? "#b0b0b0" : colors.text.secondary,
+                    color: mode === "dark" ? "#b0b0b0" : colors.primary.main,
                     "&:hover": {
                       color: mode === "dark" ? "#90caf9" : colors.primary.main,
                     },
@@ -1155,7 +1160,7 @@ const Chatbot = () => {
                   }}
                   size="small"
                   sx={{
-                    color: mode === "dark" ? "#b0b0b0" : colors.text.secondary,
+                    color: mode === "dark" ? "#b0b0b0" : colors.primary.main,
                     "&:hover": {
                       color: mode === "dark" ? "#90caf9" : colors.primary.main,
                     },
