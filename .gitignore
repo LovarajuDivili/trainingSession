@@ -76,3 +76,8 @@ backend/.coverage
 # OS files
 # -------------------------
 Thumbs.db
+
+
+.env
+.env.*
+backend/.env
