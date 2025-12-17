@@ -21,6 +21,8 @@ import { Alert, IconButton, InputAdornment, Snackbar } from "@mui/material";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import Visibility from "@mui/icons-material/Visibility";
 import sha256 from "crypto-js/sha256";
+import { useAuth0 } from "@auth0/auth0-react";
+//import axios from "axios";
 
 const Card = styled(MuiCard)(({ theme }) => ({
   display: "flex",
@@ -72,6 +74,27 @@ export default function SignIn(props: { disableCustomTheme?: boolean }) {
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const { login, isLoggingIn } = useAuth();
+  const { loginWithRedirect } = useAuth0();
+  //const { isAuthenticated, getIdTokenClaims } = useAuth0();
+
+  // useEffect(() => {
+  //   const handleSSOLogin = async () => {
+  //     if (isAuthenticated) {
+  //       const claims = await getIdTokenClaims();
+  //       const idToken = claims?.role === "Admin";
+
+  //       const response = await axios.post(
+  //         "http://localhost:8000/v-1/application/auth/sso-login",
+  //         { id_token: idToken }
+  //       );
+
+  //       sessionStorage.setItem("token", response.data.access_token);
+  //       sessionStorage.setItem("user", JSON.stringify(response.data.user));
+  //     }
+  //   };
+
+  //   handleSSOLogin();
+  // }, [isAuthenticated]);
 
   useEffect(() => {
     const token = sessionStorage.getItem("token");
@@ -236,6 +259,14 @@ export default function SignIn(props: { disableCustomTheme?: boolean }) {
               sx={{ backgroundColor: "#906aff" }}
             >
               {isLoggingIn ? "Signing in..." : "Sign in"}
+            </Button>
+
+            <Button
+              fullWidth
+              variant="outlined"
+              onClick={() => loginWithRedirect()}
+            >
+              Login with SSO
             </Button>
 
             <Link

@@ -608,7 +608,7 @@ const Chatbot = () => {
               position: "fixed",
               bottom: isFullScreen ? "0" : "20px",
               right: isFullScreen ? "0" : "20px",
-              width: isFullScreen ? "calc(100vw - 40px)" : "540px",
+              width: isFullScreen ? "calc(60vw - 40px)" : "540px",
               height: isFullScreen ? "calc(100vh - 40px)" : "650px",
               backgroundColor:
                 mode === "dark" ? "#1e1e1e" : colors.background.white,
@@ -621,11 +621,11 @@ const Chatbot = () => {
                 : "0px 8px 30px rgba(0,0,0,0.3)",
               transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
               ...(isFullScreen && {
-                top: "50%",
-                left: "50%",
-                transform: "translate(-50%, -50%)",
-                bottom: "auto",
-                right: "auto",
+                top: "20px",
+                right: "20px",
+                left: "auto",
+                bottom: "20px",
+                transform: "none",
               }),
             }}
             className="chat-container"

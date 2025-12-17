@@ -30,6 +30,8 @@ import { OrdersProvider } from "./context/OrderContext";
 import { ThemeProvider } from "./context/ThemeContext";
 import { useEffect } from "react";
 import Chatbot from "./components/Chatbot";
+import Auth0Callback from "./components/Auth0Callback";
+
 
 
 const AppContent = () => {
@@ -68,6 +70,7 @@ const AppContent = () => {
   return (
     <Routes>
       <Route path="/signin" element={<SignIn />} />
+      <Route path="/callback" element={<Auth0Callback />} />
       <Route path="/signup" element={<SignUp />} />
 
       <Route
