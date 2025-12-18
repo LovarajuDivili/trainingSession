@@ -30,7 +30,7 @@ import { OrdersProvider } from "./context/OrderContext";
 import { ThemeProvider } from "./context/ThemeContext";
 import { useEffect } from "react";
 import Chatbot from "./components/Chatbot";
-
+import GoogleCallback from "./GoogleCallback";
 
 const AppContent = () => {
   const { isAuthenticated, isLoading } = useAuth();
@@ -68,6 +68,7 @@ const AppContent = () => {
   return (
     <Routes>
       <Route path="/signin" element={<SignIn />} />
+      <Route path="/auth/google/callback" element={<GoogleCallback />} />
       <Route path="/signup" element={<SignUp />} />
 
       <Route

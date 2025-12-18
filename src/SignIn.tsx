@@ -248,6 +248,32 @@ export default function SignIn(props: { disableCustomTheme?: boolean }) {
               Forgot your password?
             </Link>
           </Box>
+          {/* Add Google Login Button */}
+          <Button
+            fullWidth
+            variant="outlined"
+            onClick={() =>
+              (window.location.href =
+                "http://localhost:8000/v-1/application/auth/google/login")
+            }
+            startIcon={
+              <img
+                src="/google-icon.svg"
+                alt="Google"
+                style={{ width: 20, height: 20 }}
+              />
+            }
+            sx={{
+              borderColor: "#ddd",
+              color: "#444",
+              "&:hover": {
+                borderColor: "#906aff",
+                backgroundColor: "rgba(144, 106, 255, 0.04)",
+              },
+            }}
+          >
+            Sign in with Google
+          </Button>
           <Divider>or</Divider>
           <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
             <Typography sx={{ textAlign: "center" }}>
