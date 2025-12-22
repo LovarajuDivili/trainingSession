@@ -73,12 +73,16 @@ const RequestOrder: React.FC = () => {
   useEffect(() => {
     const fetchItems = async () => {
       try {
-        const data = await apiRequest<any>({
+        // const data = await apiRequest<any>({
+        //   endpoint: "/api/accountant",
+        //   method: "GET",
+        // });
+        const data = await apiRequest<{ items: any[] }>({
           endpoint: "/api/accountant",
           method: "GET",
         });
-
-        setItems(data?.items || data || []);
+        setItems(data.items);
+        // setItems(data?.items || data || []);
       } catch (err) {
         console.error("Error loading items:", err);
       }
@@ -103,10 +107,24 @@ const RequestOrder: React.FC = () => {
     "Others",
   ];
 
+  // const products =
+  //   activeCategory === "Others"
+  //     ? items
+  //     : items.filter((i: any) => i.category === activeCategory);
   const products =
     activeCategory === "Others"
-      ? items
-      : items.filter((i: any) => i.category === activeCategory);
+      ? items.filter(
+          (i) =>
+            ![
+              "Laptop",
+              "Monitor",
+              "Keyboard",
+              "Mouse",
+              "Headphones",
+              "Webcam",
+            ].includes(i.category)
+        )
+      : items.filter((i) => i.category === activeCategory);
 
   const toggleFav = (id: string) =>
     setFav((prev) =>
@@ -160,7 +178,7 @@ const RequestOrder: React.FC = () => {
 
       <Grid container spacing={3}>
         {products.map((item: any) => (
-          <Grid item xs={12} sm={6} md={4} lg={3} key={item._id}>
+          <Grid item xs={12} sm={6} md={4} m={3} key={item._id}>
             <Card
               sx={{ borderRadius: 3, boxShadow: "0 8px 18px rgba(0,0,0,0.08)" }}
             >

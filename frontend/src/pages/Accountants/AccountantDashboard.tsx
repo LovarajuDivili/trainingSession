@@ -249,8 +249,9 @@ const AccountantDashboard = () => {
     headphones: items.filter((i) => i.category === "Headphones").length,
     monitors: items.filter((i) => i.category === "Monitor").length,
     others: items.filter(
-      (i) => !["Laptop", "Headphones", "Monitor"].includes(i.category)
+      (i) => !["Laptop", "Headphones", "Monitor"].includes(i.category?.trim())
     ).length,
+    length,
   };
 
   return (

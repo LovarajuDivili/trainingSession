@@ -1,6 +1,7 @@
 import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
-import AccountBalanceWalletIcon from "@mui/icons-material/AccountBalanceWallet";
-// import SmartToyIcon from "@mui/icons-material/SmartToy";
+// import AccountBalanceWalletIcon from "@mui/icons-material/AccountBalanceWallet";
+import AccountBalanceIcon from "@mui/icons-material/AccountBalance";
+
 
 export const roles = [
   {
@@ -11,7 +12,7 @@ export const roles = [
   {
     value: "Accountant",
     label: "Accountant",
-    icon: <AccountBalanceWalletIcon sx={{ color: "#00bcd4" }} />,
+    icon: <AccountBalanceIcon sx={{ color: "#00bcd4" }} />,
   },
  
 ];

@@ -16,7 +16,7 @@ router.get("/", auth, async (req, res) => {
 
 router.post("/", auth, async (req, res) => {
   const newItem = new AccountantItem({
-    category: req.body.category,
+    category: req.body.category.trim(),
     brand: req.body.brand,
     model: req.body.model,
     price: req.body.price,
